@@ -829,6 +829,36 @@ app.get(['/sitemap.xml', '/api/sitemap.xml'], (_req, res) => {
   res.send(SITEMAP_XML);
 });
 
+// Explicitly serve favicon assets with proper Content-Type and caching
+app.get(
+  [
+    '/favicon.ico',
+    '/favicon.png',
+    '/favicon-48x48.png',
+    '/favicon-96x96.png',
+    '/favicon-192x192.png',
+    '/favicon-32x32.png',
+    '/apple-touch-icon.png'
+  ],
+  (req, res) => {
+    const filename = path.basename(req.path);
+    const candidates = [
+      path.resolve(process.cwd(), 'dist', filename),
+      path.resolve(process.cwd(), 'public', filename)
+    ];
+    for (const filePath of candidates) {
+      if (fs.existsSync(filePath)) {
+        const ext = path.extname(filename).toLowerCase();
+        const contentType = ext === '.ico' ? 'image/x-icon' : 'image/png';
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800');
+        return res.sendFile(filePath);
+      }
+    }
+    res.status(404).end();
+  }
+);
+
 // Content-protected learning dataset (Server-side enforcement - Fail Closed)
 app.get('/api/data', (req, res) => {
   const access = getRequesterAccess(req);
