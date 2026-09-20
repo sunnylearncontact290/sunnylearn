@@ -746,14 +746,7 @@ function getRequesterAccess(req: Request): { isPremium: boolean; isAdmin: boolea
 // ----------------------------------------------------
 
 // Robots.txt & Sitemap.xml SEO routes
-app.get('/robots.txt', (_req, res) => {
-  res.type('text/plain');
-  res.send('User-agent: *\nAllow: /\n\nSitemap: https://sunnylearn.online/sitemap.xml\n');
-});
-
-app.get('/sitemap.xml', (_req, res) => {
-  res.type('application/xml');
-  res.send(`<?xml version="1.0" encoding="UTF-8"?>
+const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://sunnylearn.online/</loc>
@@ -761,7 +754,70 @@ app.get('/sitemap.xml', (_req, res) => {
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-</urlset>`);
+  <url>
+    <loc>https://sunnylearn.online/learn</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://sunnylearn.online/dictionary</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://sunnylearn.online/practice</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sunnylearn.online/quiz</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sunnylearn.online/ai</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://sunnylearn.online/premium</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sunnylearn.online/contact</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+</urlset>`;
+
+const ROBOTS_TXT = `User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /profile
+Disallow: /progress
+
+Sitemap: https://sunnylearn.online/sitemap.xml
+`;
+
+app.get(['/robots.txt', '/api/robots.txt'], (_req, res) => {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+  res.send(ROBOTS_TXT);
+});
+
+app.get(['/sitemap.xml', '/api/sitemap.xml'], (_req, res) => {
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+  res.send(SITEMAP_XML);
 });
 
 // Content-protected learning dataset (Server-side enforcement - Fail Closed)

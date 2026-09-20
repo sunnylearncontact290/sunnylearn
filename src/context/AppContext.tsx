@@ -246,16 +246,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [activeTab, setActiveTabState] = useState<MainTab>(() => {
     if (typeof window !== 'undefined') {
+      const path = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase();
       const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase();
       const params = new URLSearchParams(window.location.search);
       const queryTab = (params.get('tab') || params.get('page') || '').toLowerCase();
-      const target = hash || queryTab;
+      const target = hash || queryTab || path;
       if (target === 'admin') {
         return 'home'; // Never initialize on admin before auth confirmation
       }
-      const validTabs: MainTab[] = ['home', 'learn', 'dictionary', 'practice', 'quiz', 'progress', 'profile', 'contact', 'premium', 'tutor'];
+      const validTabs: MainTab[] = ['home', 'learn', 'dictionary', 'practice', 'quiz', 'progress', 'profile', 'contact', 'premium', 'tutor', 'ai'];
       if (validTabs.includes(target as MainTab)) {
-        return target as MainTab;
+        return (target === 'tutor' ? 'ai' : target) as MainTab;
       }
     }
     return 'home';

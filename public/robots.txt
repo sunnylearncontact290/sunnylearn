@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /profile
+Disallow: /progress
 
 Sitemap: https://sunnylearn.online/sitemap.xml
