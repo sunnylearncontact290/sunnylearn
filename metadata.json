@@ -1,0 +1,6 @@
+{
+  "name": "SunnyLearn – Япон хэлийг монголоор сур",
+  "description": "SunnyLearn бол монгол хэлээр япон хэл сурах онлайн платформ. JLPT N5–N1 түвшний үг, ханз, дүрэм, дасгал, quiz болон бусад хичээлээр япон хэлээ системтэйгээр сураарай.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
