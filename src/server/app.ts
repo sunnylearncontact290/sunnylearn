@@ -4,15 +4,11 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { fileURLToPath } from 'url';
 import nodemailer from 'nodemailer';
 import { GoogleGenAI } from '@google/genai';
 import { initialSeedData } from '../data/seedData';
 import { DatabaseSchema, PaymentRequestItem, JLPTLevel, LevelCountDetails } from '../types';
 import { buildFreeTierData, ensureAccessTiers, computeLevelCounts } from '../data/accessControl';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = 3000;
@@ -132,8 +128,7 @@ function loadDatabase(): DatabaseSchema {
     if (IS_VERCEL && !fs.existsSync(DB_FILE)) {
       const candidates = [
         path.resolve(process.cwd(), 'data', 'db.json'),
-        path.resolve(process.cwd(), 'api', 'data', 'db.json'),
-        path.join(__dirname, 'data', 'db.json')
+        path.resolve(process.cwd(), 'api', 'data', 'db.json')
       ];
       for (const candidate of candidates) {
         if (fs.existsSync(candidate)) {

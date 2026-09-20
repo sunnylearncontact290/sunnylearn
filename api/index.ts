@@ -97,7 +97,6 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import { fileURLToPath } from "url";
 import nodemailer from "nodemailer";
 import { GoogleGenAI } from "@google/genai";
 
@@ -125853,8 +125852,6 @@ ensureAccessTiers(initialSeedData);
 var freeTierSeedData = buildFreeTierData(initialSeedData);
 
 // src/server/app.ts
-var __filename = fileURLToPath(import.meta.url);
-var __dirname = path.dirname(__filename);
 var app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use((req, res, next) => {
@@ -125933,8 +125930,7 @@ function loadDatabase() {
     if (IS_VERCEL && !fs.existsSync(DB_FILE)) {
       const candidates = [
         path.resolve(process.cwd(), "data", "db.json"),
-        path.resolve(process.cwd(), "api", "data", "db.json"),
-        path.join(__dirname, "data", "db.json")
+        path.resolve(process.cwd(), "api", "data", "db.json")
       ];
       for (const candidate of candidates) {
         if (fs.existsSync(candidate)) {

@@ -134305,7 +134305,7 @@
           "longest": 0,
           "lastActiveDate": ""
         },
-        "updatedAt": "2026-09-16T14:08:07.106Z",
+        "updatedAt": "2026-09-20T13:10:45.634Z",
         "settings": {
           "targetLevel": "N5",
           "dailyGoalCount": 10,
@@ -134315,7 +134315,7 @@
         }
       },
       "createdAt": "2026.09.15 15:28:33",
-      "updatedAt": "2026-09-16T14:08:07.106Z",
+      "updatedAt": "2026-09-20T13:10:45.634Z",
       "timezone": "Asia/Ulaanbaatar",
       "notifiedAdmin": false,
       "isPremium": true,
@@ -134619,6 +134619,7 @@
   "aiUsageRecords": {
     "ip:127.0.0.1": [
       1789802044415
-    ]
+    ],
+    "anon:anon_x3ihqqws4_mu9u25tb": []
   }
 }
