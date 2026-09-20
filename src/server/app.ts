@@ -27,6 +27,15 @@ app.use((req, res, next) => {
   next();
 });
 
+// Canonical Domain Redirect: sunnylearn.online -> https://www.sunnylearn.online
+app.use((req, res, next) => {
+  const host = (req.headers.host || '').toLowerCase().split(':')[0];
+  if (host === 'sunnylearn.online') {
+    return res.redirect(301, `https://www.sunnylearn.online${req.originalUrl || req.url}`);
+  }
+  next();
+});
+
 // Database Persistence Configuration (Supports local container and Vercel serverless)
 const IS_VERCEL = !!process.env.VERCEL;
 const DB_FILE = IS_VERCEL ? path.join('/tmp', 'db.json') : path.resolve(process.cwd(), 'data', 'db.json');
@@ -749,49 +758,49 @@ function getRequesterAccess(req: Request): { isPremium: boolean; isAdmin: boolea
 const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://sunnylearn.online/</loc>
+    <loc>https://www.sunnylearn.online/</loc>
     <lastmod>2026-09-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://sunnylearn.online/learn</loc>
+    <loc>https://www.sunnylearn.online/learn</loc>
     <lastmod>2026-09-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://sunnylearn.online/dictionary</loc>
+    <loc>https://www.sunnylearn.online/dictionary</loc>
     <lastmod>2026-09-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://sunnylearn.online/practice</loc>
+    <loc>https://www.sunnylearn.online/practice</loc>
     <lastmod>2026-09-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sunnylearn.online/quiz</loc>
+    <loc>https://www.sunnylearn.online/quiz</loc>
     <lastmod>2026-09-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sunnylearn.online/ai</loc>
+    <loc>https://www.sunnylearn.online/ai</loc>
     <lastmod>2026-09-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sunnylearn.online/premium</loc>
+    <loc>https://www.sunnylearn.online/premium</loc>
     <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sunnylearn.online/contact</loc>
+    <loc>https://www.sunnylearn.online/contact</loc>
     <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -805,7 +814,7 @@ Disallow: /api/
 Disallow: /profile
 Disallow: /progress
 
-Sitemap: https://sunnylearn.online/sitemap.xml
+Sitemap: https://www.sunnylearn.online/sitemap.xml
 `;
 
 app.get(['/robots.txt', '/api/robots.txt'], (_req, res) => {

@@ -5,6 +5,19 @@
       "includeFiles": "{data/**,api/data/**}"
     }
   },
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "sunnylearn.online"
+        }
+      ],
+      "destination": "https://www.sunnylearn.online/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/sitemap.xml",
