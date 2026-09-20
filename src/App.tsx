@@ -18,6 +18,7 @@ import { AdminDashboard } from './components/admin/AdminDashboard';
 import { SunnyAIView } from './components/ai/SunnyAIView';
 import { SunnyAIModal } from './components/ai/SunnyAIModal';
 import { SunnyAIFloatingButton } from './components/ai/SunnyAIFloatingButton';
+import { Analytics } from '@vercel/analytics/react';
 
 const MainContent: React.FC = () => {
   const { activeTab, setActiveTab, isAdmin, inAppNotification, dismissInAppNotification } = useApp();
@@ -87,6 +88,7 @@ export default function App() {
   return (
     <AppProvider>
       <MainContent />
+      <Analytics />
     </AppProvider>
   );
 }
