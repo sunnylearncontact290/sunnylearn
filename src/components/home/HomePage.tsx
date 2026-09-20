@@ -252,7 +252,7 @@ export const HomePage: React.FC = () => {
 
           <div className="space-y-2 sm:space-y-3">
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight break-words">
-              Япон хэлийг монголоор сур
+              SunnyLearn — Япон хэлийг Монголоор сурах платформ
             </h1>
             <p className="text-stone-300 text-xs sm:text-base leading-relaxed max-w-2xl">
               JLPT N5–N1 түвшний үгийн сан, ханз, дүрмийг монгол тайлбартай суралцаарай.
