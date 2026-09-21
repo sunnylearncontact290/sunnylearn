@@ -803,7 +803,7 @@ export const QuizView: React.FC = () => {
               className="px-8 py-4 rounded-2xl font-bold text-base sm:text-lg bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
             >
               <Lock className="w-5 h-5" />
-              <span>Premium идэвхжүүлж {currentLevel} сорилыг нээх (¥980 / 30 хоног)</span>
+              <span>Premium идэвхжүүлж {currentLevel} сорилыг нээх (¥880 / 30 хоног)</span>
             </button>
             <p className="text-xs text-stone-500 dark:text-stone-400">
               N5 түвшний бүх сорил шалгалтууд үнэгүй нээлттэй байдаг.

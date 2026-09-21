@@ -137,7 +137,7 @@ export const storageService = {
       if (!stored) return defaultProgress;
       const parsed = JSON.parse(stored);
 
-      return {
+      const loaded: UserProgress = {
         ...defaultProgress,
         ...parsed,
         selectedLevel: this.getSelectedLevel() || parsed.selectedLevel || null,
@@ -252,7 +252,7 @@ export const storageService = {
     // Merge daily activity
     const dailyRecords: Record<string, any> = { ...(remote.dailyActivity || {}), ...(local.dailyActivity || {}) };
 
-    return {
+    const merged: UserProgress = {
       selectedLevel,
       learnedVocabIds: union(local.learnedVocabIds, remote.learnedVocabIds),
       learnedKanjiIds: union(local.learnedKanjiIds, remote.learnedKanjiIds),

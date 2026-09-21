@@ -119,7 +119,7 @@ export const AdminPaymentsTab: React.FC = () => {
         <div>
           <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-amber-500" />
-            Төлбөр баталгаажуулалт (¥980 / 30 хоног)
+            Төлбөр баталгаажуулалт (¥880 / 30 хоног)
           </h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
             Банкны шилжүүлгийг гараар нягталж, хэрэглэгчдийн Premium эрхийг нээх хяналтын самбар
@@ -144,7 +144,7 @@ export const AdminPaymentsTab: React.FC = () => {
             Админы шалгалтын анхааруулга (ゆうちょ銀行):
           </p>
           <p className="leading-relaxed">
-            Хэрэглэгчийн оруулсан <strong>Шилжүүлэгчийн нэр (振込名義)</strong> болон огноог өөрийн <strong>ゆうちょ銀行</strong> дансны хуулгатай тулган нягталж, <strong>¥980</strong> орж ирснийг бодитоор баталгаажуулсны дараа <strong>[ Зөвшөөрөх ]</strong> товч дарна уу. Зөвшөөрснөөр тухайн хэрэглэгчийн Premium эрх шууд 30 хоногоор идэвхжинэ.
+            Хэрэглэгчийн оруулсан <strong>Шилжүүлэгчийн нэр (振込名義)</strong> болон огноог өөрийн <strong>ゆうちょ銀行</strong> дансны хуулгатай тулган нягталж, <strong>¥880</strong> орж ирснийг бодитоор баталгаажуулсны дараа <strong>[ Зөвшөөрөх ]</strong> товч дарна уу. Зөвшөөрснөөр тухайн хэрэглэгчийн Premium эрх шууд 30 хоногоор идэвхжинэ.
           </p>
         </div>
       </div>
@@ -437,10 +437,10 @@ export const AdminPaymentsTab: React.FC = () => {
 
             <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/80 text-xs text-amber-950 dark:text-amber-100 space-y-1">
               <p className="font-extrabold text-sm">
-                ⚠️ ¥980の入金を実際に確認してから承認してください。
+                ⚠️ ¥880の入金を実際に確認してから承認してください。
               </p>
               <p className="leading-relaxed text-amber-900 dark:text-amber-200">
-                ゆうちょ銀行 дансны хуулга дээр шилжүүлэгчийн нэр, огноо, ¥980 дүн бодитоор орж ирснийг шалгасны дараа зөвшөөрнө үү.
+                ゆうちょ銀行 дансны хуулга дээр шилжүүлэгчийн нэр, огноо, ¥880 дүн бодитоор орж ирснийг шалгасны дараа зөвшөөрнө үү.
               </p>
             </div>
 

@@ -145,7 +145,7 @@ export const PremiumView: React.FC = () => {
           <div className="shrink-0 flex flex-col items-start md:items-end gap-2 bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20">
             <span className="text-xs text-amber-200 font-semibold">Багцын үнэ</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl sm:text-4xl font-black text-white">¥980</span>
+              <span className="text-3xl sm:text-4xl font-black text-white">¥880</span>
               <span className="text-xs text-amber-100 font-medium">/ 30 хоног</span>
             </div>
             <span className="text-[11px] text-amber-200/80">Гар шилжүүлэг (Банк)</span>
@@ -247,7 +247,7 @@ export const PremiumView: React.FC = () => {
           <div className="bg-amber-100/60 dark:bg-amber-900/30 p-3.5 rounded-xl text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
             <Info className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
             <p>
-              <strong>Санамж:</strong> Та дахин ¥980 шилжүүлэх шаардлагагүй. Таны хүсэлт аюулгүй хадгалагдсан тул админ хуулга шалгаад баталгаажуулна. Энэ хугацаанд та сайтын үндсэн хичээлүүдээ чөлөөтэй үзэж болно.
+              <strong>Санамж:</strong> Та дахин ¥880 шилжүүлэх шаардлагагүй. Таны хүсэлт аюулгүй хадгалагдсан тул админ хуулга шалгаад баталгаажуулна. Энэ хугацаанд та сайтын үндсэн хичээлүүдээ чөлөөтэй үзэж болно.
             </p>
           </div>
         </div>
@@ -269,7 +269,7 @@ export const PremiumView: React.FC = () => {
         </div>
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-amber-200/60 dark:border-amber-900/40">
           <span className="px-3 py-1 rounded-full bg-amber-200/70 dark:bg-amber-900/60 text-amber-950 dark:text-amber-200 font-black text-xs">
-            ¥980
+            ¥880
           </span>
           <span className="px-3 py-1 rounded-full bg-stone-200/70 dark:bg-stone-800 text-stone-800 dark:text-stone-200 font-bold text-xs">
             30 хоног
@@ -443,11 +443,11 @@ export const PremiumView: React.FC = () => {
               <div className="p-3 bg-stone-50 dark:bg-stone-800/60 rounded-xl flex items-center justify-between">
                 <div>
                   <span className="text-[11px] text-stone-500 dark:text-stone-400 block">振込金額</span>
-                  <span className="font-extrabold text-red-600 dark:text-red-400 text-base">¥980</span>
+                  <span className="font-extrabold text-red-600 dark:text-red-400 text-base">¥880</span>
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleCopy('980', 'amount')}
+                  onClick={() => handleCopy('880', 'amount')}
                   className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
                   title="Хуулах"
                 >
@@ -561,7 +561,7 @@ export const PremiumView: React.FC = () => {
                     Шилжүүлсэн дүн
                   </label>
                   <div className="px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm font-bold">
-                    ¥980 (SunnyLearn Premium — 30 days)
+                    ¥880 (SunnyLearn Premium — 30 days)
                   </div>
                 </div>
               </div>

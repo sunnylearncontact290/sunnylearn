@@ -462,7 +462,7 @@ async function sendPaymentNotificationEmail(payment: PaymentRequestItem): Promis
           
           <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
             <div style="font-size: 12px; color: #92400e; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Төлбөрийн дүн & Багц</div>
-            <div style="font-size: 24px; font-weight: 900; color: #78350f;">¥980 <span style="font-size: 14px; font-weight: 600; color: #b45309;">/ SunnyLearn Premium — 30 days</span></div>
+            <div style="font-size: 24px; font-weight: 900; color: #78350f;">¥880 <span style="font-size: 14px; font-weight: 600; color: #b45309;">/ SunnyLearn Premium — 30 days</span></div>
           </div>
 
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px;">
@@ -499,7 +499,7 @@ async function sendPaymentNotificationEmail(payment: PaymentRequestItem): Promis
           <div style="background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-size: 13px; color: #1e40af; line-height: 1.6;">
             <div style="font-weight: 800; font-size: 14px; margin-bottom: 4px;">⚠️ Админы зааварчилгаа:</div>
             <strong>ゆうちょ銀行への入金を確認してから承認してください。</strong><br/>
-            1. ゆうちょ銀行 дансаа шалгаж ¥980 орж ирснийг баталгаажуулна.<br/>
+            1. ゆうちょ銀行 дансаа шалгаж ¥880 орж ирснийг баталгаажуулна.<br/>
             2. Шилжүүлэгчийн нэр (<strong>${escapeHtml(payment.senderName)}</strong>) болон огноог тулгана.<br/>
             3. Админ самбарт нэвтэрч гараар <strong>[ 承認 / Зөвшөөрөх ]</strong> товч дарна.<br/>
             <em>* Энэхүү имэйлийг нээснээр эсвэл товч дарснаар төлбөр автоматаар баталгаажихгүй.</em>
@@ -1600,7 +1600,7 @@ app.post('/api/payment/request', async (req, res) => {
         success: false,
         isDuplicate: true,
         existingRequest: existingPending,
-        message: 'Таны өмнөх төлбөрийн хүсэлт одоогоор шалгагдаж байна. Дахин ¥980 шилжүүлэх шаардлагагүй.'
+        message: 'Таны өмнөх төлбөрийн хүсэлт одоогоор шалгагдаж байна. Дахин ¥880 шилжүүлэх шаардлагагүй.'
       });
     }
 
@@ -1609,7 +1609,7 @@ app.post('/api/payment/request', async (req, res) => {
       userId: authUserId,
       userName: userName.trim(),
       userEmail: userEmail.trim(),
-      amount: 980,
+      amount: 880,
       currency: 'JPY',
       plan: 'SunnyLearn Premium — 30 days',
       durationDays: 30,
@@ -1837,7 +1837,7 @@ app.get('/api/admin/payments', verifyAdminToken, (_req, res) => {
   const pendingCount = allPayments.filter(p => p.status === 'PENDING').length;
   const approvedCount = allPayments.filter(p => p.status === 'APPROVED').length;
   const rejectedCount = allPayments.filter(p => p.status === 'REJECTED').length;
-  const totalYenApproved = approvedCount * 980;
+  const totalYenApproved = approvedCount * 880;
 
   res.json({
     success: true,

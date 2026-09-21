@@ -84,13 +84,44 @@ export const Footer: React.FC = () => {
                   Санал хүсэлт, Холбогдох
                 </button>
               </li>
+              <li>
+                <a
+                  href="/tokushoho"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActiveTab('tokushoho');
+                    if (typeof window !== 'undefined') {
+                      window.history.pushState(null, '', '/tokushoho');
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="hover:text-red-600 dark:hover:text-red-400 text-[11px] sm:text-xs"
+                >
+                  特定商取引法に基づく表記
+                </a>
+              </li>
             </ul>
           </div>
         </div>
 
         <div className="pt-8 border-t border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
           <p>© {new Date().getFullYear()} SunnyLearn. Бүх эрх хуулиар хамгаалагдсан.</p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4">
+            <a
+              href="/tokushoho"
+              onClick={(e) => {
+                e.preventDefault();
+                setActiveTab('tokushoho');
+                if (typeof window !== 'undefined') {
+                  window.history.pushState(null, '', '/tokushoho');
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="text-stone-500 hover:text-stone-800 dark:hover:text-stone-200 transition-colors underline underline-offset-4 decoration-stone-300 dark:decoration-stone-700"
+            >
+              特定商取引法に基づく表記
+            </a>
+            <span className="text-stone-300 dark:text-stone-700">•</span>
             {isAdmin && (
               <>
                 <button

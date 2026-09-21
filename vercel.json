@@ -11,10 +11,10 @@
       "has": [
         {
           "type": "host",
-          "value": "sunnylearn.online"
+          "value": "www.sunnylearn.online"
         }
       ],
-      "destination": "https://www.sunnylearn.online/$1",
+      "destination": "https://sunnylearn.online/$1",
       "permanent": true
     }
   ],

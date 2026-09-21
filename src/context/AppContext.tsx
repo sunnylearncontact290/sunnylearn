@@ -260,7 +260,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (target === 'admin') {
         return 'home'; // Never initialize on admin before auth confirmation
       }
-      const validTabs: MainTab[] = ['home', 'learn', 'dictionary', 'practice', 'quiz', 'progress', 'profile', 'contact', 'premium', 'tutor', 'ai'];
+      const validTabs: MainTab[] = ['home', 'learn', 'dictionary', 'practice', 'quiz', 'progress', 'profile', 'contact', 'premium', 'tutor', 'ai', 'tokushoho'];
       if (validTabs.includes(target as MainTab)) {
         return (target === 'tutor' ? 'ai' : target) as MainTab;
       }
@@ -284,6 +284,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         window.location.hash = '#admin';
       } else if (window.location.hash === '#admin') {
         window.history.replaceState(null, '', window.location.pathname || '/');
+      } else if (tab === 'tokushoho') {
+        if (window.location.pathname !== '/tokushoho') {
+          window.history.pushState(null, '', '/tokushoho');
+        }
+      } else if (window.location.pathname === '/tokushoho') {
+        window.history.pushState(null, '', '/');
       }
     }
   }, [isAdmin]);
@@ -709,6 +715,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         } else {
           setActiveTabState('admin');
         }
+        return;
+      }
+
+      const isTargetingTokushoho = hash === 'tokushoho' || queryTab === 'tokushoho' || pathname.endsWith('/tokushoho');
+      if (isTargetingTokushoho) {
+        setActiveTabState('tokushoho');
+        return;
       }
     };
 

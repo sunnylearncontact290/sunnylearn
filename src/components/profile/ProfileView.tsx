@@ -176,7 +176,7 @@ export const ProfileView: React.FC = () => {
             </span>
           ) : (
             <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-[10px] font-black">
-              ¥980
+              ¥880
             </span>
           )}
         </button>
@@ -200,7 +200,7 @@ export const ProfileView: React.FC = () => {
                       SunnyLearn Premium
                     </h3>
                     <span className="text-[11px] text-amber-800 dark:text-amber-300">
-                      ¥980 • 30 хоног
+                      ¥880 • 30 хоног
                     </span>
                   </div>
                 </div>
@@ -244,7 +244,7 @@ export const ProfileView: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-sm text-stone-900 dark:text-stone-100 group-hover:text-amber-600 transition-colors">
-                    SunnyLearn Premium гишүүн болох (¥980 / 30 хоног)
+                    SunnyLearn Premium гишүүн болох (¥880 / 30 хоног)
                   </h3>
                   <p className="text-xs text-stone-500 dark:text-stone-400">
                     Банкны шилжүүлгээр 30 хоногийн бүх эрхээ нээж, хязгааргүй суралцаарай

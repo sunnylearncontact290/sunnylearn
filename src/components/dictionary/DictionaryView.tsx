@@ -109,7 +109,7 @@ export const DictionaryView: React.FC = () => {
               }}
               className="shrink-0 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-colors cursor-pointer"
             >
-              Premium авах (¥980)
+              Premium авах (¥880)
             </button>
           </div>
         )}

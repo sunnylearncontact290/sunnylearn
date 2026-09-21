@@ -14,6 +14,7 @@ import { ProgressView } from './components/progress/ProgressView';
 import { ProfileView } from './components/profile/ProfileView';
 import { ContactView } from './components/contact/ContactView';
 import { PremiumView } from './components/premium/PremiumView';
+import { TokushohoView } from './components/tokushoho/TokushohoView';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { SunnyAIView } from './components/ai/SunnyAIView';
 import { SunnyAIModal } from './components/ai/SunnyAIModal';
@@ -73,6 +74,7 @@ const MainContent: React.FC = () => {
         {activeTab === 'premium' && <PremiumView />}
         {activeTab === 'profile' && <ProfileView />}
         {activeTab === 'contact' && <ContactView />}
+        {activeTab === 'tokushoho' && <TokushohoView />}
       </main>
       <Footer />
       <SearchModal />
