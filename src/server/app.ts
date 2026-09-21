@@ -27,14 +27,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Canonical Domain Redirect: sunnylearn.online -> https://www.sunnylearn.online
-app.use((req, res, next) => {
-  const host = (req.headers.host || '').toLowerCase().split(':')[0];
-  if (host === 'sunnylearn.online') {
-    return res.redirect(301, `https://www.sunnylearn.online${req.originalUrl || req.url}`);
-  }
-  next();
-});
+// CORS is handled above; no conflicting domain redirects here
 
 // Database Persistence Configuration (Supports local container and Vercel serverless)
 const IS_VERCEL = !!process.env.VERCEL;

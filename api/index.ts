@@ -126241,7 +126241,7 @@ https://ais-dev-seaxwrqdabhqsqbm3l76x6-109960249109.asia-east1.run.app`,
           
           <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
             <div style="font-size: 12px; color: #92400e; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">\u0422\u04E9\u043B\u0431\u04E9\u0440\u0438\u0439\u043D \u0434\u04AF\u043D & \u0411\u0430\u0433\u0446</div>
-            <div style="font-size: 24px; font-weight: 900; color: #78350f;">\xA5980 <span style="font-size: 14px; font-weight: 600; color: #b45309;">/ SunnyLearn Premium \u2014 30 days</span></div>
+            <div style="font-size: 24px; font-weight: 900; color: #78350f;">\xA5880 <span style="font-size: 14px; font-weight: 600; color: #b45309;">/ SunnyLearn Premium \u2014 30 days</span></div>
           </div>
 
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px;">
@@ -126278,7 +126278,7 @@ https://ais-dev-seaxwrqdabhqsqbm3l76x6-109960249109.asia-east1.run.app`,
           <div style="background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-size: 13px; color: #1e40af; line-height: 1.6;">
             <div style="font-weight: 800; font-size: 14px; margin-bottom: 4px;">\u26A0\uFE0F \u0410\u0434\u043C\u0438\u043D\u044B \u0437\u0430\u0430\u0432\u0430\u0440\u0447\u0438\u043B\u0433\u0430\u0430:</div>
             <strong>\u3086\u3046\u3061\u3087\u9280\u884C\u3078\u306E\u5165\u91D1\u3092\u78BA\u8A8D\u3057\u3066\u304B\u3089\u627F\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002</strong><br/>
-            1. \u3086\u3046\u3061\u3087\u9280\u884C \u0434\u0430\u043D\u0441\u0430\u0430 \u0448\u0430\u043B\u0433\u0430\u0436 \xA5980 \u043E\u0440\u0436 \u0438\u0440\u0441\u043D\u0438\u0439\u0433 \u0431\u0430\u0442\u0430\u043B\u0433\u0430\u0430\u0436\u0443\u0443\u043B\u043D\u0430.<br/>
+            1. \u3086\u3046\u3061\u3087\u9280\u884C \u0434\u0430\u043D\u0441\u0430\u0430 \u0448\u0430\u043B\u0433\u0430\u0436 \xA5880 \u043E\u0440\u0436 \u0438\u0440\u0441\u043D\u0438\u0439\u0433 \u0431\u0430\u0442\u0430\u043B\u0433\u0430\u0430\u0436\u0443\u0443\u043B\u043D\u0430.<br/>
             2. \u0428\u0438\u043B\u0436\u04AF\u04AF\u043B\u044D\u0433\u0447\u0438\u0439\u043D \u043D\u044D\u0440 (<strong>${escapeHtml(payment.senderName)}</strong>) \u0431\u043E\u043B\u043E\u043D \u043E\u0433\u043D\u043E\u043E\u0433 \u0442\u0443\u043B\u0433\u0430\u043D\u0430.<br/>
             3. \u0410\u0434\u043C\u0438\u043D \u0441\u0430\u043C\u0431\u0430\u0440\u0442 \u043D\u044D\u0432\u0442\u044D\u0440\u0447 \u0433\u0430\u0440\u0430\u0430\u0440 <strong>[ \u627F\u8A8D / \u0417\u04E9\u0432\u0448\u04E9\u04E9\u0440\u04E9\u0445 ]</strong> \u0442\u043E\u0432\u0447 \u0434\u0430\u0440\u043D\u0430.<br/>
             <em>* \u042D\u043D\u044D\u0445\u04AF\u04AF \u0438\u043C\u044D\u0439\u043B\u0438\u0439\u0433 \u043D\u044D\u044D\u0441\u043D\u044D\u044D\u0440 \u044D\u0441\u0432\u044D\u043B \u0442\u043E\u0432\u0447 \u0434\u0430\u0440\u0441\u043D\u0430\u0430\u0440 \u0442\u04E9\u043B\u0431\u04E9\u0440 \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0430\u0430\u0440 \u0431\u0430\u0442\u0430\u043B\u0433\u0430\u0430\u0436\u0438\u0445\u0433\u04AF\u0439.</em>
@@ -126475,22 +126475,104 @@ function getRequesterAccess(req) {
   }
   return { isPremium: false, isAdmin: false };
 }
-app.get("/robots.txt", (_req, res) => {
-  res.type("text/plain");
-  res.send("User-agent: *\nAllow: /\n\nSitemap: https://sunnylearn.online/sitemap.xml\n");
-});
-app.get("/sitemap.xml", (_req, res) => {
-  res.type("application/xml");
-  res.send(`<?xml version="1.0" encoding="UTF-8"?>
+var SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://sunnylearn.online/</loc>
+    <loc>https://www.sunnylearn.online/</loc>
     <lastmod>2026-09-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-</urlset>`);
+  <url>
+    <loc>https://www.sunnylearn.online/learn</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.sunnylearn.online/dictionary</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.sunnylearn.online/practice</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.sunnylearn.online/quiz</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.sunnylearn.online/ai</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.sunnylearn.online/premium</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.sunnylearn.online/contact</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+</urlset>`;
+var ROBOTS_TXT = `User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /profile
+Disallow: /progress
+
+Sitemap: https://www.sunnylearn.online/sitemap.xml
+`;
+app.get(["/robots.txt", "/api/robots.txt"], (_req, res) => {
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=86400");
+  res.send(ROBOTS_TXT);
 });
+app.get(["/sitemap.xml", "/api/sitemap.xml"], (_req, res) => {
+  res.setHeader("Content-Type", "application/xml; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=86400");
+  res.send(SITEMAP_XML);
+});
+app.get(
+  [
+    "/favicon.ico",
+    "/favicon.png",
+    "/favicon-48x48.png",
+    "/favicon-96x96.png",
+    "/favicon-192x192.png",
+    "/favicon-32x32.png",
+    "/apple-touch-icon.png"
+  ],
+  (req, res) => {
+    const filename = path.basename(req.path);
+    const candidates = [
+      path.resolve(process.cwd(), "dist", filename),
+      path.resolve(process.cwd(), "public", filename)
+    ];
+    for (const filePath of candidates) {
+      if (fs.existsSync(filePath)) {
+        const ext = path.extname(filename).toLowerCase();
+        const contentType = ext === ".ico" ? "image/x-icon" : "image/png";
+        res.setHeader("Content-Type", contentType);
+        res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=604800");
+        return res.sendFile(filePath);
+      }
+    }
+    res.status(404).end();
+  }
+);
 app.get("/api/data", (req, res) => {
   const access = getRequesterAccess(req);
   const counts = computeLevelCounts(db);
@@ -126943,6 +127025,16 @@ app.post("/api/user/progress", verifyUserToken, (req, res) => {
         longest: Math.max(user.progress.streak?.longest || 0, progress.streak?.longest || 0),
         lastActiveDate: progress.streak?.lastActiveDate || user.progress.streak?.lastActiveDate || ""
       },
+      gamification: progress.gamification ? {
+        ...user.progress.gamification || {},
+        ...progress.gamification,
+        totalXP: Math.max(user.progress.gamification?.totalXP || 0, progress.gamification.totalXP || 0),
+        longestStreak: Math.max(user.progress.gamification?.longestStreak || 0, progress.gamification.longestStreak || 0),
+        awardedItemIds: union(user.progress.gamification?.awardedItemIds, progress.gamification.awardedItemIds),
+        awardedQuizIds: union(user.progress.gamification?.awardedQuizIds, progress.gamification.awardedQuizIds),
+        completedGoalDates: union(user.progress.gamification?.completedGoalDates, progress.gamification.completedGoalDates),
+        unlockedBadgeIds: union(user.progress.gamification?.unlockedBadgeIds, progress.gamification.unlockedBadgeIds)
+      } : user.progress.gamification,
       lastStudied: progress.lastStudied || user.progress.lastStudied,
       updatedAt: (/* @__PURE__ */ new Date()).toISOString()
     };
@@ -127089,7 +127181,7 @@ app.post("/api/payment/request", async (req, res) => {
         success: false,
         isDuplicate: true,
         existingRequest: existingPending,
-        message: "\u0422\u0430\u043D\u044B \u04E9\u043C\u043D\u04E9\u0445 \u0442\u04E9\u043B\u0431\u04E9\u0440\u0438\u0439\u043D \u0445\u04AF\u0441\u044D\u043B\u0442 \u043E\u0434\u043E\u043E\u0433\u043E\u043E\u0440 \u0448\u0430\u043B\u0433\u0430\u0433\u0434\u0430\u0436 \u0431\u0430\u0439\u043D\u0430. \u0414\u0430\u0445\u0438\u043D \xA5980 \u0448\u0438\u043B\u0436\u04AF\u04AF\u043B\u044D\u0445 \u0448\u0430\u0430\u0440\u0434\u043B\u0430\u0433\u0430\u0433\u04AF\u0439."
+        message: "\u0422\u0430\u043D\u044B \u04E9\u043C\u043D\u04E9\u0445 \u0442\u04E9\u043B\u0431\u04E9\u0440\u0438\u0439\u043D \u0445\u04AF\u0441\u044D\u043B\u0442 \u043E\u0434\u043E\u043E\u0433\u043E\u043E\u0440 \u0448\u0430\u043B\u0433\u0430\u0433\u0434\u0430\u0436 \u0431\u0430\u0439\u043D\u0430. \u0414\u0430\u0445\u0438\u043D \xA5880 \u0448\u0438\u043B\u0436\u04AF\u04AF\u043B\u044D\u0445 \u0448\u0430\u0430\u0440\u0434\u043B\u0430\u0433\u0430\u0433\u04AF\u0439."
       });
     }
     const newPayment = {
@@ -127097,7 +127189,7 @@ app.post("/api/payment/request", async (req, res) => {
       userId: authUserId,
       userName: userName.trim(),
       userEmail: userEmail.trim(),
-      amount: 980,
+      amount: 880,
       currency: "JPY",
       plan: "SunnyLearn Premium \u2014 30 days",
       durationDays: 30,
@@ -127269,7 +127361,7 @@ app.get("/api/admin/payments", verifyAdminToken, (_req, res) => {
   const pendingCount = allPayments.filter((p) => p.status === "PENDING").length;
   const approvedCount = allPayments.filter((p) => p.status === "APPROVED").length;
   const rejectedCount = allPayments.filter((p) => p.status === "REJECTED").length;
-  const totalYenApproved = approvedCount * 980;
+  const totalYenApproved = approvedCount * 880;
   res.json({
     success: true,
     payments: sorted,
@@ -127662,12 +127754,17 @@ function handler(req, res) {
   try {
     const parsed = new URL(rawUrl, "http://localhost");
     let pathname = parsed.pathname;
-    if (!pathname.startsWith("/api")) {
+    if (pathname === "/robots.txt" || pathname === "/sitemap.xml") {
+      req.url = pathname + parsed.search;
+    } else if (!pathname.startsWith("/api")) {
       pathname = "/api" + (pathname.startsWith("/") ? pathname : "/" + pathname);
+      req.url = pathname + parsed.search;
+    } else {
+      req.url = pathname + parsed.search;
     }
-    req.url = pathname + parsed.search;
   } catch {
-    if (!req.url || !req.url.startsWith("/api")) {
+    if (req.url === "/robots.txt" || req.url === "/sitemap.xml") {
+    } else if (!req.url || !req.url.startsWith("/api")) {
       req.url = "/api" + (req.url && req.url.startsWith("/") ? req.url : "/" + (req.url || ""));
     }
   }

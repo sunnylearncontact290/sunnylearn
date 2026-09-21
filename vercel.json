@@ -5,19 +5,6 @@
       "includeFiles": "{data/**,api/data/**}"
     }
   },
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.sunnylearn.online"
-        }
-      ],
-      "destination": "https://sunnylearn.online/$1",
-      "permanent": true
-    }
-  ],
   "headers": [
     {
       "source": "/sitemap.xml",
@@ -57,23 +44,15 @@
   ],
   "rewrites": [
     {
+      "source": "/api",
+      "destination": "/api"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api"
     },
     {
-      "source": "/robots.txt",
-      "destination": "/robots.txt"
-    },
-    {
-      "source": "/sitemap.xml",
-      "destination": "/sitemap.xml"
-    },
-    {
-      "source": "/(favicon.*|apple-touch-icon.*)",
-      "destination": "/$1"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!api/|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]
