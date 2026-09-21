@@ -29,6 +29,11 @@ import { storageService } from '../services/storage';
 import { speechService } from '../services/speech';
 import { learningEngine } from '../services/learningEngine';
 import { freeTierSeedData } from '../data/accessControl';
+import {
+  awardItemLearned,
+  awardQuizCompleted,
+  getTokyoDateString
+} from '../services/gamificationEngine';
 
 interface ToastMessage {
   id: string;
@@ -102,6 +107,7 @@ interface AppContextType {
   setPracticeMissedItems: (ids: string[]) => void;
   updateSettings: (settings: Partial<UserProgress['settings']>) => void;
   resetProgress: () => void;
+  markDailyCelebrationSeen: () => void;
 
   // Audio Speech
   playAudio: (text: string, onStart?: () => void) => Promise<void> | void;
@@ -758,21 +764,72 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Progress helpers
   const toggleVocabLearned = useCallback((id: string) => {
     const isLearned = storageService.toggleVocabLearned(id);
-    setUserProgress(storageService.getProgress());
-    showToast(isLearned ? 'Үгийг цээжилсэнд тэмдэглэлээ!' : 'Цээжилсэн жагсаалтаас хаслаа.', 'success');
-  }, [showToast]);
+    let progress = storageService.getProgress();
+
+    if (isLearned) {
+      const item = data.vocabulary.find(v => v.id === id);
+      const level = item?.jlptLevel || selectedLevel || 'N5';
+      const res = awardItemLearned(progress, id, 'vocab', level);
+      progress = res.updatedProgress;
+      storageService.saveProgress(progress);
+      if (res.newlyReachedDailyGoal) {
+        showToast('🎉 Өнөөдрийн 20 XP зорилго биеллээ! 🔥 Streak нэмэгдлээ!', 'success');
+      } else if (res.awardedXP > 0) {
+        showToast(`+${res.awardedXP} XP • Үгийг цээжилсэнд тэмдэглэлээ!`, 'success');
+      } else {
+        showToast('Үгийг цээжилсэнд тэмдэглэлээ!', 'success');
+      }
+    } else {
+      showToast('Цээжилсэн жагсаалтаас хаслаа.', 'info');
+    }
+    setUserProgress(progress);
+  }, [data.vocabulary, selectedLevel, showToast]);
 
   const toggleKanjiLearned = useCallback((id: string) => {
     const isLearned = storageService.toggleKanjiLearned(id);
-    setUserProgress(storageService.getProgress());
-    showToast(isLearned ? 'Ханзыг сурсанд тэмдэглэлээ!' : 'Сурсан жагсаалтаас хаслаа.', 'success');
-  }, [showToast]);
+    let progress = storageService.getProgress();
+
+    if (isLearned) {
+      const item = data.kanji.find(k => k.id === id);
+      const level = item?.jlptLevel || selectedLevel || 'N5';
+      const res = awardItemLearned(progress, id, 'kanji', level);
+      progress = res.updatedProgress;
+      storageService.saveProgress(progress);
+      if (res.newlyReachedDailyGoal) {
+        showToast('🎉 Өнөөдрийн 20 XP зорилго биеллээ! 🔥 Streak нэмэгдлээ!', 'success');
+      } else if (res.awardedXP > 0) {
+        showToast(`+${res.awardedXP} XP • Ханзыг сурсанд тэмдэглэлээ!`, 'success');
+      } else {
+        showToast('Ханзыг сурсанд тэмдэглэлээ!', 'success');
+      }
+    } else {
+      showToast('Сурсан жагсаалтаас хаслаа.', 'info');
+    }
+    setUserProgress(progress);
+  }, [data.kanji, selectedLevel, showToast]);
 
   const toggleGrammarLearned = useCallback((id: string) => {
     const isLearned = storageService.toggleGrammarLearned(id);
-    setUserProgress(storageService.getProgress());
-    showToast(isLearned ? 'Дүрмийг эзэмшсэнд тэмдэглэлээ!' : 'Эзэмшсэн жагсаалтаас хаслаа.', 'success');
-  }, [showToast]);
+    let progress = storageService.getProgress();
+
+    if (isLearned) {
+      const item = data.grammar.find(g => g.id === id);
+      const level = item?.jlptLevel || selectedLevel || 'N5';
+      const res = awardItemLearned(progress, id, 'grammar', level);
+      progress = res.updatedProgress;
+      storageService.saveProgress(progress);
+      if (res.newlyReachedDailyGoal) {
+        showToast('🎉 Өнөөдрийн 20 XP зорилго биеллээ! 🔥 Streak нэмэгдлээ!', 'success');
+      } else if (res.awardedXP > 0) {
+        showToast(`+${res.awardedXP} XP • Дүрмийг эзэмшсэнд тэмдэглэлээ!`, 'success');
+      } else {
+        showToast('Дүрмийг эзэмшсэнд тэмдэглэлээ!', 'success');
+      }
+    } else {
+      showToast('Эзэмшсэн жагсаалтаас хаслаа.', 'info');
+    }
+    setUserProgress(progress);
+  }, [data.grammar, selectedLevel, showToast]);
 
   const toggleFavorite = useCallback((type: 'vocab' | 'kanji' | 'grammar' | 'sentence', id: string) => {
     const isFav = storageService.toggleFavorite(type, id);
@@ -799,16 +856,38 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const recordQuizCompleted = useCallback((attempt: QuizAttemptRecord) => {
     setUserProgress(prev => {
       let updated = learningEngine.recordQuizCompleted(prev, attempt);
+      const res = awardQuizCompleted(updated, attempt.id, attempt.jlptLevel, attempt.total);
+      updated = res.updatedProgress;
+      if (res.newlyReachedDailyGoal) {
+        showToast('🎉 Өнөөдрийн 20 XP зорилго биеллээ! 🔥 Streak нэмэгдлээ!', 'success');
+      } else if (res.awardedXP > 0) {
+        showToast(`+${res.awardedXP} XP • Сорил амжилттай дууслаа!`, 'success');
+      }
+      storageService.saveProgress(updated);
+      return updated;
+    });
+  }, [showToast]);
+
+  const recordPracticeCompleted = useCallback((attempt: PracticeAttemptRecord) => {
+    setUserProgress(prev => {
+      let updated = learningEngine.recordPracticeCompleted(prev, attempt);
       updated = storageService.recordLearningAction(updated);
       storageService.saveProgress(updated);
       return updated;
     });
   }, []);
 
-  const recordPracticeCompleted = useCallback((attempt: PracticeAttemptRecord) => {
+  const markDailyCelebrationSeen = useCallback(() => {
     setUserProgress(prev => {
-      let updated = learningEngine.recordPracticeCompleted(prev, attempt);
-      updated = storageService.recordLearningAction(updated);
+      if (!prev.gamification) return prev;
+      const todayTokyo = getTokyoDateString();
+      const updated: UserProgress = {
+        ...prev,
+        gamification: {
+          ...prev.gamification,
+          dailyCelebratedDate: todayTokyo
+        }
+      };
       storageService.saveProgress(updated);
       return updated;
     });
@@ -1266,6 +1345,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setPracticeMissedItems,
         updateSettings,
         resetProgress,
+        markDailyCelebrationSeen,
         playAudio,
         stopAudio,
         isAdmin,

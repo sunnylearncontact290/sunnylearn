@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RotateCcw, Check, X } from 'lucide-react';
+import { normalizeAnswerText } from '../../services/learningEngine';
 
 interface SentenceScrambleCardProps {
   prompt: string; // Mongolian meaning
@@ -27,6 +28,11 @@ export const SentenceScrambleCard: React.FC<SentenceScrambleCardProps> = ({
   // Track selected chips by index in scrambleWords
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
 
+  // Reset selected chips when moving to another question
+  useEffect(() => {
+    setSelectedIndices([]);
+  }, [prompt, scrambleWords]);
+
   const handleSelectWord = (index: number) => {
     if (isAnswered) return;
     if (selectedIndices.includes(index)) return;
@@ -46,13 +52,13 @@ export const SentenceScrambleCard: React.FC<SentenceScrambleCardProps> = ({
   const handleCheck = () => {
     if (isAnswered || selectedIndices.length === 0) return;
     const userBuiltWords = selectedIndices.map(i => scrambleWords[i]);
-    const isCorrect = userBuiltWords.join('') === correctOrder.join('');
+    const isCorrect = normalizeAnswerText(userBuiltWords.join('')) === normalizeAnswerText(correctOrder.join(''));
     onAnswer(isCorrect);
   };
 
   const isAllPlaced = selectedIndices.length === scrambleWords.length;
   const userBuiltWords = selectedIndices.map(i => scrambleWords[i]);
-  const isCorrect = isAnswered && userBuiltWords.join('') === correctOrder.join('');
+  const isCorrect = isAnswered && normalizeAnswerText(userBuiltWords.join('')) === normalizeAnswerText(correctOrder.join(''));
 
   return (
     <div className="space-y-6">

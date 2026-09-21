@@ -22,7 +22,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { JLPTLevel, ContentType, ItemStudyRecord } from '../../types';
 import { LevelBadge } from '../common/LevelBadge';
-import { learningEngine, PracticeCategory, PracticeQuestion } from '../../services/learningEngine';
+import { learningEngine, PracticeCategory, PracticeQuestion, normalizeAnswerText } from '../../services/learningEngine';
 import { SentenceScrambleCard } from './SentenceScrambleCard';
 
 export const PracticeView: React.FC = () => {
@@ -139,7 +139,20 @@ export const PracticeView: React.FC = () => {
     setSelectedOption(index);
     setIsAnswered(true);
 
-    const correct = index === currentQ.correctIndex;
+    const isDirectIndexMatch = index === currentQ.correctIndex;
+    const selectedText = currentQ.options?.[index];
+    const correctTargetText =
+      currentQ.options && currentQ.correctIndex !== undefined
+        ? currentQ.options[currentQ.correctIndex]
+        : undefined;
+
+    const isTextMatch = Boolean(
+      selectedText &&
+      correctTargetText &&
+      normalizeAnswerText(selectedText) === normalizeAnswerText(correctTargetText)
+    );
+
+    const correct = isDirectIndexMatch || isTextMatch;
     setIsCorrect(correct);
 
     // Record answer in UserProgress & spaced repetition engine
@@ -432,12 +445,18 @@ export const PracticeView: React.FC = () => {
                   </span>
                 )}
 
+                {currentQ.promptInstruction && (
+                  <p className="text-xs sm:text-sm font-semibold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/40 px-3.5 py-1.5 rounded-xl max-w-lg mx-auto">
+                    {currentQ.promptInstruction}
+                  </p>
+                )}
+
                 <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight">
                   {currentQ.prompt}
                 </h2>
 
                 {currentQ.promptSub && (
-                  <p className="text-sm sm:text-base font-medium text-stone-500 dark:text-stone-400">
+                  <p className="text-sm sm:text-base font-medium text-stone-600 dark:text-stone-300 bg-stone-50 dark:bg-stone-800/40 px-3.5 py-1.5 rounded-xl inline-block border border-stone-200/60 dark:border-stone-700/60">
                     {currentQ.promptSub}
                   </p>
                 )}
@@ -447,7 +466,11 @@ export const PracticeView: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 {currentQ.options.map((option, idx) => {
                   const isSelected = selectedOption === idx;
-                  const isCorrectAnswer = idx === currentQ.correctIndex;
+                  const isCorrectAnswer =
+                    idx === currentQ.correctIndex ||
+                    (currentQ.options &&
+                      normalizeAnswerText(option) ===
+                        normalizeAnswerText(currentQ.options[currentQ.correctIndex]));
 
                   let btnStyle =
                     'bg-white dark:bg-stone-800/80 border-stone-200 dark:border-stone-700/80 text-stone-800 dark:text-stone-100 hover:border-amber-400 hover:bg-amber-50/50 dark:hover:bg-stone-700/80';
@@ -522,11 +545,11 @@ export const PracticeView: React.FC = () => {
                               ? currentQ.options[selectedOption]
                               : 'Хариулаагүй';
                           const correctAnsText =
-                            currentQ.options && currentQ.correctAnswer !== undefined
-                              ? currentQ.options[currentQ.correctAnswer]
+                            currentQ.options && currentQ.correctIndex !== undefined
+                              ? currentQ.options[currentQ.correctIndex]
                               : '';
                           openSunnyAIWithQuiz({
-                            question: currentQ.question,
+                            question: currentQ.prompt,
                             questionReading: currentQ.reading,
                             userAnswer: userAnsText,
                             correctAnswer: correctAnsText,

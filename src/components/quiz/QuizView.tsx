@@ -21,7 +21,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { JLPTLevel, ContentType, QuizAttemptRecord, QuizQuestionReview } from '../../types';
 import { LevelBadge } from '../common/LevelBadge';
-import { learningEngine, PracticeQuestion } from '../../services/learningEngine';
+import { learningEngine, PracticeQuestion, normalizeAnswerText } from '../../services/learningEngine';
 
 export const QuizView: React.FC = () => {
   const {
@@ -98,7 +98,16 @@ export const QuizView: React.FC = () => {
 
     const reviews: QuizQuestionReview[] = questions.map((q, idx) => {
       const userAnswer = answers[idx] !== undefined ? answers[idx] : -1;
-      const isCorrect = userAnswer === q.correctIndex;
+      const isDirectMatch = userAnswer === q.correctIndex;
+      const userSelectedText = userAnswer >= 0 && q.options ? q.options[userAnswer] : undefined;
+      const correctTargetText =
+        q.options && q.correctIndex !== undefined ? q.options[q.correctIndex] : undefined;
+      const isTextMatch = Boolean(
+        userSelectedText &&
+        correctTargetText &&
+        normalizeAnswerText(userSelectedText) === normalizeAnswerText(correctTargetText)
+      );
+      const isCorrect = isDirectMatch || isTextMatch;
       if (isCorrect) score += 1;
 
       const cat = q.category;
@@ -374,7 +383,11 @@ export const QuizView: React.FC = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3">
                         {q.options.map((opt, optIdx) => {
                           const isUserPicked = q.userAnswerIndex === optIdx;
-                          const isRight = q.correctAnswerIndex === optIdx;
+                          const isRight =
+                            q.correctAnswerIndex === optIdx ||
+                            (q.options &&
+                              normalizeAnswerText(opt) ===
+                                normalizeAnswerText(q.options[q.correctAnswerIndex]));
 
                           let style =
                             'bg-stone-50 dark:bg-stone-800/40 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300';
@@ -532,12 +545,17 @@ export const QuizView: React.FC = () => {
           </div>
 
           {/* Prompt */}
-          <div className="text-center space-y-2 py-4">
+          <div className="text-center space-y-3 py-4">
+            {currentQ.promptInstruction && (
+              <p className="text-xs sm:text-sm font-semibold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/40 px-3.5 py-1.5 rounded-xl max-w-lg mx-auto">
+                {currentQ.promptInstruction}
+              </p>
+            )}
             <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight">
               {currentQ.prompt}
             </h2>
             {currentQ.promptSub && (
-              <p className="text-sm sm:text-base font-medium text-stone-500 dark:text-stone-400">
+              <p className="text-sm sm:text-base font-medium text-stone-600 dark:text-stone-300 bg-stone-50 dark:bg-stone-800/40 px-3.5 py-1.5 rounded-xl inline-block border border-stone-200/60 dark:border-stone-700/60">
                 {currentQ.promptSub}
               </p>
             )}

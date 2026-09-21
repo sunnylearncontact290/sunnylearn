@@ -366,6 +366,42 @@ export interface PracticeAttemptRecord {
   date: string;
 }
 
+export interface DailyTaskProgress {
+  vocabCount: number;
+  kanjiCount: number;
+  grammarCount: number;
+  quizCount: number;
+}
+
+export interface GamificationProgress {
+  totalXP: number;
+  level: number;
+  dailyDate: string; // YYYY-MM-DD in Asia/Tokyo
+  dailyXP: number;
+  dailyGoalXP: number; // default 20
+  dailyGoalCompleted: boolean;
+  dailyCelebratedDate?: string; // YYYY-MM-DD in Asia/Tokyo
+  dailyTaskProgress: Record<JLPTLevel, DailyTaskProgress>;
+  awardedItemIds: string[]; // Anti-farming: IDs of vocab/kanji/grammar that already awarded XP
+  awardedQuizIds: string[]; // Anti-farming: IDs of completed quizzes that already awarded XP
+  completedGoalDates: string[]; // YYYY-MM-DD dates in Asia/Tokyo when 20 XP was completed
+  currentStreak: number;
+  longestStreak: number;
+  unlockedBadgeIds: string[];
+}
+
+export interface BadgeDefinition {
+  id: string;
+  title: string;
+  description: string;
+  iconName: string;
+  category: 'streak' | 'xp' | 'learning' | 'special';
+  target: number;
+  isUnlocked: boolean;
+  statusText: string;
+  unlockedDate?: string;
+}
+
 export interface UserProgress {
   selectedLevel?: JLPTLevel | null;
   learnedVocabIds: string[];
@@ -386,6 +422,7 @@ export interface UserProgress {
   practiceHistory?: PracticeAttemptRecord[];
   itemStudyRecords?: Record<string, ItemStudyRecord>;
   dailyActivity?: Record<string, DailyActivityRecord>;
+  gamification?: GamificationProgress;
   favorites: {
     vocabIds: string[];
     kanjiIds: string[];

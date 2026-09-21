@@ -26,13 +26,22 @@ export interface PracticeQuestion {
   prompt: string;
   promptSub?: string;
   promptBadge?: string;
+  promptInstruction?: string;
   options: string[];
   correctIndex: number;
+  correctAnswer?: number; // alias for backwards compatibility
   explanation: string;
   audioText?: string;
   reading?: string;
-  scrambleWords?: string[]; // For sentence reordering
+  scrambleWords?: string[]; // For sentence reordering in practice mode
   correctOrder?: string[];
+}
+
+export interface SentencePair {
+  id: string;
+  japanese: string;
+  mongolian: string;
+  reading?: string;
 }
 
 // Fisher-Yates shuffle helper
@@ -45,12 +54,91 @@ export function shuffleArray<T>(array: T[]): T[] {
   return arr;
 }
 
-// Generate smart distractors
-function getDistractors(pool: string[], correct: string, count: number = 3): string[] {
-  const filtered = pool.filter(item => item && item.trim() !== '' && item.trim() !== correct.trim());
-  const unique = Array.from(new Set(filtered));
-  const shuffled = shuffleArray(unique);
+// Robust text normalizer for comparing choices, filtering duplicates, and validating answers
+export function normalizeAnswerText(text: string | null | undefined): string {
+  if (!text) return '';
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/[.。!！?？,、・~〜～:;：；「」『』【】（）()\[\]\s+]/g, '')
+    .normalize('NFKC');
+}
+
+// Generate smart, unique distractors without duplicates or accidental matches
+export function getDistractors(pool: (string | undefined | null)[], correct: string, count: number = 3): string[] {
+  const normCorrect = normalizeAnswerText(correct);
+  const seen = new Set<string>([normCorrect]);
+  const uniqueFiltered: string[] = [];
+
+  for (const item of pool) {
+    if (!item) continue;
+    const trimmed = item.trim();
+    if (!trimmed) continue;
+    const norm = normalizeAnswerText(trimmed);
+    if (!norm || seen.has(norm)) continue;
+    seen.add(norm);
+    uniqueFiltered.push(trimmed);
+  }
+
+  const shuffled = shuffleArray(uniqueFiltered);
   return shuffled.slice(0, count);
+}
+
+// Assemble shuffled options with guaranteed correctIndex synchronization and zero duplicates
+export function assembleOptions(
+  correctText: string,
+  distractors: (string | undefined | null)[]
+): { options: string[]; correctIndex: number } {
+  const cleanCorrect = correctText.trim();
+  const normCorrect = normalizeAnswerText(cleanCorrect);
+  const validDistractors: string[] = [];
+  const seen = new Set<string>([normCorrect]);
+
+  for (const d of distractors) {
+    if (!d) continue;
+    const trimmed = d.trim();
+    if (!trimmed) continue;
+    const norm = normalizeAnswerText(trimmed);
+    if (!norm || seen.has(norm)) continue;
+    seen.add(norm);
+    validDistractors.push(trimmed);
+    if (validDistractors.length >= 3) break;
+  }
+
+  const options = shuffleArray([cleanCorrect, ...validDistractors]);
+  const correctIndex = options.indexOf(cleanCorrect);
+
+  return { options, correctIndex };
+}
+
+// Helper to find a matching pattern segment in a sentence for fill-in-the-blank
+function findPatternInSentence(pattern: string, sentence: string): string | null {
+  if (!pattern || !sentence) return null;
+  const clean = pattern
+    .replace(/[〜～~]/g, ' ')
+    .replace(/\[.*?\]/g, ' ')
+    .replace(/\(.*?\)/g, ' ')
+    .replace(/（.*?）/g, ' ');
+  const rawParts = clean.split(/[・/、\s+]/).map(p => p.trim()).filter(Boolean);
+
+  const candidates: string[] = [];
+  rawParts.forEach(p => {
+    candidates.push(p);
+    if (p.endsWith('る') && p.length > 1) candidates.push(p.slice(0, -1));
+    if (p.endsWith('く') && p.length > 1) candidates.push(p.slice(0, -1) + 'き');
+    if (p.endsWith('す') && p.length > 1) candidates.push(p.slice(0, -1) + 'し');
+    if (p.endsWith('ある') && p.length > 2) candidates.push(p.slice(0, -2) + 'あり');
+  });
+
+  // Longest match first to prioritize specific compound expressions
+  candidates.sort((a, b) => b.length - a.length);
+
+  for (const cand of candidates) {
+    if (cand.length >= 1 && sentence.includes(cand)) {
+      return cand;
+    }
+  }
+  return null;
 }
 
 export const learningEngine = {
@@ -69,6 +157,75 @@ export const learningEngine = {
     }
 
     return { vocab, kanji, grammar, sentences };
+  },
+
+  // Aggregate comprehensive, authentic sentence pairs across all N5-N1 content
+  getSentencePool(data: DatabaseSchema, level: JLPTLevel, isUnlocked: boolean = false): SentencePair[] {
+    const pairs: SentencePair[] = [];
+    const seenJp = new Set<string>();
+
+    // 1. Example sentences collection
+    let sentences = (data.exampleSentences || []).filter(s => s.jlptLevel === level && s.japanese && s.mongolian);
+    if (level !== 'N5' && !isUnlocked) {
+      sentences = sentences.filter(s => s.accessTier === 'FREE');
+    }
+    sentences.forEach(s => {
+      const jp = s.japanese.trim();
+      const norm = normalizeAnswerText(jp);
+      if (!seenJp.has(norm)) {
+        seenJp.add(norm);
+        pairs.push({
+          id: s.id,
+          japanese: jp,
+          mongolian: s.mongolian.trim(),
+          reading: s.reading?.trim()
+        });
+      }
+    });
+
+    // 2. Vocabulary example sentences
+    let vocabs = (data.vocabulary || []).filter(v => v.jlptLevel === level && v.exampleSentence && v.exampleMongolian);
+    if (level !== 'N5' && !isUnlocked) {
+      vocabs = vocabs.filter(v => v.accessTier === 'FREE').slice(0, FREE_LIMITS.VOCABULARY);
+    }
+    vocabs.forEach(v => {
+      const jp = v.exampleSentence!.trim();
+      const norm = normalizeAnswerText(jp);
+      if (!seenJp.has(norm)) {
+        seenJp.add(norm);
+        pairs.push({
+          id: `v-s-${v.id}`,
+          japanese: jp,
+          mongolian: v.exampleMongolian!.trim(),
+          reading: v.exampleReading?.trim()
+        });
+      }
+    });
+
+    // 3. Grammar example sentences
+    let grammars = (data.grammar || []).filter(g => g.jlptLevel === level && Array.isArray(g.examples));
+    if (level !== 'N5' && !isUnlocked) {
+      grammars = grammars.filter(g => g.accessTier === 'FREE').slice(0, FREE_LIMITS.GRAMMAR);
+    }
+    grammars.forEach(g => {
+      g.examples?.forEach((ex, idx) => {
+        if (ex.japanese && ex.mongolian) {
+          const jp = ex.japanese.trim();
+          const norm = normalizeAnswerText(jp);
+          if (!seenJp.has(norm)) {
+            seenJp.add(norm);
+            pairs.push({
+              id: `g-s-${g.id}-${idx}`,
+              japanese: jp,
+              mongolian: ex.mongolian.trim(),
+              reading: ex.reading?.trim()
+            });
+          }
+        }
+      });
+    });
+
+    return pairs;
   },
 
   // Calculate item priority for spaced repetition
@@ -119,9 +276,11 @@ export const learningEngine = {
     progress: UserProgress,
     count: number = 10,
     specificItemIds?: string[],
-    isUnlocked: boolean = false
+    isUnlocked: boolean = false,
+    isQuiz: boolean = false
   ): PracticeQuestion[] {
-    const { vocab, kanji, grammar, sentences } = this.getLevelContent(data, level, isUnlocked);
+    const { vocab, kanji, grammar } = this.getLevelContent(data, level, isUnlocked);
+    const sentencePool = this.getSentencePool(data, level, isUnlocked);
     const questions: PracticeQuestion[] = [];
     const usedItemIds = new Set<string>();
 
@@ -131,6 +290,7 @@ export const learningEngine = {
       const specVocab = vocab.filter(v => idSet.has(v.id));
       const specKanji = kanji.filter(k => idSet.has(k.id));
       const specGrammar = grammar.filter(g => idSet.has(g.id));
+      const specSentences = sentencePool.filter(s => idSet.has(s.id));
 
       specVocab.forEach(v => {
         const q = this.buildVocabQuestion(v, vocab);
@@ -142,6 +302,10 @@ export const learningEngine = {
       });
       specGrammar.forEach(g => {
         const q = this.buildGrammarQuestion(g, grammar);
+        if (q) questions.push(q);
+      });
+      specSentences.forEach(s => {
+        const q = this.buildSentenceQuestion(s, sentencePool, !isQuiz);
         if (q) questions.push(q);
       });
 
@@ -156,7 +320,7 @@ export const learningEngine = {
         .map(r => r.itemId);
 
       if (reviewIds.length > 0) {
-        return this.generatePracticeSession(data, level, 'mixed', progress, count, reviewIds);
+        return this.generatePracticeSession(data, level, 'mixed', progress, count, reviewIds, isUnlocked, isQuiz);
       }
       // If no weak items, fallback to mixed
       category = 'mixed';
@@ -175,7 +339,7 @@ export const learningEngine = {
       return this.getItemPriority(b.id, 'grammar', level, progress) - this.getItemPriority(a.id, 'grammar', level, progress);
     });
 
-    const prioritizedSentences = shuffleArray([...sentences]);
+    const prioritizedSentences = shuffleArray([...sentencePool]);
 
     // Build question generator based on category
     if (category === 'vocab') {
@@ -211,23 +375,18 @@ export const learningEngine = {
     } else if (category === 'sentence') {
       for (const item of prioritizedSentences) {
         if (questions.length >= count) break;
-        const q = this.buildSentenceQuestion(item, sentences);
-        if (q) questions.push(q);
-      }
-      // If sentences are few, augment with vocab example sentences
-      if (questions.length < count) {
-        const vocabWithSentences = prioritizedVocab.filter(v => v.exampleSentence && v.exampleMongolian);
-        for (const v of vocabWithSentences) {
-          if (questions.length >= count) break;
-          const q = this.buildSentenceQuestionFromVocab(v);
-          if (q) questions.push(q);
+        if (usedItemIds.has(item.id)) continue;
+        const q = this.buildSentenceQuestion(item, sentencePool, !isQuiz);
+        if (q) {
+          questions.push(q);
+          usedItemIds.add(item.id);
         }
       }
     } else {
       // Mixed: balanced mix of Vocab, Kanji, Grammar, and Sentences
       let vIdx = 0, kIdx = 0, gIdx = 0, sIdx = 0;
       let loop = 0;
-      while (questions.length < count && loop < count * 3) {
+      while (questions.length < count && loop < count * 4) {
         loop++;
         const targetType = loop % 4;
         if (targetType === 0 && prioritizedVocab[vIdx]) {
@@ -248,17 +407,11 @@ export const learningEngine = {
             const q = this.buildGrammarQuestion(g, grammar);
             if (q) { questions.push(q); usedItemIds.add(g.id); }
           }
-        } else if (targetType === 3) {
-          if (prioritizedSentences[sIdx]) {
-            const s = prioritizedSentences[sIdx++];
-            const q = this.buildSentenceQuestion(s, sentences);
-            if (q) questions.push(q);
-          } else if (prioritizedVocab[vIdx]) {
-            const v = prioritizedVocab[vIdx++];
-            if (!usedItemIds.has(v.id)) {
-              const q = this.buildVocabQuestion(v, vocab);
-              if (q) { questions.push(q); usedItemIds.add(v.id); }
-            }
+        } else if (targetType === 3 && prioritizedSentences[sIdx]) {
+          const s = prioritizedSentences[sIdx++];
+          if (!usedItemIds.has(s.id)) {
+            const q = this.buildSentenceQuestion(s, sentencePool, !isQuiz);
+            if (q) { questions.push(q); usedItemIds.add(s.id); }
           }
         }
       }
@@ -270,13 +423,16 @@ export const learningEngine = {
   // Question Builders
   buildVocabQuestion(item: VocabularyItem, pool: VocabularyItem[]): PracticeQuestion | null {
     if (pool.length < 2) return null;
-    const subTypes = ['jp_to_mn', 'mn_to_jp', 'reading'];
+
+    // Check if item has a distinct reading (not pure hiragana/katakana identical to japanese)
+    const hasDistinctReading = Boolean(item.reading && item.reading.trim() !== item.japanese.trim());
+    const subTypes = hasDistinctReading ? ['jp_to_mn', 'mn_to_jp', 'reading'] : ['jp_to_mn', 'mn_to_jp'];
     const chosenType = subTypes[Math.floor(Math.random() * subTypes.length)];
 
     if (chosenType === 'jp_to_mn') {
       const distractors = getDistractors(pool.map(p => p.mongolian), item.mongolian, 3);
       if (distractors.length < 1) return null;
-      const options = shuffleArray([item.mongolian, ...distractors]);
+      const { options, correctIndex } = assembleOptions(item.mongolian, distractors);
       return {
         id: `q-v-jm-${item.id}-${Date.now()}`,
         category: 'vocab',
@@ -286,15 +442,16 @@ export const learningEngine = {
         promptSub: item.reading ? `【${item.reading}】` : undefined,
         promptBadge: 'Япон → Монгол утга',
         options,
-        correctIndex: options.indexOf(item.mongolian),
-        explanation: `${item.japanese} (${item.reading}): ${item.mongolian}. ${item.explanation || ''}`,
+        correctIndex,
+        correctAnswer: correctIndex,
+        explanation: `${item.japanese} (${item.reading || ''}): ${item.mongolian}. ${item.explanation || ''}`,
         audioText: item.japanese,
         reading: item.reading
       };
     } else if (chosenType === 'mn_to_jp') {
       const distractors = getDistractors(pool.map(p => p.japanese), item.japanese, 3);
       if (distractors.length < 1) return null;
-      const options = shuffleArray([item.japanese, ...distractors]);
+      const { options, correctIndex } = assembleOptions(item.japanese, distractors);
       return {
         id: `q-v-mj-${item.id}-${Date.now()}`,
         category: 'vocab',
@@ -304,16 +461,18 @@ export const learningEngine = {
         promptSub: item.partOfSpeech ? `(${item.partOfSpeech})` : undefined,
         promptBadge: 'Монгол → Япон үг',
         options,
-        correctIndex: options.indexOf(item.japanese),
-        explanation: `Зөв хариулт: ${item.japanese}【${item.reading}】 (${item.mongolian}). ${item.explanation || ''}`,
+        correctIndex,
+        correctAnswer: correctIndex,
+        explanation: `Зөв хариулт: ${item.japanese}${item.reading ? `【${item.reading}】` : ''} (${item.mongolian}). ${item.explanation || ''}`,
         audioText: item.japanese,
         reading: item.reading
       };
     } else {
       // Reading test
-      const distractors = getDistractors(pool.map(p => p.reading), item.reading, 3);
+      const validReadings = pool.map(p => p.reading).filter(Boolean);
+      const distractors = getDistractors(validReadings, item.reading, 3);
       if (distractors.length < 1) return null;
-      const options = shuffleArray([item.reading, ...distractors]);
+      const { options, correctIndex } = assembleOptions(item.reading, distractors);
       return {
         id: `q-v-rd-${item.id}-${Date.now()}`,
         category: 'vocab',
@@ -323,7 +482,8 @@ export const learningEngine = {
         promptSub: `Монгол утга: ${item.mongolian}`,
         promptBadge: 'Уншлага сонгох (Хирагана)',
         options,
-        correctIndex: options.indexOf(item.reading),
+        correctIndex,
+        correctAnswer: correctIndex,
         explanation: `Зөв уншлага: 「${item.reading}」. Утга: ${item.mongolian}.`,
         audioText: item.japanese,
         reading: item.reading
@@ -339,54 +499,58 @@ export const learningEngine = {
     if (chosenType === 'kanji_meaning') {
       const distractors = getDistractors(pool.map(p => p.mongolian), item.mongolian, 3);
       if (distractors.length < 1) return null;
-      const options = shuffleArray([item.mongolian, ...distractors]);
+      const { options, correctIndex } = assembleOptions(item.mongolian, distractors);
       return {
         id: `q-k-mn-${item.id}-${Date.now()}`,
         category: 'kanji',
         subType: 'kanji_meaning',
         itemId: item.id,
         prompt: item.kanji,
-        promptSub: `Оньёми: ${item.onyomi} | Күньёми: ${item.kunyomi}`,
+        promptSub: `Оньёми: ${item.onyomi || '—'} | Күньёми: ${item.kunyomi || '—'}`,
         promptBadge: 'Ханзны утга',
         options,
-        correctIndex: options.indexOf(item.mongolian),
-        explanation: `Ханз ${item.kanji}: ${item.mongolian}. Оньёми: ${item.onyomi}, Күньёми: ${item.kunyomi}.`,
+        correctIndex,
+        correctAnswer: correctIndex,
+        explanation: `Ханз ${item.kanji}: ${item.mongolian}. Оньёми: ${item.onyomi || '—'}, Күньёми: ${item.kunyomi || '—'}.`,
         audioText: item.kanji
       };
     } else if (chosenType === 'kanji_reading') {
-      const readPool = pool.map(p => p.onyomi || p.kunyomi).filter(Boolean);
-      const targetRead = item.onyomi || item.kunyomi;
+      const isOnyomi = Boolean(item.onyomi && (!item.kunyomi || Math.random() > 0.5));
+      const targetRead = isOnyomi ? item.onyomi.trim() : item.kunyomi.trim();
+      const readPool = pool.map(p => (isOnyomi ? p.onyomi : p.kunyomi)).filter(Boolean);
       const distractors = getDistractors(readPool, targetRead, 3);
       if (distractors.length < 1) return null;
-      const options = shuffleArray([targetRead, ...distractors]);
+      const { options, correctIndex } = assembleOptions(targetRead, distractors);
       return {
         id: `q-k-rd-${item.id}-${Date.now()}`,
         category: 'kanji',
         subType: 'kanji_reading',
         itemId: item.id,
         prompt: item.kanji,
-        promptSub: `Монгол утга: ${item.mongolian}`,
+        promptSub: isOnyomi ? 'Оньёми (Катакана) уншлагыг сонгоно уу' : 'Күньёми (Хирагана) уншлагыг сонгоно уу',
         promptBadge: 'Ханзны уншлага',
         options,
-        correctIndex: options.indexOf(targetRead),
-        explanation: `${item.kanji} ханзны уншлага: ${targetRead}. Монгол утга: ${item.mongolian}.`,
+        correctIndex,
+        correctAnswer: correctIndex,
+        explanation: `${item.kanji} ханзны ${isOnyomi ? 'оньёми' : 'күньёми'} уншлага: ${targetRead}. Монгол утга: ${item.mongolian}.`,
         audioText: item.kanji
       };
     } else {
       // Find the character for the meaning
       const distractors = getDistractors(pool.map(p => p.kanji), item.kanji, 3);
       if (distractors.length < 1) return null;
-      const options = shuffleArray([item.kanji, ...distractors]);
+      const { options, correctIndex } = assembleOptions(item.kanji, distractors);
       return {
         id: `q-k-ch-${item.id}-${Date.now()}`,
         category: 'kanji',
         subType: 'kanji_char',
         itemId: item.id,
         prompt: item.mongolian,
-        promptSub: `Уншлага: ${item.onyomi} / ${item.kunyomi}`,
+        promptSub: `Уншлага: ${item.onyomi || ''} / ${item.kunyomi || ''}`,
         promptBadge: 'Тохирох ханзыг сонго',
         options,
-        correctIndex: options.indexOf(item.kanji),
+        correctIndex,
+        correctAnswer: correctIndex,
         explanation: `Зөв ханз: ${item.kanji} (${item.mongolian})`,
         audioText: item.kanji
       };
@@ -395,129 +559,166 @@ export const learningEngine = {
 
   buildGrammarQuestion(item: GrammarItem, pool: GrammarItem[]): PracticeQuestion | null {
     if (pool.length < 2) return null;
-    const hasExamples = Array.isArray(item.examples) && item.examples.length > 0;
 
-    if (hasExamples && Math.random() > 0.4) {
-      // Fill in the blank with grammar pattern
-      const eg = item.examples[0];
-      // Create blank in sentence
-      let masked = eg.japanese;
-      const cleanPat = item.pattern.replace(/〜/g, '').trim();
-      if (cleanPat && masked.includes(cleanPat)) {
-        masked = masked.replace(cleanPat, '【 _____ 】');
-      } else {
-        masked = `${masked} (Тохирох дүрэм: _____ )`;
+    // 1. Handcrafted practice questions if present on the grammar item
+    if (Array.isArray(item.practiceQuestions) && item.practiceQuestions.length > 0) {
+      const pq = item.practiceQuestions[Math.floor(Math.random() * item.practiceQuestions.length)];
+      if (pq && pq.options && pq.answer !== undefined && pq.options[pq.answer]) {
+        const correctText = pq.options[pq.answer];
+        const dists = pq.options.filter((_, idx) => idx !== pq.answer);
+        const { options, correctIndex } = assembleOptions(correctText, dists);
+        return {
+          id: `q-g-pq-${item.id}-${Date.now()}`,
+          category: 'grammar',
+          subType: 'fill_blank',
+          itemId: item.id,
+          prompt: pq.question,
+          promptSub: 'Хоосон зайд хамгийн тохирох дүрэм / хэлбэрийг сонгоно уу.',
+          promptBadge: 'Дүрэм нөхөж бичих',
+          promptInstruction: 'Хоосон зайд хамгийн тохирох дүрэм / хэлбэрийг сонгоно уу.',
+          options,
+          correctIndex,
+          correctAnswer: correctIndex,
+          explanation: pq.explanation || `Зөв хариулт: ${correctText}. Дүрэм: ${item.pattern} (${item.mongolian}).`,
+          audioText: pq.question.replace(/_{2,}|（.*?）|【.*?】/g, correctText),
+          reading: undefined
+        };
       }
-      const distractors = getDistractors(pool.map(p => p.pattern), item.pattern, 3);
-      if (distractors.length < 1) return null;
-      const options = shuffleArray([item.pattern, ...distractors]);
-      return {
-        id: `q-g-fb-${item.id}-${Date.now()}`,
-        category: 'grammar',
-        subType: 'fill_blank',
-        itemId: item.id,
-        prompt: masked,
-        promptSub: `Орчуулга: ${eg.mongolian}`,
-        promptBadge: 'Дүрэм нөхөж бичих',
-        options,
-        correctIndex: options.indexOf(item.pattern),
-        explanation: `Бүтэн өгүүлбэр: 「${eg.japanese}」. Дүрэм: ${item.pattern} (${item.mongolian}). ${item.structure || ''}`,
-        audioText: eg.japanese
-      };
-    } else {
-      // Grammar pattern -> meaning
-      const distractors = getDistractors(pool.map(p => p.mongolian), item.mongolian, 3);
-      if (distractors.length < 1) return null;
-      const options = shuffleArray([item.mongolian, ...distractors]);
-      return {
-        id: `q-g-mn-${item.id}-${Date.now()}`,
-        category: 'grammar',
-        subType: 'grammar_meaning',
-        itemId: item.id,
-        prompt: item.pattern,
-        promptSub: item.structure ? `Бүтэц: ${item.structure}` : undefined,
-        promptBadge: 'Дүрмийн утга',
-        options,
-        correctIndex: options.indexOf(item.mongolian),
-        explanation: `Дүрэм ${item.pattern}: ${item.mongolian}. ${item.explanation || ''}`,
-        audioText: item.pattern
-      };
     }
+
+    // 2. Smart fill-in-the-blank from examples
+    const hasExamples = Array.isArray(item.examples) && item.examples.length > 0;
+    if (hasExamples && Math.random() > 0.35) {
+      for (const eg of item.examples) {
+        const matched = findPatternInSentence(item.pattern, eg.japanese);
+        if (matched && eg.japanese.includes(matched)) {
+          const blank = '（ _____ ）';
+          const masked = eg.japanese.replace(matched, blank);
+          const otherPatterns = pool.map(p => {
+            const clean = p.pattern.replace(/[〜～~]/g, '').trim().split(/[・/、]/)[0].trim();
+            return clean || p.pattern;
+          });
+          const distractors = getDistractors(otherPatterns, matched, 3);
+          if (distractors.length >= 2) {
+            const { options, correctIndex } = assembleOptions(matched, distractors);
+            return {
+              id: `q-g-fb-${item.id}-${Date.now()}`,
+              category: 'grammar',
+              subType: 'fill_blank',
+              itemId: item.id,
+              prompt: masked,
+              promptSub: `Орчуулга: ${eg.mongolian}`,
+              promptBadge: 'Дүрэм нөхөж бичих',
+              promptInstruction: 'Хоосон зайд хамгийн тохирох дүрэм / хэлбэрийг сонгоно уу.',
+              options,
+              correctIndex,
+              correctAnswer: correctIndex,
+              explanation: `Бүтэн өгүүлбэр: 「${eg.japanese}」. Зөв дүрэм: ${item.pattern} (${item.mongolian}). ${item.structure ? `Бүтэц: ${item.structure}. ` : ''}${item.explanation || ''}`,
+              audioText: eg.japanese,
+              reading: eg.reading
+            };
+          }
+        }
+      }
+    }
+
+    // 3. Grammar pattern -> Mongolian explanation/meaning
+    const distractors = getDistractors(pool.map(p => p.mongolian), item.mongolian, 3);
+    if (distractors.length < 1) return null;
+    const { options, correctIndex } = assembleOptions(item.mongolian, distractors);
+    return {
+      id: `q-g-mn-${item.id}-${Date.now()}`,
+      category: 'grammar',
+      subType: 'grammar_meaning',
+      itemId: item.id,
+      prompt: item.pattern,
+      promptSub: item.structure ? `Бүтэц: ${item.structure}` : 'Энэхүү дүрмийн монгол утга, тайлбарыг сонгоно уу.',
+      promptBadge: 'Дүрмийн утга',
+      promptInstruction: 'Дүрмийн зөв монгол утга, тайлбарыг сонгоно уу.',
+      options,
+      correctIndex,
+      correctAnswer: correctIndex,
+      explanation: `Дүрэм ${item.pattern}: ${item.mongolian}. ${item.structure ? `Бүтэц: ${item.structure}. ` : ''}${item.explanation || ''}`,
+      audioText: item.pattern
+    };
   },
 
-  buildSentenceQuestion(item: ExampleSentenceItem, pool: ExampleSentenceItem[]): PracticeQuestion | null {
-    // Sentence reordering or translation
-    const jp = item.japanese;
-    const mn = item.mongolian;
+  buildSentenceQuestion(item: SentencePair, pool: SentencePair[], allowScramble: boolean = false): PracticeQuestion | null {
+    const jp = item.japanese.trim();
+    const mn = item.mongolian.trim();
 
-    // Word tokens for scramble (split by spaces or punctuation)
-    let words = jp.replace(/([。！？、])/g, ' $1 ').trim().split(/\s+/).filter(Boolean);
-    if (words.length < 3) {
-      // Split into chunks if no spaces
-      words = jp.match(/.{1,4}/g) || [jp];
+    // Word tokens for scramble (only for practice mode if allowed and word count is suitable)
+    if (allowScramble) {
+      let words = jp.replace(/([。！？、])/g, ' $1 ').trim().split(/\s+/).filter(Boolean);
+      if (words.length >= 3 && words.length <= 6) {
+        let scrambled = shuffleArray([...words]);
+        if (scrambled.join('') === words.join('') && words.length >= 2) {
+          [scrambled[0], scrambled[1]] = [scrambled[1], scrambled[0]];
+        }
+        return {
+          id: `q-s-sc-${item.id}-${Date.now()}`,
+          category: 'sentence',
+          subType: 'sentence_scramble',
+          itemId: item.id,
+          prompt: mn,
+          promptSub: 'Үгсийг зөв дараалалд оруулан өгүүлбэр бүтээгээрэй',
+          promptBadge: 'Өгүүлбэр эвлүүлэх',
+          options: words,
+          correctIndex: 0,
+          correctAnswer: 0,
+          explanation: `Зөв өгүүлбэр: 「${jp}」 ${item.reading ? `(${item.reading})` : ''} — ${mn}`,
+          scrambleWords: scrambled,
+          correctOrder: words,
+          audioText: jp,
+          reading: item.reading
+        };
+      }
     }
 
-    if (words.length >= 3 && words.length <= 7) {
-      const scrambled = shuffleArray([...words]);
-      return {
-        id: `q-s-sc-${item.id}-${Date.now()}`,
-        category: 'sentence',
-        subType: 'sentence_scramble',
-        itemId: item.id,
-        prompt: mn,
-        promptSub: 'Үгсийг зөв дараалалд оруулан өгүүлбэр бүтээгээрэй',
-        promptBadge: 'Өгүүлбэр эвлүүлэх',
-        options: words,
-        correctIndex: 0,
-        explanation: `Зөв өгүүлбэр: 「${jp}」 (${item.reading || ''}) — ${mn}`,
-        scrambleWords: scrambled,
-        correctOrder: words,
-        audioText: jp,
-        reading: item.reading
-      };
-    } else {
-      // Multiple choice translation
+    // Authentic sentence multiple-choice question:
+    // 60% chance: Japanese sentence -> select correct Mongolian translation
+    // 40% chance: Mongolian meaning -> select correct Japanese sentence
+    const isJpToMn = Math.random() > 0.4;
+
+    if (isJpToMn) {
       const distractors = getDistractors(pool.map(p => p.mongolian), mn, 3);
       if (distractors.length < 1) return null;
-      const options = shuffleArray([mn, ...distractors]);
+      const { options, correctIndex } = assembleOptions(mn, distractors);
       return {
         id: `q-s-tr-${item.id}-${Date.now()}`,
         category: 'sentence',
         subType: 'sentence_translation',
         itemId: item.id,
         prompt: jp,
-        promptSub: item.reading ? `【${item.reading}】` : undefined,
-        promptBadge: 'Өгүүлбэрийн орчуулга',
+        promptSub: item.reading ? `【${item.reading}】` : 'Дараах өгүүлбэрийн зөв монгол орчуулгыг сонгоно уу.',
+        promptBadge: 'Өгүүлбэрийн орчуулга (Япон → Монгол)',
         options,
-        correctIndex: options.indexOf(mn),
-        explanation: `Өгүүлбэр: ${jp} — ${mn}`,
+        correctIndex,
+        correctAnswer: correctIndex,
+        explanation: `Зөв орчуулга: 「${jp}」 — ${mn}`,
+        audioText: jp,
+        reading: item.reading
+      };
+    } else {
+      const distractors = getDistractors(pool.map(p => p.japanese), jp, 3);
+      if (distractors.length < 1) return null;
+      const { options, correctIndex } = assembleOptions(jp, distractors);
+      return {
+        id: `q-s-rev-${item.id}-${Date.now()}`,
+        category: 'sentence',
+        subType: 'sentence_translation',
+        itemId: item.id,
+        prompt: mn,
+        promptSub: 'Дараах монгол утгатай тохирох зөв япон өгүүлбэрийг сонгоно уу.',
+        promptBadge: 'Өгүүлбэр сонгох (Монгол → Япон)',
+        options,
+        correctIndex,
+        correctAnswer: correctIndex,
+        explanation: `Зөв өгүүлбэр: 「${jp}」 ${item.reading ? `【${item.reading}】` : ''} — ${mn}`,
         audioText: jp,
         reading: item.reading
       };
     }
-  },
-
-  buildSentenceQuestionFromVocab(vocab: VocabularyItem): PracticeQuestion | null {
-    if (!vocab.exampleSentence || !vocab.exampleMongolian) return null;
-    return {
-      id: `q-s-v-${vocab.id}-${Date.now()}`,
-      category: 'sentence',
-      subType: 'sentence_translation',
-      itemId: vocab.id,
-      prompt: vocab.exampleSentence,
-      promptSub: vocab.exampleReading ? `【${vocab.exampleReading}】` : `Үг: ${vocab.japanese} (${vocab.mongolian})`,
-      promptBadge: 'Өгүүлбэрийн орчуулга',
-      options: shuffleArray([
-        vocab.exampleMongolian,
-        'Энэ өгүүлбэрийн утга нь буруу байна.',
-        'Би маргааш номын сан руу явна.',
-        'Өнөөдөр цаг агаар маш сайхан байна.'
-      ]),
-      correctIndex: 0, // adjusted below
-      explanation: `Зөв орчуулга: ${vocab.exampleMongolian}`,
-      audioText: vocab.exampleSentence,
-      reading: vocab.exampleReading
-    };
   },
 
   // QUIZ ENGINE: Generate mini, standard, or full quiz
@@ -530,29 +731,18 @@ export const learningEngine = {
     isUnlocked: boolean = false
   ): PracticeQuestion[] {
     const practiceCat: PracticeCategory = category;
-    const questions = this.generatePracticeSession(data, level, practiceCat, progress, questionCount, undefined, isUnlocked);
-    // Ensure questions are strictly multiple-choice for Quiz (no open scrambles that require different UI in quiz mode)
-    return questions.map(q => {
-      if (q.subType === 'sentence_scramble' && q.scrambleWords) {
-        // Convert to multiple choice sentence
-        const otherOptions = [
-          q.correctOrder?.reverse().join('') || 'Буруу дараалал',
-          q.scrambleWords.join(''),
-          'Тохирохгүй хувилбар'
-        ];
-        const correctSentence = q.correctOrder?.join('') || q.prompt;
-        const options = shuffleArray([correctSentence, ...otherOptions]);
-        return {
-          ...q,
-          subType: 'sentence_choice',
-          prompt: `Дараах утгатай өгүүлбэрийг сонгоно уу: "${q.prompt}"`,
-          promptSub: undefined,
-          options,
-          correctIndex: options.indexOf(correctSentence)
-        };
-      }
-      return q;
-    });
+    // Pass isQuiz = true so all questions are standard multiple choice without scramble UI or dummy choices
+    const questions = this.generatePracticeSession(
+      data,
+      level,
+      practiceCat,
+      progress,
+      questionCount,
+      undefined,
+      isUnlocked,
+      true
+    );
+    return questions;
   },
 
   // Record an answer and update ItemStudyRecord in UserProgress

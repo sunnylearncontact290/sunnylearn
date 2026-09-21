@@ -1410,6 +1410,18 @@ app.post('/api/user/progress', verifyUserToken, (req, res) => {
         longest: Math.max(user.progress.streak?.longest || 0, progress.streak?.longest || 0),
         lastActiveDate: progress.streak?.lastActiveDate || user.progress.streak?.lastActiveDate || ''
       },
+      gamification: progress.gamification
+        ? {
+            ...(user.progress.gamification || {}),
+            ...progress.gamification,
+            totalXP: Math.max(user.progress.gamification?.totalXP || 0, progress.gamification.totalXP || 0),
+            longestStreak: Math.max(user.progress.gamification?.longestStreak || 0, progress.gamification.longestStreak || 0),
+            awardedItemIds: union(user.progress.gamification?.awardedItemIds, progress.gamification.awardedItemIds),
+            awardedQuizIds: union(user.progress.gamification?.awardedQuizIds, progress.gamification.awardedQuizIds),
+            completedGoalDates: union(user.progress.gamification?.completedGoalDates, progress.gamification.completedGoalDates),
+            unlockedBadgeIds: union(user.progress.gamification?.unlockedBadgeIds, progress.gamification.unlockedBadgeIds)
+          }
+        : user.progress.gamification,
       lastStudied: progress.lastStudied || user.progress.lastStudied,
       updatedAt: new Date().toISOString()
     };

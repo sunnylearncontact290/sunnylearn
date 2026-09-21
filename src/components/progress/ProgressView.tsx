@@ -21,6 +21,11 @@ import { useApp } from '../../context/AppContext';
 import { JLPTLevel } from '../../types';
 import { LevelBadge } from '../common/LevelBadge';
 import { learningEngine } from '../../services/learningEngine';
+import { ensureGamificationProgress, getTokyoDateString } from '../../services/gamificationEngine';
+import { DailyMissionSection } from './DailyMissionSection';
+import { GamificationStatsSection } from './GamificationStatsSection';
+import { BadgesSection } from './BadgesSection';
+import { CelebrationModal } from './CelebrationModal';
 
 export const ProgressView: React.FC = () => {
   const {
@@ -33,7 +38,8 @@ export const ProgressView: React.FC = () => {
     toggleFavorite,
     toggleVocabLearned,
     toggleKanjiLearned,
-    toggleGrammarLearned
+    toggleGrammarLearned,
+    markDailyCelebrationSeen
   } = useApp();
 
   const [activeTab, setActiveTabLocal] = useState<'overview' | 'weak' | 'history' | 'favorites'>('overview');
@@ -45,6 +51,21 @@ export const ProgressView: React.FC = () => {
       setViewLevel(selectedLevel);
     }
   }, [selectedLevel]);
+
+  const gamification = useMemo(() => {
+    return ensureGamificationProgress(userProgress).gamification!;
+  }, [userProgress]);
+
+  const todayTokyo = getTokyoDateString();
+  const showCelebration = Boolean(
+    gamification.dailyGoalCompleted &&
+    gamification.dailyCelebratedDate !== todayTokyo
+  );
+
+  const handleMissionNavigate = (tab: 'learn' | 'quiz') => {
+    setSelectedLevel(viewLevel);
+    setActiveTab(tab);
+  };
 
   const stats = useMemo(() => {
     return learningEngine.getLevelStats(data, viewLevel, userProgress);
@@ -185,78 +206,101 @@ export const ProgressView: React.FC = () => {
 
       {/* 1. OVERVIEW TAB */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* Key Metrics Bento Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {/* Overall Level Progress */}
-            <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
-              <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
-                <span className="text-xs font-semibold">Нийт явц ({viewLevel})</span>
-                <Sparkles className="w-5 h-5 text-amber-500" />
-              </div>
-              <div className="text-3xl sm:text-4xl font-black text-stone-900 dark:text-stone-100">
-                {stats.overallPct}%
-              </div>
-              <div className="w-full bg-stone-100 dark:bg-stone-800 h-2 rounded-full overflow-hidden">
-                <div
-                  className="bg-amber-500 h-full rounded-full transition-all"
-                  style={{ width: `${stats.overallPct}%` }}
-                />
-              </div>
-              <p className="text-xs text-stone-400">
-                {stats.learnedItems} / {stats.totalItems} контент эзэмшсэн
-              </p>
+        <div className="space-y-6 sm:space-y-8">
+          {/* B & C: Daily Mission Section (Follows selected JLPT level) */}
+          <DailyMissionSection
+            level={viewLevel}
+            gamification={gamification}
+            onNavigateTab={handleMissionNavigate}
+          />
+
+          {/* D & E: Gamification Streak & Learner Level Section */}
+          <GamificationStatsSection gamification={gamification} />
+
+          {/* F: Badges & Achievements Section */}
+          <BadgesSection gamification={gamification} userProgress={userProgress} />
+
+          {/* G: Existing Analytics & Performance Metrics */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
+              <h3 className="text-base sm:text-lg font-extrabold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                <span>Сургалтын Нарийвчилсан Үзүүлэлт ({viewLevel})</span>
+              </h3>
             </div>
 
-            {/* Daily Streak */}
-            <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
-              <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
-                <span className="text-xs font-semibold">Дараалсан өдөр</span>
-                <Flame className="w-5 h-5 text-amber-500 fill-amber-500" />
+            {/* Key Metrics Bento Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              {/* Overall Level Progress */}
+              <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
+                <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
+                  <span className="text-xs font-semibold">Нийт явц ({viewLevel})</span>
+                  <Sparkles className="w-5 h-5 text-amber-500" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-black text-stone-900 dark:text-stone-100">
+                  {stats.overallPct}%
+                </div>
+                <div className="w-full bg-stone-100 dark:bg-stone-800 h-2 rounded-full overflow-hidden">
+                  <div
+                    className="bg-amber-500 h-full rounded-full transition-all"
+                    style={{ width: `${stats.overallPct}%` }}
+                  />
+                </div>
+                <p className="text-xs text-stone-400">
+                  {stats.learnedItems} / {stats.totalItems} контент эзэмшсэн
+                </p>
               </div>
-              <div className="text-3xl sm:text-4xl font-black text-amber-600 dark:text-amber-400">
-                {streak.current} өдөр
-              </div>
-              <div className="text-xs text-stone-500 dark:text-stone-400">
-                Хамгийн урт: <span className="font-bold text-stone-700 dark:text-stone-300">{streak.longest || streak.current} өдөр</span>
-              </div>
-              <p className="text-xs text-stone-400">
-                Өдөр бүр дасгал хийж streak-ээ хадгалаарай
-              </p>
-            </div>
 
-            {/* Quiz Average */}
-            <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
-              <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
-                <span className="text-xs font-semibold">Сорилын дундаж</span>
-                <Target className="w-5 h-5 text-emerald-500" />
+              {/* Vocab Mastered Count */}
+              <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
+                <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
+                  <span className="text-xs font-semibold">Цээжилсэн үг</span>
+                  <Languages className="w-5 h-5 text-amber-500" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-black text-stone-900 dark:text-stone-100">
+                  {stats.learnedVocab}
+                </div>
+                <div className="text-xs text-stone-500 dark:text-stone-400">
+                  {viewLevel} нийт үг: <span className="font-bold text-stone-700 dark:text-stone-300">{stats.totalVocab}</span>
+                </div>
+                <p className="text-xs text-stone-400">
+                  Явц: {stats.vocabPct}%
+                </p>
               </div>
-              <div className="text-3xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-400">
-                {stats.quizAverage}%
-              </div>
-              <div className="text-xs text-stone-500 dark:text-stone-400">
-                Нийт сорил: <span className="font-bold text-stone-700 dark:text-stone-300">{stats.quizCount} удаа</span>
-              </div>
-              <p className="text-xs text-stone-400">
-                Шилдэг оноо: {stats.quizBest}%
-              </p>
-            </div>
 
-            {/* Practice Accuracy */}
-            <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
-              <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
-                <span className="text-xs font-semibold">Дасгалын нарийвчлал</span>
-                <Award className="w-5 h-5 text-indigo-500" />
+              {/* Quiz Average */}
+              <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
+                <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
+                  <span className="text-xs font-semibold">Сорилын дундаж</span>
+                  <Target className="w-5 h-5 text-emerald-500" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-400">
+                  {stats.quizAverage}%
+                </div>
+                <div className="text-xs text-stone-500 dark:text-stone-400">
+                  Нийт сорил: <span className="font-bold text-stone-700 dark:text-stone-300">{stats.quizCount} удаа</span>
+                </div>
+                <p className="text-xs text-stone-400">
+                  Шилдэг оноо: {stats.quizBest}%
+                </p>
               </div>
-              <div className="text-3xl sm:text-4xl font-black text-indigo-600 dark:text-indigo-400">
-                {stats.practiceAccuracy}%
+
+              {/* Practice Accuracy */}
+              <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
+                <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
+                  <span className="text-xs font-semibold">Дасгалын нарийвчлал</span>
+                  <Award className="w-5 h-5 text-indigo-500" />
+                </div>
+                <div className="text-3xl sm:text-4xl font-black text-indigo-600 dark:text-indigo-400">
+                  {stats.practiceAccuracy}%
+                </div>
+                <div className="text-xs text-stone-500 dark:text-stone-400">
+                  Нийт дасгал: <span className="font-bold text-stone-700 dark:text-stone-300">{stats.practiceCount} удаа</span>
+                </div>
+                <p className="text-xs text-stone-400">
+                  Сул зүйлс: {totalWeakCount}
+                </p>
               </div>
-              <div className="text-xs text-stone-500 dark:text-stone-400">
-                Нийт дасгал: <span className="font-bold text-stone-700 dark:text-stone-300">{stats.practiceCount} удаа</span>
-              </div>
-              <p className="text-xs text-stone-400">
-                Сул зүйлс: {totalWeakCount}
-              </p>
             </div>
           </div>
 
@@ -769,6 +813,14 @@ export const ProgressView: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Celebration Modal (Shows once per day upon reaching 20 XP) */}
+      <CelebrationModal
+        isOpen={showCelebration}
+        streakCount={gamification.currentStreak}
+        dailyXP={gamification.dailyXP}
+        onClose={markDailyCelebrationSeen}
+      />
     </div>
   );
 };

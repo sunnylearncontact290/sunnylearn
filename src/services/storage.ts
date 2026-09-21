@@ -1,4 +1,8 @@
 import { UserProgress, JLPTLevel } from '../types';
+import {
+  createDefaultGamificationProgress,
+  ensureGamificationProgress
+} from './gamificationEngine';
 
 const PROGRESS_STORAGE_KEY = 'nihongo_mongol_progress_v1';
 const THEME_STORAGE_KEY = 'nihongo_mongol_theme_v1';
@@ -168,10 +172,12 @@ export const storageService = {
           longest: parsed.streak?.longest || 0,
           lastActiveDate: parsed.streak?.lastActiveDate || ''
         },
+        gamification: parsed.gamification,
         updatedAt: parsed.updatedAt || new Date().toISOString()
       };
+      return ensureGamificationProgress(loaded);
     } catch {
-      return defaultProgress;
+      return ensureGamificationProgress(defaultProgress);
     }
   },
 
@@ -270,6 +276,19 @@ export const storageService = {
         longest: longestStreak,
         lastActiveDate: latestActiveDate || ''
       },
+      gamification: (local.gamification || remote.gamification)
+        ? {
+            ...createDefaultGamificationProgress(local),
+            ...(remote.gamification || {}),
+            ...(local.gamification || {}),
+            totalXP: Math.max(local.gamification?.totalXP || 0, remote.gamification?.totalXP || 0),
+            longestStreak: Math.max(local.gamification?.longestStreak || 0, remote.gamification?.longestStreak || 0),
+            awardedItemIds: union(local.gamification?.awardedItemIds, remote.gamification?.awardedItemIds),
+            awardedQuizIds: union(local.gamification?.awardedQuizIds, remote.gamification?.awardedQuizIds),
+            completedGoalDates: union(local.gamification?.completedGoalDates, remote.gamification?.completedGoalDates),
+            unlockedBadgeIds: union(local.gamification?.unlockedBadgeIds, remote.gamification?.unlockedBadgeIds)
+          }
+        : undefined,
       lastStudied,
       updatedAt: new Date().toISOString(),
       settings: {
@@ -277,6 +296,7 @@ export const storageService = {
         ...local.settings
       }
     };
+    return ensureGamificationProgress(merged);
   },
 
   toggleVocabLearned(vocabId: string): boolean {
