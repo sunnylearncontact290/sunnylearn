@@ -1,6 +1,6 @@
 export type JLPTLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
 
-export type MainTab = 'home' | 'learn' | 'dictionary' | 'practice' | 'quiz' | 'progress' | 'profile' | 'contact' | 'admin' | 'premium' | 'tutor' | 'ai' | 'tokushoho';
+export type MainTab = 'home' | 'learn' | 'dictionary' | 'practice' | 'quiz' | 'roleplay' | 'progress' | 'profile' | 'contact' | 'admin' | 'premium' | 'tutor' | 'ai' | 'tokushoho';
 
 export const PREMIUM_PRICE_YEN = 880;
 export const PREMIUM_DURATION_DAYS = 30;
@@ -253,6 +253,7 @@ export interface DatabaseSchema {
   payments?: PaymentRequestItem[];
   counts?: Record<JLPTLevel, LevelCountDetails>;
   aiUsageRecords?: Record<string, number[]>;
+  roleplaySessions?: RoleplaySessionRecord[];
 }
 
 export interface SunnyAIQuizContext {
@@ -265,13 +266,159 @@ export interface SunnyAIQuizContext {
   jlptLevel?: JLPTLevel;
 }
 
+export interface SunnyAIRoleplayFeedbackContext {
+  scenarioId?: string;
+  scenarioTitle: string;
+  userRole?: string;
+  aiRole?: string;
+  jlptLevel: JLPTLevel;
+  category: 'grammar' | 'naturalness' | 'vocabulary' | 'communication' | 'general';
+  originalSentence?: string;
+  correctedSentence?: string;
+  betterSentence?: string;
+  explanationMongolian?: string;
+  explanation?: string;
+  conversationExcerpt?: string;
+}
+
+export interface SunnyAIExplanationContext {
+  type: 'quiz' | 'roleplay';
+  quiz?: SunnyAIQuizContext;
+  roleplay?: SunnyAIRoleplayFeedbackContext;
+}
+
 export interface SunnyAIMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   createdAt: string;
   quizContext?: SunnyAIQuizContext;
+  roleplayContext?: SunnyAIRoleplayFeedbackContext;
 }
+
+// ----------------------------------------------------
+// AI ROLEPLAY TYPES & SCHEMAS
+// ----------------------------------------------------
+export interface RoleplayObjective {
+  id: string;
+  japanese: string;
+  mongolian: string;
+}
+
+export interface RoleplayScenario {
+  id: string;
+  titleJapanese: string;
+  titleMongolian: string;
+  descriptionMongolian: string;
+  recommendedLevels: JLPTLevel[];
+  userRole: string;
+  aiRole: string;
+  icon: string;
+  shortObjective: string;
+  objectives: RoleplayObjective[];
+  initialGreetings: Record<JLPTLevel, string>;
+  starterSuggestions?: Record<JLPTLevel, string[]>;
+}
+
+export interface RoleplayMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
+
+export interface RoleplayGrammarCorrection {
+  originalSentence: string;
+  correctedSentence: string;
+  betterSentence?: string;
+  explanationMongolian: string;
+}
+
+export interface RoleplayNaturalnessItem {
+  originalSentence?: string;
+  userSaid?: string;
+  moreNaturalSentence?: string;
+  naturalAlternative?: string;
+  status: 'incorrect' | 'unnatural' | 'natural'; // ❌ Incorrect vs △ Understandable but unnatural vs ✓ Natural
+  explanationMongolian: string;
+}
+
+export interface RoleplayVocabularyItem {
+  word: string;
+  furigana?: string;
+  mongolian: string;
+  type?: 'used_well' | 'recommended';
+  exampleUsage?: string;
+}
+
+export interface RoleplayFeedbackReport {
+  whatWentWell: string | string[];
+  grammarCorrections?: RoleplayGrammarCorrection[];
+  grammar?: { corrections: RoleplayGrammarCorrection[] };
+  naturalnessItems?: RoleplayNaturalnessItem[];
+  naturalness?: { items: RoleplayNaturalnessItem[] };
+  vocabularyItems?: RoleplayVocabularyItem[];
+  vocabulary?: { recommendedToLearn: RoleplayVocabularyItem[]; usedWell?: RoleplayVocabularyItem[] };
+  communication: {
+    score: number; // 0 to 100
+    objectivesCompleted?: number;
+    objectivesCompletedCount?: number;
+    totalObjectives?: number;
+    politenessEvaluation?: string;
+    politenessLevel?: string;
+    feedbackMongolian: string;
+  };
+}
+
+export interface RoleplaySessionRecord {
+  id: string;
+  userId?: string;
+  scenarioId: string;
+  scenarioTitle: string;
+  scenarioIcon: string;
+  jlptLevel: JLPTLevel;
+  userRole: string;
+  aiRole: string;
+  messages: RoleplayMessage[];
+  completedObjectiveIndices: number[];
+  feedback: RoleplayFeedbackReport;
+  createdAt: string;
+}
+
+export interface RoleplayHintResponse {
+  hintMongolian: string;
+  suggestedExpressions: string[];
+}
+
+export interface FreeChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  cleanContent?: string;
+  audioUrl?: string | null;
+  correction?: {
+    original: string;
+    corrected: string;
+    explanation: string;
+  } | null;
+  createdAt: number;
+}
+
+export interface FreeChatFeedbackReport {
+  overallImpression: string;
+  overallImpressionMongolian: string;
+  fluencyScore: number;
+  keyVocabularyUsed: Array<{ japanese: string; reading: string; mongolian: string }>;
+  corrections: Array<{
+    original: string;
+    better: string;
+    explanationMongolian: string;
+  }>;
+  nextPracticeTipMongolian: string;
+}
+
+export type ConversationStyle = 'easy' | 'natural';
+export type VoicePersona = 'Aoede' | 'Puck' | 'Kore' | 'Fenrir';
 
 export interface SunnyAIUsageStatus {
   isPremium: boolean;

@@ -26,6 +26,7 @@ import { DailyMissionSection } from './DailyMissionSection';
 import { GamificationStatsSection } from './GamificationStatsSection';
 import { BadgesSection } from './BadgesSection';
 import { CelebrationModal } from './CelebrationModal';
+import { CurrentLevelProgressCard } from './CurrentLevelProgressCard';
 
 export const ProgressView: React.FC = () => {
   const {
@@ -207,6 +208,16 @@ export const ProgressView: React.FC = () => {
       {/* 1. OVERVIEW TAB */}
       {activeTab === 'overview' && (
         <div className="space-y-6 sm:space-y-8">
+          {/* A: Current JLPT Level & Overall Progress Card */}
+          <CurrentLevelProgressCard
+            level={viewLevel}
+            stats={stats}
+            onSelectLevel={(lvl) => {
+              setViewLevel(lvl);
+              setSelectedLevel(lvl);
+            }}
+          />
+
           {/* B & C: Daily Mission Section (Follows selected JLPT level) */}
           <DailyMissionSection
             level={viewLevel}
@@ -231,10 +242,10 @@ export const ProgressView: React.FC = () => {
 
             {/* Key Metrics Bento Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-              {/* Overall Level Progress */}
+              {/* 1. Overall Level Progress */}
               <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
-                  <span className="text-xs font-semibold">Нийт явц ({viewLevel})</span>
+                  <span className="text-xs font-semibold">Нийт явц</span>
                   <Sparkles className="w-5 h-5 text-amber-500" />
                 </div>
                 <div className="text-3xl sm:text-4xl font-black text-stone-900 dark:text-stone-100">
@@ -251,24 +262,24 @@ export const ProgressView: React.FC = () => {
                 </p>
               </div>
 
-              {/* Vocab Mastered Count */}
+              {/* 2. Consecutive Days / Streak */}
               <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
-                  <span className="text-xs font-semibold">Цээжилсэн үг</span>
-                  <Languages className="w-5 h-5 text-amber-500" />
+                  <span className="text-xs font-semibold">Дараалсан өдөр</span>
+                  <Flame className="w-5 h-5 text-orange-500 fill-orange-500/20" />
                 </div>
-                <div className="text-3xl sm:text-4xl font-black text-stone-900 dark:text-stone-100">
-                  {stats.learnedVocab}
+                <div className="text-3xl sm:text-4xl font-black text-orange-600 dark:text-orange-400">
+                  {gamification.currentStreak} өдөр
                 </div>
                 <div className="text-xs text-stone-500 dark:text-stone-400">
-                  {viewLevel} нийт үг: <span className="font-bold text-stone-700 dark:text-stone-300">{stats.totalVocab}</span>
+                  Хамгийн урт: <span className="font-bold text-stone-700 dark:text-stone-300">{gamification.longestStreak} өдөр</span>
                 </div>
                 <p className="text-xs text-stone-400">
-                  Явц: {stats.vocabPct}%
+                  Биелүүлсэн: {gamification.completedGoalDates?.length || 0} өдөр
                 </p>
               </div>
 
-              {/* Quiz Average */}
+              {/* 3. Quiz Average */}
               <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
                   <span className="text-xs font-semibold">Сорилын дундаж</span>
@@ -285,7 +296,7 @@ export const ProgressView: React.FC = () => {
                 </p>
               </div>
 
-              {/* Practice Accuracy */}
+              {/* 4. Practice Accuracy */}
               <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
                   <span className="text-xs font-semibold">Дасгалын нарийвчлал</span>
@@ -298,7 +309,7 @@ export const ProgressView: React.FC = () => {
                   Нийт дасгал: <span className="font-bold text-stone-700 dark:text-stone-300">{stats.practiceCount} удаа</span>
                 </div>
                 <p className="text-xs text-stone-400">
-                  Сул зүйлс: {totalWeakCount}
+                  Сул сэдвүүд: {totalWeakCount}
                 </p>
               </div>
             </div>

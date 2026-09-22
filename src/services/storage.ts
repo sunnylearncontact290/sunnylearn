@@ -1,13 +1,17 @@
 import { UserProgress, JLPTLevel } from '../types';
 import {
   createDefaultGamificationProgress,
-  ensureGamificationProgress
+  ensureGamificationProgress,
+  calculateStreakFromDates,
+  getTokyoDateString
 } from './gamificationEngine';
 
 const PROGRESS_STORAGE_KEY = 'nihongo_mongol_progress_v1';
 const THEME_STORAGE_KEY = 'nihongo_mongol_theme_v1';
 const SELECTED_LEVEL_STORAGE_KEY = 'nihongo_mongol_selected_level_v1';
 const BANNER_DISMISSED_KEY = 'nihongo_mongol_sync_banner_dismissed_v1';
+
+let activeUserId: string | null = null;
 
 export const defaultProgress: UserProgress = {
   selectedLevel: null,
@@ -44,6 +48,18 @@ export const defaultProgress: UserProgress = {
 };
 
 export const storageService = {
+  setActiveUserId(userId: string | null) {
+    activeUserId = userId;
+  },
+
+  getActiveUserId(): string | null {
+    return activeUserId;
+  },
+
+  getProgressStorageKey(): string {
+    return activeUserId ? `nihongo_mongol_progress_u_${activeUserId}` : PROGRESS_STORAGE_KEY;
+  },
+
   getSelectedLevel(): JLPTLevel | null {
     if (typeof window === 'undefined') return null;
     try {
@@ -94,7 +110,26 @@ export const storageService = {
 
   // Record a genuine learning activity to advance the daily streak
   recordLearningAction(progress: UserProgress): UserProgress {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTokyoDateString();
+
+    // If gamification is active, streak strictly depends on completing the 20 XP Daily Goal
+    if (progress.gamification?.completedGoalDates) {
+      const streakInfo = calculateStreakFromDates(
+        progress.gamification.completedGoalDates || [],
+        today
+      );
+      const longest = Math.max(progress.streak?.longest || 0, streakInfo.longestStreak);
+      return {
+        ...progress,
+        streak: {
+          current: streakInfo.currentStreak,
+          longest,
+          lastActiveDate: today
+        },
+        updatedAt: new Date().toISOString()
+      };
+    }
+
     const lastActive = progress.streak?.lastActiveDate || '';
     let currentStreak = progress.streak?.current || 0;
 
@@ -133,7 +168,12 @@ export const storageService = {
   getProgress(): UserProgress {
     if (typeof window === 'undefined') return defaultProgress;
     try {
-      const stored = localStorage.getItem(PROGRESS_STORAGE_KEY);
+      const key = this.getProgressStorageKey();
+      let stored = localStorage.getItem(key);
+      if (!stored && activeUserId) {
+        // Check if there is existing un-migrated progress
+        stored = localStorage.getItem(PROGRESS_STORAGE_KEY);
+      }
       if (!stored) return defaultProgress;
       const parsed = JSON.parse(stored);
 
@@ -188,7 +228,8 @@ export const storageService = {
         ...progress,
         updatedAt: progress.updatedAt || new Date().toISOString()
       };
-      localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(toSave));
+      const key = this.getProgressStorageKey();
+      localStorage.setItem(key, JSON.stringify(toSave));
     } catch (e) {
       console.error('Failed to save progress locally:', e);
     }
@@ -403,6 +444,7 @@ export const storageService = {
   clearProgress() {
     if (typeof window === 'undefined') return;
     try {
+      localStorage.removeItem(this.getProgressStorageKey());
       localStorage.removeItem(PROGRESS_STORAGE_KEY);
     } catch (e) {
       console.error('Failed to clear progress:', e);

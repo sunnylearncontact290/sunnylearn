@@ -17,13 +17,50 @@ import {
   JLPTLevel,
   PaymentRequestItem,
   SunnyAIUsageStatus,
-  SunnyAIQuizContext
+  SunnyAIQuizContext,
+  SunnyAIRoleplayFeedbackContext,
+  RoleplayScenario,
+  RoleplayFeedbackReport,
+  RoleplaySessionRecord,
+  FreeChatMessage,
+  FreeChatFeedbackReport,
+  ConversationStyle,
+  VoicePersona
 } from '../types';
 import { freeTierSeedData } from '../data/accessControl';
 
 const TOKEN_KEY = 'nihongo_admin_auth_token_v1';
 const USER_TOKEN_KEY = 'nihongo_user_auth_token_v1';
-const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+
+// Ensure API requests in Cloud Run dev/preview and localhost always use the local container backend
+const getApiBaseUrl = (): string => {
+  if (typeof window !== 'undefined') {
+    const envUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/$/, '');
+    if (!envUrl) return '';
+    try {
+      const parsed = new URL(envUrl);
+      // If current origin matches envUrl, use relative paths
+      if (window.location.hostname === parsed.hostname) {
+        return '';
+      }
+      // If in Cloud Run container preview (*.run.app) or localhost, always use local relative paths
+      if (
+        window.location.hostname.includes('.run.app') ||
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.port === '3000'
+      ) {
+        return '';
+      }
+      return envUrl;
+    } catch {
+      return '';
+    }
+  }
+  return '';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 class ApiService {
   private token: string | null = null;
@@ -849,6 +886,7 @@ class ApiService {
     message?: string;
     conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>;
     quizContext?: SunnyAIQuizContext;
+    roleplayContext?: SunnyAIRoleplayFeedbackContext;
     currentLevel?: JLPTLevel | string;
   }): Promise<{
     success: boolean;
@@ -868,6 +906,171 @@ class ApiService {
       throw err;
     }
     return data;
+  }
+
+  // ----------------------------------------------------
+  // AI ROLEPLAY CLIENT APIS
+  // ----------------------------------------------------
+  public async getRoleplayScenarios(): Promise<{ success: boolean; scenarios: RoleplayScenario[] }> {
+    const res = await fetch(`${API_BASE_URL}/api/ai/roleplay/scenarios`, {
+      headers: this.getAIClientHeaders()
+    });
+    return await this.parseJsonResponse(res, 'Roleplay хувилбаруудыг татахад алдаа гарлаа.');
+  }
+
+  public async sendRoleplayTurn(payload: {
+    scenarioId: string;
+    jlptLevel: JLPTLevel;
+    messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+    completedObjectiveIndices: number[];
+  }): Promise<{
+    success: boolean;
+    reply: string;
+    completedObjectiveIndices: number[];
+    isFinished: boolean;
+    usage: SunnyAIUsageStatus;
+  }> {
+    const res = await fetch(`${API_BASE_URL}/api/ai/roleplay/chat`, {
+      method: 'POST',
+      headers: this.getAIClientHeaders(),
+      body: JSON.stringify(payload)
+    });
+    const data = await this.parseJsonResponse<any>(res, 'Хариулт авахад алдаа гарлаа.');
+    if (!res.ok || !data.success) {
+      const err: any = new Error(data.error || 'Хариулт авахад алдаа гарлаа.');
+      err.limitReached = data.limitReached;
+      err.usage = data.usage;
+      throw err;
+    }
+    return data;
+  }
+
+  public async getRoleplayHint(payload: {
+    scenarioId: string;
+    jlptLevel: JLPTLevel;
+    messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+  }): Promise<{
+    success: boolean;
+    hintMongolian: string;
+    suggestedExpressions: string[];
+  }> {
+    const res = await fetch(`${API_BASE_URL}/api/ai/roleplay/hint`, {
+      method: 'POST',
+      headers: this.getAIClientHeaders(),
+      body: JSON.stringify(payload)
+    });
+    return await this.parseJsonResponse(res, 'Тусламж авахад алдаа гарлаа.');
+  }
+
+  public async getRoleplayFeedback(payload: {
+    scenarioId: string;
+    jlptLevel: JLPTLevel;
+    messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+    completedObjectiveIndices: number[];
+  }): Promise<{
+    success: boolean;
+    feedback: RoleplayFeedbackReport;
+    sessionId: string;
+    session: RoleplaySessionRecord;
+  }> {
+    const res = await fetch(`${API_BASE_URL}/api/ai/roleplay/feedback`, {
+      method: 'POST',
+      headers: this.getAIClientHeaders(),
+      body: JSON.stringify(payload)
+    });
+    return await this.parseJsonResponse(res, 'Үнэлгээний тайлан үүсгэхэд алдаа гарлаа.');
+  }
+
+  public async getRoleplayHistory(): Promise<{
+    success: boolean;
+    history: Array<{
+      id: string;
+      scenarioId: string;
+      scenarioTitle: string;
+      scenarioIcon: string;
+      jlptLevel: JLPTLevel;
+      createdAt: string;
+      messageCount: number;
+      objectivesCompleted: number;
+      score: number;
+    }>;
+  }> {
+    const res = await fetch(`${API_BASE_URL}/api/ai/roleplay/history`, {
+      headers: this.getAIClientHeaders()
+    });
+    return await this.parseJsonResponse(res, 'Түүх татахад алдаа гарлаа.');
+  }
+
+  public async getRoleplaySession(id: string): Promise<{
+    success: boolean;
+    session: RoleplaySessionRecord;
+  }> {
+    const res = await fetch(`${API_BASE_URL}/api/ai/roleplay/session/${id}`, {
+      headers: this.getAIClientHeaders()
+    });
+    return await this.parseJsonResponse(res, 'Хичээл авахад алдаа гарлаа.');
+  }
+
+  // Free Conversation (Чөлөөт яриа) API
+  public async sendFreeChatMessage(payload: {
+    messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+    jlptLevel: JLPTLevel;
+    style?: ConversationStyle;
+    voiceName?: VoicePersona;
+    generateAudio?: boolean;
+  }): Promise<{
+    success: boolean;
+    reply: string;
+    cleanReply: string;
+    audio: string | null;
+    speechFallback: boolean;
+    correction: { original: string; corrected: string; explanation: string } | null;
+    usage: SunnyAIUsageStatus;
+  }> {
+    const res = await fetch(`${API_BASE_URL}/api/ai/free-chat`, {
+      method: 'POST',
+      headers: this.getAIClientHeaders(),
+      body: JSON.stringify(payload)
+    });
+    const data = await this.parseJsonResponse<any>(res, 'Чөлөөт ярианы хариулт авахад алдаа гарлаа.');
+    if (!res.ok || !data.success) {
+      const err: any = new Error(data.error || 'Чөлөөт ярианы хариулт авахад алдаа гарлаа.');
+      err.limitReached = data.limitReached;
+      err.usage = data.usage;
+      throw err;
+    }
+    return data;
+  }
+
+  public async getFreeChatVoice(payload: {
+    text: string;
+    voiceName?: VoicePersona;
+  }): Promise<{
+    success: boolean;
+    audio: string | null;
+    speechFallback: boolean;
+  }> {
+    const res = await fetch(`${API_BASE_URL}/api/ai/free-chat/voice`, {
+      method: 'POST',
+      headers: this.getAIClientHeaders(),
+      body: JSON.stringify(payload)
+    });
+    return await this.parseJsonResponse(res, 'Дуу авахад алдаа гарлаа.');
+  }
+
+  public async getFreeChatFeedback(payload: {
+    messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+    jlptLevel: JLPTLevel;
+  }): Promise<{
+    success: boolean;
+    feedback: FreeChatFeedbackReport;
+  }> {
+    const res = await fetch(`${API_BASE_URL}/api/ai/free-chat/feedback`, {
+      method: 'POST',
+      headers: this.getAIClientHeaders(),
+      body: JSON.stringify(payload)
+    });
+    return await this.parseJsonResponse(res, 'Ярианы үнэлгээ авахад алдаа гарлаа.');
   }
 }
 

@@ -22,6 +22,7 @@ import {
   PaymentRequestItem,
   AccessTier,
   SunnyAIQuizContext,
+  SunnyAIRoleplayFeedbackContext,
   SunnyAIUsageStatus
 } from '../types';
 import { apiService } from '../services/api';
@@ -201,7 +202,10 @@ interface AppContextType {
   setIsSunnyAIOpen: (open: boolean) => void;
   sunnyAIQuizContext: SunnyAIQuizContext | null;
   setSunnyAIQuizContext: (context: SunnyAIQuizContext | null) => void;
+  sunnyAIRoleplayFeedbackContext: SunnyAIRoleplayFeedbackContext | null;
+  setSunnyAIRoleplayFeedbackContext: (context: SunnyAIRoleplayFeedbackContext | null) => void;
   openSunnyAIWithQuiz: (context: SunnyAIQuizContext) => void;
+  openSunnyAIWithRoleplayFeedback: (context: SunnyAIRoleplayFeedbackContext) => void;
   closeSunnyAI: () => void;
   sunnyAIUsage: SunnyAIUsageStatus | null;
   refreshSunnyAIUsage: () => Promise<void>;
@@ -337,6 +341,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // Sunny AI Tutor State
   const [isSunnyAIOpen, setIsSunnyAIOpen] = useState<boolean>(false);
   const [sunnyAIQuizContext, setSunnyAIQuizContext] = useState<SunnyAIQuizContext | null>(null);
+  const [sunnyAIRoleplayFeedbackContext, setSunnyAIRoleplayFeedbackContext] = useState<SunnyAIRoleplayFeedbackContext | null>(null);
   const [sunnyAIUsage, setSunnyAIUsage] = useState<SunnyAIUsageStatus | null>(null);
 
   const refreshSunnyAIUsage = useCallback(async () => {
@@ -356,11 +361,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const openSunnyAIWithQuiz = useCallback((context: SunnyAIQuizContext) => {
     setSunnyAIQuizContext(context);
+    setSunnyAIRoleplayFeedbackContext(null);
+    setIsSunnyAIOpen(true);
+  }, []);
+
+  const openSunnyAIWithRoleplayFeedback = useCallback((context: SunnyAIRoleplayFeedbackContext) => {
+    setSunnyAIRoleplayFeedbackContext(context);
+    setSunnyAIQuizContext(null);
     setIsSunnyAIOpen(true);
   }, []);
 
   const closeSunnyAI = useCallback(() => {
     setIsSunnyAIOpen(false);
+    setSunnyAIQuizContext(null);
+    setSunnyAIRoleplayFeedbackContext(null);
   }, []);
 
   const isPremium = useMemo(() => {
@@ -440,6 +454,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       apiService.getCurrentUser()
         .then(res => {
           if (res && res.user) {
+            storageService.setActiveUserId(res.user.id);
             setCurrentUser(res.user);
             const localProgress = storageService.getProgress();
             const merged = storageService.mergeProgress(localProgress, res.user.progress);
@@ -530,6 +545,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         localSelectedLevel: selectedLevel
       });
       if (res.user) {
+        storageService.setActiveUserId(res.user.id);
         setCurrentUser(res.user);
         if (res.user.progress) {
           storageService.saveProgress(res.user.progress);
@@ -567,6 +583,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         localSelectedLevel: selectedLevel
       });
       if (res.user) {
+        storageService.setActiveUserId(res.user.id);
         setCurrentUser(res.user);
         if (res.user.progress) {
           storageService.saveProgress(res.user.progress);
@@ -603,6 +620,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         localSelectedLevel: selectedLevel
       });
       if (res.user) {
+        storageService.setActiveUserId(res.user.id);
         setCurrentUser(res.user);
         if (res.user.progress) {
           storageService.saveProgress(res.user.progress);
@@ -655,6 +673,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       await apiService.logoutUser();
     } finally {
+      storageService.setActiveUserId(null);
       setCurrentUser(null);
       setActiveTabState('home');
       if (typeof window !== 'undefined') {
@@ -1412,7 +1431,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setIsSunnyAIOpen,
         sunnyAIQuizContext,
         setSunnyAIQuizContext,
+        sunnyAIRoleplayFeedbackContext,
+        setSunnyAIRoleplayFeedbackContext,
         openSunnyAIWithQuiz,
+        openSunnyAIWithRoleplayFeedback,
         closeSunnyAI,
         sunnyAIUsage,
         refreshSunnyAIUsage,

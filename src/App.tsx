@@ -17,8 +17,8 @@ import { PremiumView } from './components/premium/PremiumView';
 import { TokushohoView } from './components/tokushoho/TokushohoView';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { SunnyAIView } from './components/ai/SunnyAIView';
-import { SunnyAIModal } from './components/ai/SunnyAIModal';
-import { SunnyAIFloatingButton } from './components/ai/SunnyAIFloatingButton';
+import { RoleplayView } from './components/roleplay/RoleplayView';
+import { QuizExplanationModal } from './components/quiz/QuizExplanationModal';
 import { Analytics } from '@vercel/analytics/react';
 
 const MainContent: React.FC = () => {
@@ -69,6 +69,7 @@ const MainContent: React.FC = () => {
         {activeTab === 'dictionary' && <DictionaryView />}
         {activeTab === 'practice' && <PracticeView />}
         {activeTab === 'quiz' && <QuizView />}
+        {activeTab === 'roleplay' && <RoleplayView />}
         {(activeTab === 'ai' || activeTab === 'tutor') && <SunnyAIView />}
         {activeTab === 'progress' && <ProgressView />}
         {activeTab === 'premium' && <PremiumView />}
@@ -79,8 +80,7 @@ const MainContent: React.FC = () => {
       <Footer />
       <SearchModal />
       <AuthModal />
-      <SunnyAIModal />
-      <SunnyAIFloatingButton />
+      <QuizExplanationModal />
       <ToastContainer />
     </div>
   );

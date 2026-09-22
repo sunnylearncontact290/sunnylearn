@@ -15,7 +15,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { SunnyAIQuizContext, SunnyAIMessage, JLPTLevel } from '../../types';
+import { SunnyAIQuizContext, SunnyAIMessage, JLPTLevel, SunnyAIRoleplayFeedbackContext } from '../../types';
 import { apiService } from '../../services/api';
 import { LevelBadge } from '../common/LevelBadge';
 
@@ -23,12 +23,14 @@ interface SunnyAITutorProps {
   mode?: 'page' | 'modal';
   onClose?: () => void;
   initialQuizContext?: SunnyAIQuizContext | null;
+  initialRoleplayContext?: SunnyAIRoleplayFeedbackContext | null;
 }
 
 export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
   mode = 'page',
   onClose,
-  initialQuizContext
+  initialQuizContext,
+  initialRoleplayContext
 }) => {
   const {
     isPremium,
@@ -47,6 +49,9 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeQuizContext, setActiveQuizContext] = useState<SunnyAIQuizContext | null>(
     initialQuizContext || null
+  );
+  const [activeRoleplayContext, setActiveRoleplayContext] = useState<SunnyAIRoleplayFeedbackContext | null>(
+    initialRoleplayContext || null
   );
   const [localLimitReached, setLocalLimitReached] = useState(false);
 
@@ -69,6 +74,68 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
       handleQuizExplanationRequest(initialQuizContext);
     }
   }, [initialQuizContext]);
+
+  // Sync initial roleplay context when opened
+  useEffect(() => {
+    if (initialRoleplayContext) {
+      setActiveRoleplayContext(initialRoleplayContext);
+      handleRoleplayExplanationRequest(initialRoleplayContext);
+    }
+  }, [initialRoleplayContext]);
+
+  // Trigger automated explanation when opened with roleplay feedback context
+  const handleRoleplayExplanationRequest = async (roleplay: SunnyAIRoleplayFeedbackContext) => {
+    setIsLoading(true);
+    const categoryName =
+      roleplay.category === 'grammar'
+        ? 'Дүрмийн зөвлөгөө'
+        : roleplay.category === 'naturalness'
+        ? 'Байгалийн яриа'
+        : 'Үгийн сан';
+
+    const userPrompt = `Roleplay: 【${roleplay.scenarioTitle}】 (${roleplay.jlptLevel}) харилцан яриан дахь дараах өгүүлбэрийг монголоор дэлгэрүүлэн тайлбарлаж өгнө үү:\n\nТөрөл: ${categoryName}\nМиний хэлсэн: "${roleplay.originalSentence}"\nЗөв/Байгалийн хэлбэр: "${roleplay.betterSentence}"\nҮндсэн тайлбар: ${roleplay.explanation}`;
+
+    const userMsg: SunnyAIMessage = {
+      id: 'usr_' + Date.now(),
+      role: 'user',
+      content: userPrompt,
+      createdAt: new Date().toISOString()
+    };
+
+    setMessages([userMsg]);
+
+    try {
+      const res = await apiService.sendSunnyAIMessage({
+        message: userPrompt,
+        conversationHistory: [],
+        currentLevel: roleplay.jlptLevel || selectedLevel || 'N5',
+        roleplayContext: roleplay
+      });
+
+      const assistantMsg: SunnyAIMessage = {
+        id: 'ast_' + Date.now(),
+        role: 'assistant',
+        content: res.reply,
+        createdAt: new Date().toISOString()
+      };
+
+      setMessages([userMsg, assistantMsg]);
+      await refreshSunnyAIUsage();
+    } catch (err: any) {
+      if (err?.limitReached) {
+        setLocalLimitReached(true);
+      }
+      const errorMsg: SunnyAIMessage = {
+        id: 'err_' + Date.now(),
+        role: 'assistant',
+        content: err?.message || 'Sunny AI хариулахад алдаа гарлаа. Түр хүлээгээд дахин оролдоно уу.',
+        createdAt: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Trigger automated explanation when opened with quiz context
   const handleQuizExplanationRequest = async (quiz: SunnyAIQuizContext) => {
@@ -298,6 +365,44 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
             onClick={() => setActiveQuizContext(null)}
             className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 p-1 cursor-pointer shrink-0"
             title="Энэ сонжооны хам сэдвийг хаах"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* 2.5 ROLEPLAY FEEDBACK CONTEXT CARD (If active) */}
+      {activeRoleplayContext && (
+        <div className="bg-amber-50/90 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/40 p-3 sm:px-6 flex items-start justify-between gap-3 text-xs sm:text-sm shrink-0">
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                Roleplay тайлангийн зөвлөгөө:
+              </span>
+              <span className="font-bold font-jp text-stone-900 dark:text-stone-100">
+                {activeRoleplayContext.scenarioTitle}
+              </span>
+              {activeRoleplayContext.jlptLevel && (
+                <LevelBadge level={activeRoleplayContext.jlptLevel} size="sm" />
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
+              <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/40">
+                <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold block">Таны бичсэн:</span>
+                <span className="font-jp font-semibold text-stone-900 dark:text-stone-100">{activeRoleplayContext.originalSentence}</span>
+              </div>
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-900/40">
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block">Зөв/байгалийн:</span>
+                <span className="font-jp font-semibold text-stone-900 dark:text-stone-100">{activeRoleplayContext.betterSentence}</span>
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActiveRoleplayContext(null)}
+            className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 p-1 cursor-pointer shrink-0"
+            title="Энэ Roleplay зөвлөгөөний хам сэдвийг хаах"
           >
             <X className="w-4 h-4" />
           </button>

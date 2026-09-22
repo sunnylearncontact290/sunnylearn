@@ -213,10 +213,29 @@ export function createDefaultGamificationProgress(existing?: Partial<UserProgres
 
   const levelInfo = calculateLearnerLevel(initialTotalXP);
 
-  // If existing streak was recorded, we initialize completed dates appropriately
+  // If existing streak was recorded, initialize completed dates appropriately so existing streak is preserved
   const existingStreak = existing?.streak?.current || 0;
   const existingLongest = existing?.streak?.longest || existingStreak;
   const completedGoalDates: string[] = [];
+
+  if (existingStreak > 0) {
+    const lastActive = existing?.streak?.lastActiveDate || todayTokyo;
+    let curr = lastActive;
+    for (let i = 0; i < existingStreak; i++) {
+      completedGoalDates.push(curr);
+      curr = getPreviousTokyoDate(curr);
+    }
+  }
+
+  const initialBadges = evaluateBadges(
+    existingStreak,
+    existingLongest,
+    initialTotalXP,
+    completedGoalDates.length,
+    existingVocab.length,
+    existingQuizzes.length,
+    []
+  );
 
   return {
     totalXP: initialTotalXP,
@@ -232,7 +251,7 @@ export function createDefaultGamificationProgress(existing?: Partial<UserProgres
     completedGoalDates,
     currentStreak: existingStreak,
     longestStreak: existingLongest,
-    unlockedBadgeIds: []
+    unlockedBadgeIds: initialBadges
   };
 }
 

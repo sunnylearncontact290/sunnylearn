@@ -31,3 +31,32 @@ img, svg, video, canvas, audio, iframe, embed, object {
 h1, h2, h3, h4, h5, h6, p, blockquote, li {
   overflow-wrap: break-word;
 }
+
+/* Japanese Typography & Native Ruby / Furigana Layout */
+.font-jp {
+  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+ruby, .ruby-unit {
+  display: ruby;
+  ruby-position: over;
+  -webkit-ruby-position: over;
+  ruby-align: center;
+  white-space: nowrap;
+  margin: 0;
+  padding: 0;
+}
+
+rt, .ruby-reading {
+  display: ruby-text;
+  font-size: 0.52em;
+  line-height: 1;
+  text-align: center;
+  ruby-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+  font-weight: 400;
+  opacity: 0.85;
+  margin: 0;
+  padding: 0;
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Flame, Sparkles, CheckCircle2, X } from 'lucide-react';
 
@@ -15,11 +15,28 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
   dailyXP,
   onClose
 }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div
+          id="celebration-modal-overlay"
+          onClick={onClose}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+        >
           <motion.div
+            id="celebration-modal"
+            onClick={e => e.stopPropagation()}
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 10 }}
@@ -31,6 +48,7 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
 
             {/* Close button */}
             <button
+              id="celebration-close-btn"
               type="button"
               onClick={onClose}
               className="absolute top-4 right-4 p-2 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all cursor-pointer"
@@ -53,17 +71,17 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
               </div>
             </div>
 
-            {/* Content */}
+            {/* Content matching requested format */}
             <div className="space-y-2">
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full">
-                <Sparkles className="w-3.5 h-3.5" />
-                Өдрийн даалгавар биелэгдлээ
-              </span>
-              <h3 className="text-2xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
-                🎉 Өнөөдрийн зорилго биеллээ!
+              <div className="inline-flex items-center gap-1.5 text-base sm:text-lg font-black text-orange-500 bg-orange-500/10 px-4 py-1.5 rounded-full">
+                <span>🔥</span>
+                <span>{streakCount} өдрийн streak!</span>
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-stone-100 tracking-tight">
+                🎉 Өнөөдрийн зорилго биеллээ
               </h3>
               <p className="text-sm text-stone-600 dark:text-stone-400">
-                Та өнөөдрийн 20 XP-ийн зорилгоо амжилттай давуулан биелүүллээ.
+                Та өнөөдрийн 20 XP зорилгоо амжилттай биелүүлж streak-ээ баталгаажууллаа!
               </p>
             </div>
 
@@ -86,11 +104,12 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
 
             {/* Action button */}
             <button
+              id="celebration-confirm-btn"
               type="button"
               onClick={onClose}
-              className="w-full py-3 px-6 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+              className="w-full py-3 px-6 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md shadow-amber-500/20 transition-all cursor-pointer active:scale-98"
             >
-              Баярлалаа, үргэлжлүүлье!
+              Баярлалаа, хичээлээ үргэлжлүүлье!
             </button>
           </motion.div>
         </div>

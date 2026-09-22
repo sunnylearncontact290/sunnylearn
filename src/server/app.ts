@@ -7,8 +7,9 @@ import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import { GoogleGenAI } from '@google/genai';
 import { initialSeedData } from '../data/seedData';
-import { DatabaseSchema, PaymentRequestItem, JLPTLevel, LevelCountDetails } from '../types';
+import { DatabaseSchema, PaymentRequestItem, JLPTLevel, LevelCountDetails, RoleplaySessionRecord, RoleplayScenario, SunnyAIRoleplayFeedbackContext, RoleplayFeedbackReport, FreeChatFeedbackReport } from '../types';
 import { buildFreeTierData, ensureAccessTiers, computeLevelCounts } from '../data/accessControl';
+import { INITIAL_ROLEPLAY_SCENARIOS, getScenarioById } from '../data/roleplayScenarios';
 
 const app = express();
 const PORT = 3000;
@@ -155,7 +156,8 @@ function loadDatabase(): DatabaseSchema {
         feedback: Array.isArray(parsed.feedback) ? parsed.feedback : (initialSeedData.feedback || []),
         users: Array.isArray(parsed.users) ? parsed.users : [],
         payments: Array.isArray(parsed.payments) ? parsed.payments : [],
-        aiUsageRecords: (parsed.aiUsageRecords && typeof parsed.aiUsageRecords === 'object') ? parsed.aiUsageRecords : {}
+        aiUsageRecords: (parsed.aiUsageRecords && typeof parsed.aiUsageRecords === 'object') ? parsed.aiUsageRecords : {},
+        roleplaySessions: Array.isArray(parsed.roleplaySessions) ? parsed.roleplaySessions : []
       };
       ensureAccessTiers(merged);
       console.log(`[Database] Loaded & merged db.json: ${merged.vocabulary.length} vocab, ${merged.kanji.length} kanji, ${merged.grammar.length} grammar, ${merged.lessons.length} lessons, ${(merged.users || []).length} users, ${(merged.payments || []).length} payments`);
@@ -2154,7 +2156,8 @@ function recordAIUsage(identifier: string) {
 async function callGeminiTutor(
   messages: { role: 'user' | 'assistant'; content: string }[],
   quizContext?: any,
-  currentLevel?: string
+  currentLevel?: string,
+  roleplayContext?: SunnyAIRoleplayFeedbackContext
 ) {
   const ai = getGeminiClient();
   if (!ai) {
@@ -2180,6 +2183,9 @@ async function callGeminiTutor(
      * Хэрэглэгчийн сонгосон хариулт яагаад алдаатай болсон шалтгааныг (дүрмийн зөрчил, өгүүлбэрийн утгын алдаа, өнгө аяс) тайлбарлана.
      * Зөв хариулт нь яагаад тохирч байгааг дүрэм, бүтцээр нь задлан тайлбарлана.
      * Бататгах 1-2 бодит жишээ өгүүлбэрийг монгол орчуулгатай оруулна.
+   - AI Roleplay тайлангийн зөвлөгөө / үнэлгээний асуултын нөхцөлд:
+     * Тухайн нөхцөл байдалд хэрэглэгчийн хэлсэн өгүүлбэр яагаад буруу эсвэл эвгүй сонсогдсоныг, зассан хувилбар нь яагаад байгалийн бөгөөд зөв болохыг монгол хэлээр маш нарийн задлан тайлбарлана.
+     * Холбогдох дүрэм, эелдэг найрсаг хэлбэр (敬語), түвшинд тохирсон 1-2 амьд жишээ өгүүлбэрийг монгол тайлбартай өгнө.
 3. БҮХ ТҮВШИН:
    - N5 анхан шатнаас авахуулаад N1 гүнзгий шатны дүрмийн нарийн ухагдахууныг түвшинд нь тааруулан оновчтой тайлбарлана.
 4. ХЭЛБЭРЖҮҮЛЭЛТ:
@@ -2197,6 +2203,19 @@ async function callGeminiTutor(
 ЗӨВ хариулт: ${quizContext.correctAnswer}
 Сонжооны тайлбар: ${quizContext.explanation || 'Байхгүй'}
 Хүсэлт: Энэ асуулт дээр миний хариулт яагаад буруу болсныг, зөв хариулт яагаад зөв болохыг монгол хэлээр маш тодорхой дэлгэрэнгүй тайлбарлаж өгнө үү.]\n\n`;
+  } else if (roleplayContext) {
+    initialContext = `[AI ROLEPLAY ХАРИЛЦАН ЯРИАНЫ САНАМЖ БА ТАЙЛБАР ХҮСЭЛТ:
+Хувилбар (Сценари): ${roleplayContext.scenarioTitle}
+Хэрэглэгчийн дүр: ${roleplayContext.userRole}
+AI-ийн дүр: ${roleplayContext.aiRole}
+Суралцагчийн JLPT түвшин: ${roleplayContext.jlptLevel || currentLevel || 'N5'}
+Ангилал: ${roleplayContext.category === 'grammar' ? 'Дүрэм (文法)' : roleplayContext.category === 'naturalness' ? 'Байгалийн яриа (自然さ)' : roleplayContext.category === 'vocabulary' ? 'Үгийн сан (語彙)' : 'Ерөнхий харилцаа'}
+${roleplayContext.originalSentence ? `Суралцагчийн хэлсэн өгүүлбэр: "${roleplayContext.originalSentence}"` : ''}
+${roleplayContext.correctedSentence ? `Зассан / Илүү байгалийн өгүүлбэр: "${roleplayContext.correctedSentence}"` : ''}
+${roleplayContext.explanationMongolian ? `Тайлангийн товч үнэлгээ: ${roleplayContext.explanationMongolian}` : ''}
+${roleplayContext.conversationExcerpt ? `Харилцан ярианы хэсэг:\n${roleplayContext.conversationExcerpt}` : ''}
+
+Хүсэлт: Дээрх өгүүлбэр, дүрмийн бүтцийг суралцагчид ойлгомжтойгоор монгол хэлээр маш дэлгэрэнгүй тайлбарлаж, яагаад ингэж хэлэх нь илүү зөв болохыг, мөн амьдрал дээр хэрэглэгдэх 1-2 бодит жишээ өгүүлбэртэйгээр тайлбарлаж өгнө үү.]\n\n`;
   }
 
   for (let i = 0; i < messages.length; i++) {
@@ -2214,11 +2233,11 @@ async function callGeminiTutor(
   if (contents.length === 0 && initialContext) {
     contents.push({
       role: 'user',
-      parts: [{ text: initialContext + 'Энэ асуултад миний хариулт яагаад буруу болсныг монгол хэлээр дэлгэрэнгүй тайлбарлана уу.' }]
+      parts: [{ text: initialContext + 'Энэ талаар дэлгэрэнгүй тайлбарлаж өгнө үү.' }]
     });
   }
 
-  const models = ['gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+  const models = ['gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
   let lastError: any = null;
 
   for (const model of models) {
@@ -2243,6 +2262,381 @@ async function callGeminiTutor(
   throw lastError || new Error('Хариулт үүсгэхэд алдаа гарлаа.');
 }
 
+// ----------------------------------------------------
+// AI ROLEPLAY GEMINI ENGINE HELPERS
+// ----------------------------------------------------
+function cleanJsonText(raw: string): string {
+  let cleaned = raw.trim();
+  const codeBlockMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (codeBlockMatch) {
+    return codeBlockMatch[1].trim();
+  }
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    return cleaned.substring(firstBrace, lastBrace + 1).trim();
+  }
+  return cleaned;
+}
+
+async function callGeminiRoleplayTurn(
+  scenario: RoleplayScenario,
+  jlptLevel: JLPTLevel,
+  messages: { role: 'user' | 'assistant'; content: string }[],
+  completedObjectiveIndices: number[] = []
+): Promise<{
+  reply: string;
+  completedObjectiveIndices: number[];
+  isFinished: boolean;
+}> {
+  const ai = getGeminiClient();
+  if (!ai) {
+    throw new Error('AI систем холбогдоогүй байна. Түр хүлээнэ үү.');
+  }
+
+  const systemInstruction = `You are an expert native Japanese speaker roleplaying an interactive real-world Japanese scenario with a language learner on SunnyLearn.
+
+SCENARIO: ${scenario.titleJapanese} (${scenario.titleMongolian})
+YOUR ROLE / CHARACTER: ${scenario.aiRole}
+LEARNER'S ROLE: ${scenario.userRole}
+LEARNER'S CURRENT JLPT LEVEL: ${jlptLevel}
+
+CORE ROLEPLAY RULES:
+1. STRICTLY STAY IN CHARACTER:
+   - You are ${scenario.aiRole} in Japan.
+   - Act, speak, and react in Japanese exactly as that person would in real life.
+   - DO NOT act as a teacher, tutor, or assistant during the conversation!
+   - Continue the conversation naturally in character.
+   - If the user makes a minor Japanese mistake but their meaning is understandable, DO NOT correct them or stop the conversation. Continue naturally.
+   - Only ask for clarification in character (e.g. 「すみません、もう一度お願いできますか？」) if the message is completely unintelligible.
+
+2. ADAPT JAPANESE COMPLEXITY TO JLPT ${jlptLevel}:
+   - N5: Very simple sentences, elementary vocabulary, short friendly lines (1-2 sentences). Speak simply and clearly.
+   - N4: Basic real-world daily Japanese, polite forms (です/ます), clear and direct.
+   - N3: Natural everyday conversation, varied sentence endings, natural conversational transitions.
+   - N2: Polite business/service Japanese, appropriate Keigo (sonkeigo/kenjougo) suited for your character.
+   - N1: Fluent, native-like conversation, nuanced expressions, appropriate situational Japanese.
+
+3. JAPANESE TEXT RULES:
+   - Roleplay dialogue MUST be in Japanese.
+   - STRICTLY FORBIDDEN: NO Romaji.
+   - STRICTLY FORBIDDEN: NO Cyrillic pronunciation.
+   - Format Kanji with Japanese furigana brackets: 漢字（ふりがな） (e.g. 本日（ほんじつ）, 面接（めんせつ）, お入（はい）りください, お名前（なまえ）) so the learner can read the pronunciation.
+   - Keep dialogue clean, authentic, and natural for your character.
+
+4. OBJECTIVES CHECK:
+Scenario objectives:
+${scenario.objectives.map((obj, i) => `${i}: ${obj.japanese} (${obj.mongolian})`).join('\n')}
+
+Already completed objective indices: [${completedObjectiveIndices.join(', ')}]
+
+Evaluate which objective indices are now satisfied. Any objective that was achieved during the conversation should be marked. Do not require exact rigid phrases; multiple conversational approaches are valid.
+
+5. OUTPUT FORMAT:
+You MUST output ONLY a valid JSON object matching:
+{
+  "reply": "Your in-character Japanese response",
+  "completedObjectiveIndices": [array of all objective indices (0 to ${scenario.objectives.length - 1}) satisfied up to this point],
+  "isFinished": boolean (true ONLY if the interaction reached a natural conclusion like saying goodbye/leaving)
+}
+Return ONLY valid JSON. No markdown code blocks.`;
+
+  const contents: any[] = [];
+  for (const m of messages) {
+    contents.push({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    });
+  }
+
+  const models = ['gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+  let lastError: any = null;
+
+  for (const model of models) {
+    try {
+      const resp = await ai.models.generateContent({
+        model,
+        contents,
+        config: {
+          systemInstruction,
+          temperature: 0.7,
+        }
+      });
+      if (resp && resp.text) {
+        const cleaned = cleanJsonText(resp.text);
+        try {
+          const parsed = JSON.parse(cleaned);
+          const reply = String(parsed.reply || '').trim();
+          let newIndices: number[] = Array.isArray(parsed.completedObjectiveIndices)
+            ? parsed.completedObjectiveIndices.map((x: any) => Number(x)).filter((n: number) => !isNaN(n) && n >= 0 && n < scenario.objectives.length)
+            : completedObjectiveIndices;
+          
+          // Merge unique indices
+          const mergedSet = new Set([...completedObjectiveIndices, ...newIndices]);
+          return {
+            reply: reply || '承知いたしました。',
+            completedObjectiveIndices: Array.from(mergedSet).sort((a, b) => a - b),
+            isFinished: Boolean(parsed.isFinished)
+          };
+        } catch (jsonErr) {
+          console.warn('[Roleplay Turn JSON Parse Fallback]', jsonErr);
+          // If JSON parse failed, use cleaned text as reply
+          return {
+            reply: cleaned.replace(/[{}\"]/g, '').trim() || 'はい、分かりました。',
+            completedObjectiveIndices,
+            isFinished: false
+          };
+        }
+      }
+    } catch (err: any) {
+      console.warn(`[Roleplay Turn] Model ${model} failed, trying next:`, err?.message || err);
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error('Roleplay хариулт үүсгэхэд алдаа гарлаа.');
+}
+
+async function callGeminiRoleplayHint(
+  scenario: RoleplayScenario,
+  jlptLevel: JLPTLevel,
+  messages: { role: 'user' | 'assistant'; content: string }[]
+): Promise<{
+  hintMongolian: string;
+  suggestedExpressions: string[];
+}> {
+  const ai = getGeminiClient();
+  if (!ai) {
+    throw new Error('AI систем холбогдоогүй байна. Түр хүлээнэ үү.');
+  }
+
+  const systemInstruction = `You are a helpful Japanese language assistant on SunnyLearn.
+A learner is currently roleplaying a real-world scenario in Japanese:
+SCENARIO: ${scenario.titleJapanese} (${scenario.titleMongolian})
+AI'S CHARACTER: ${scenario.aiRole}
+USER'S ROLE: ${scenario.userRole}
+LEARNER JLPT LEVEL: ${jlptLevel}
+
+The learner clicked the "💡 Тусламж" (Help) button for guidance on what to say next.
+
+TASK:
+1. Provide a short, encouraging hint in MONGOLIAN explaining what the user can answer, ask, or express next in this situation.
+2. Provide 2 to 3 natural JAPANESE expressions adapted to JLPT ${jlptLevel} that the user can use or model their sentence after.
+3. STRICT RULES FOR JAPANESE SUGGESTIONS:
+   - Japanese only (natural Kanji and Kana).
+   - CLEAN JAPANESE ONLY: STRICTLY FORBIDDEN to use furigana annotations, ruby markup, or bracketed readings like 漢字（ふりがな）.
+   - STRICTLY FORBIDDEN: NO Romaji.
+   - STRICTLY FORBIDDEN: NO Cyrillic or Mongolian phonetic pronunciation.
+   - Example of clean Japanese: 面接の機会をいただき、ありがとうございます。 (NOT 面接（めんせつ）の機会（きかい）...)
+   - Return ONLY a valid JSON object matching:
+{
+  "hintMongolian": "Монгол хэл дээрх 1-2 өгүүлбэр бүхий товч тусламж, зөвлөгөө",
+  "suggestedExpressions": ["Хэлж болох цэвэр япон өгүүлбэр 1", "Хэлж болох цэвэр япон өгүүлбэр 2"]
+}`;
+
+  const transcript = messages.map(m => `${m.role === 'user' ? 'USER' : 'AI'}: ${m.content}`).join('\n');
+
+  const models = ['gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+  for (const model of models) {
+    try {
+      const resp = await ai.models.generateContent({
+        model,
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: `Current conversation transcript:\n${transcript}\n\nPlease provide a hint and 2-3 Japanese suggestions.` }]
+          }
+        ],
+        config: {
+          systemInstruction,
+          temperature: 0.5,
+        }
+      });
+      if (resp && resp.text) {
+        const cleaned = cleanJsonText(resp.text);
+        const parsed = JSON.parse(cleaned);
+
+        // Sanitize any accidental furigana brackets from suggested expressions
+        const furiganaRegex = /([\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]+)\s*[（\(\[【]\s*([ぁ-んァ-ヶー・]+)\s*[）\)\]】]/g;
+        const rawList = Array.isArray(parsed.suggestedExpressions) ? parsed.suggestedExpressions : [];
+        const cleanExpressions = rawList
+          .map((item: any) => String(item || '').replace(furiganaRegex, '$1').trim())
+          .filter((text: string) => text.length > 0);
+
+        return {
+          hintMongolian: String(parsed.hintMongolian || 'Тухайн нөхцөлд тохируулан хариулна уу.'),
+          suggestedExpressions: cleanExpressions
+        };
+      }
+    } catch (err: any) {
+      console.warn(`[Roleplay Hint] Model ${model} failed, trying next:`, err?.message || err);
+    }
+  }
+
+  return {
+    hintMongolian: 'Нөхцөл байдалд тохируулан хариулж, хэрэгцээгээ эелдэг илэрхийлнэ үү.',
+    suggestedExpressions: ['はい、お願いします。', 'すみません、確認してもよろしいですか？']
+  };
+}
+
+async function callGeminiRoleplayFeedback(
+  scenario: RoleplayScenario,
+  jlptLevel: JLPTLevel,
+  messages: { role: 'user' | 'assistant'; content: string }[],
+  completedObjectiveIndices: number[] = []
+): Promise<RoleplayFeedbackReport> {
+  const ai = getGeminiClient();
+  if (!ai) {
+    throw new Error('AI систем холбогдоогүй байна. Түр хүлээнэ үү.');
+  }
+
+  const userMessages = messages.filter(m => m.role === 'user');
+  const userTextList = userMessages.map(m => m.content).filter(Boolean);
+
+  const systemInstruction = `You are a master Japanese linguist and evaluator on SunnyLearn.
+You are evaluating an interactive roleplay session completed by a Mongolian learner.
+
+SCENARIO: ${scenario.titleJapanese} (${scenario.titleMongolian})
+USER ROLE: ${scenario.userRole}
+AI ROLE: ${scenario.aiRole}
+LEARNER JLPT LEVEL: ${jlptLevel}
+
+USER'S ACTUAL MESSAGES IN TRANSCRIPT:
+${userTextList.length > 0 ? userTextList.map((t, idx) => `[Sentence ${idx + 1}]: "${t}"`).join('\n') : '(User sent no text)'}
+
+FULL DIALOGUE:
+${messages.map(m => `${m.role === 'user' ? 'USER' : 'AI'}: ${m.content}`).join('\n')}
+
+OBJECTIVES COMPLETED: ${completedObjectiveIndices.length} out of ${scenario.objectives.length}
+
+CRITICAL RULES:
+1. STRICT ANTI-HALLUCINATION:
+   - In "grammarCorrections" and "naturalnessItems", ONLY quote actual phrases the USER typed.
+   - NEVER invent or attribute sentences to the user that are NOT in the USER's messages above!
+   - If the user made no grammar errors, return an empty array for grammarCorrections!
+2. CLEAR DISTINCTIONS:
+   - Grammar (文法): Real structural, tense, particle, or conjugation mistakes.
+   - Naturalness (自然さ): Sentences that are understandable, but native speakers would say differently in this context (e.g. これを買いたいです → これ、お願いします). Mark status as:
+     * 'incorrect' (❌ Буруу)
+     * 'unnatural' (△ Ойлгомжтой ч байгалийн бус)
+     * 'natural' (✓ Байгалийн зөв илэрхийлэл)
+   - Vocabulary (語彙): 2-4 words used well, and 2-4 useful scenario vocabulary with furigana and Mongolian meaning.
+   - What went well (Сайн болсон зүйл): 2-3 specific points in Mongolian praising the learner's effort and courage.
+   - Communication: Score (0-100), objectives completed count, politeness appropriateness, and a warm Mongolian summary.
+3. NO ROMAJI. NO CYRILLIC PRONUNCIATION.
+   - All explanations MUST be in clear, high-quality MONGOLIAN.
+   - Furigana format: 漢字（ふりがな）.
+
+RETURN ONLY A VALID JSON OBJECT MATCHING THIS EXACT SCHEMA:
+{
+  "whatWentWell": ["Сайн болсон зүйл 1 (Монголоор)", "Сайн болсон зүйл 2 (Монголоор)"],
+  "grammarCorrections": [
+    {
+      "originalSentence": "User's actual sentence",
+      "correctedSentence": "Corrected sentence",
+      "explanationMongolian": "Монгол хэлээр дүрмийн тайлбар"
+    }
+  ],
+  "naturalnessItems": [
+    {
+      "originalSentence": "User's actual sentence",
+      "moreNaturalSentence": "More natural phrasing in Japan",
+      "status": "unnatural",
+      "explanationMongolian": "Монгол тайлбар"
+    }
+  ],
+  "vocabularyItems": [
+    {
+      "word": "日本語単語",
+      "furigana": "ふりがな",
+      "mongolian": "Монгол утга",
+      "type": "used_well",
+      "exampleUsage": "Жишээ өгүүлбэр 漢字（ふりがな）"
+    }
+  ],
+  "communication": {
+    "score": 85,
+    "objectivesCompleted": ${completedObjectiveIndices.length},
+    "totalObjectives": ${scenario.objectives.length},
+    "politenessEvaluation": "Монголоор харилцааны эелдэг хэлбэрийн үнэлгээ",
+    "feedbackMongolian": "Монгол хэл дээрх ерөнхий дүгнэлт, урамшуулсан үгс"
+  }
+}`;
+
+  const models = ['gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+  let lastError: any = null;
+
+  for (const model of models) {
+    try {
+      const resp = await ai.models.generateContent({
+        model,
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: 'Please evaluate this roleplay transcript and generate the detailed feedback report in JSON format.' }]
+          }
+        ],
+        config: {
+          systemInstruction,
+          temperature: 0.5,
+        }
+      });
+      if (resp && resp.text) {
+        const cleaned = cleanJsonText(resp.text);
+        const parsed = JSON.parse(cleaned);
+
+        return {
+          whatWentWell: Array.isArray(parsed.whatWentWell) ? parsed.whatWentWell : ['Харилцан ярианд идэвхтэй оролцож өөрийгөө илэрхийлсэн.'],
+          grammarCorrections: Array.isArray(parsed.grammarCorrections) ? parsed.grammarCorrections : [],
+          naturalnessItems: Array.isArray(parsed.naturalnessItems) ? parsed.naturalnessItems : [],
+          vocabularyItems: Array.isArray(parsed.vocabularyItems) ? parsed.vocabularyItems : [],
+          communication: {
+            score: typeof parsed.communication?.score === 'number' ? parsed.communication.score : 80,
+            objectivesCompleted: completedObjectiveIndices.length,
+            totalObjectives: scenario.objectives.length,
+            politenessEvaluation: parsed.communication?.politenessEvaluation || 'Нөхцөл байдалд тохирсон эелдэг байдлаар харилцсан.',
+            feedbackMongolian: parsed.communication?.feedbackMongolian || 'Сайн ярилцлаа! Дараа дараагийн дадлагаар улам бүр сайжирна.'
+          }
+        };
+      }
+    } catch (err: any) {
+      console.warn(`[Roleplay Feedback] Model ${model} failed, trying next:`, err?.message || err);
+      lastError = err;
+    }
+  }
+
+  // Safe fallback report if AI generation fails
+  return {
+    whatWentWell: ['Хувилбарын дагуу харилцан яриаг амжилттай хийж дуусгалаа.'],
+    grammarCorrections: [],
+    naturalnessItems: [],
+    vocabularyItems: [
+      {
+        word: 'いらっしゃいませ',
+        furigana: 'いらっしゃいませ',
+        mongolian: 'Тавтай морил',
+        type: 'recommended'
+      },
+      {
+        word: 'お願いします',
+        furigana: 'おねがいします',
+        mongolian: 'Гуйж байна / Тэгнэ үү',
+        type: 'used_well'
+      }
+    ],
+    communication: {
+      score: 80,
+      objectivesCompleted: completedObjectiveIndices.length,
+      totalObjectives: scenario.objectives.length,
+      politenessEvaluation: 'Эелдэг байдлаар харилцсан байна.',
+      feedbackMongolian: 'Бодит амьдрал дээрх дадлага нь ярианы чадварыг хамгийн хурдан ахиулдаг.'
+    }
+  };
+}
+
+// ----------------------------------------------------
+// AI USAGE & CHAT ENDPOINTS
+// ----------------------------------------------------
 // GET AI usage & remaining messages
 app.get('/api/ai/usage', (req, res) => {
   const { identifier, isPremium } = resolveClientAIContext(req);
@@ -2250,7 +2644,7 @@ app.get('/api/ai/usage', (req, res) => {
   res.json({ success: true, usage });
 });
 
-// POST AI Chat & Quiz Explanation
+// POST AI Chat & Quiz / Roleplay Explanation
 app.post('/api/ai/chat', async (req, res) => {
   const { identifier, isPremium } = resolveClientAIContext(req);
   const usage = getAIUsage(identifier, isPremium);
@@ -2263,8 +2657,8 @@ app.post('/api/ai/chat', async (req, res) => {
     });
   }
 
-  const { message, conversationHistory, quizContext, currentLevel } = req.body || {};
-  if (!message && !quizContext) {
+  const { message, conversationHistory, quizContext, roleplayContext, currentLevel } = req.body || {};
+  if (!message && !quizContext && !roleplayContext) {
     return res.status(400).json({ error: 'Зурвасын утга хоосон байна.' });
   }
 
@@ -2274,7 +2668,7 @@ app.post('/api/ai/chat', async (req, res) => {
   }
 
   try {
-    const reply = await callGeminiTutor(history, quizContext, currentLevel);
+    const reply = await callGeminiTutor(history, quizContext, currentLevel, roleplayContext);
 
     // Increment usage ONLY for user-sent messages and ONLY if non-premium
     if (!isPremium) {
@@ -2291,6 +2685,573 @@ app.post('/api/ai/chat', async (req, res) => {
     console.error('[Sunny AI Chat Error]', err);
     res.status(500).json({
       error: 'Sunny AI хариулахад алдаа гарлаа. Дахин оролдоно уу.',
+      details: err?.message || String(err)
+    });
+  }
+});
+
+// ----------------------------------------------------
+// AI ROLEPLAY ENDPOINTS
+// ----------------------------------------------------
+// 1. GET /api/ai/roleplay/scenarios - returns all scenarios
+app.get('/api/ai/roleplay/scenarios', (req, res) => {
+  res.json({
+    success: true,
+    scenarios: INITIAL_ROLEPLAY_SCENARIOS
+  });
+});
+
+// 2. POST /api/ai/roleplay/chat - handles user turn in active scenario
+app.post('/api/ai/roleplay/chat', async (req, res) => {
+  const { identifier, isPremium } = resolveClientAIContext(req);
+  const usage = getAIUsage(identifier, isPremium);
+
+  if (usage.limitReached) {
+    return res.status(429).json({
+      error: 'Хиймэл оюуны үнэгүй хэрэглээний 20 мессежийн хязгаарт хүрлээ. Premium авснаар AI Roleplay болон Sunny AI-г хязгааргүй ашиглах боломжтой.',
+      limitReached: true,
+      usage
+    });
+  }
+
+  const { scenarioId, jlptLevel = 'N5', messages = [], completedObjectiveIndices = [] } = req.body || {};
+  if (!scenarioId) {
+    return res.status(400).json({ error: 'scenarioId шаардлагатай.' });
+  }
+
+  const scenario = getScenarioById(scenarioId);
+  if (!scenario) {
+    return res.status(404).json({ error: 'Сонгосон хувилбар олдсонгүй.' });
+  }
+
+  try {
+    const validMessages = Array.isArray(messages) ? messages : [];
+    const validIndices = Array.isArray(completedObjectiveIndices) ? completedObjectiveIndices : [];
+
+    const turnResult = await callGeminiRoleplayTurn(
+      scenario,
+      jlptLevel as JLPTLevel,
+      validMessages,
+      validIndices
+    );
+
+    // Increment usage ONLY for user-sent messages and ONLY if non-premium
+    if (!isPremium) {
+      recordAIUsage(identifier);
+    }
+    const updatedUsage = getAIUsage(identifier, isPremium);
+
+    res.json({
+      success: true,
+      reply: turnResult.reply,
+      completedObjectiveIndices: turnResult.completedObjectiveIndices,
+      isFinished: turnResult.isFinished,
+      usage: updatedUsage
+    });
+  } catch (err: any) {
+    console.error('[Roleplay Chat Error]', err);
+    res.status(500).json({
+      error: 'Хариулт авах үед алдаа гарлаа. Дахин оролдоно уу.',
+      details: err?.message || String(err)
+    });
+  }
+});
+
+// 3. POST /api/ai/roleplay/hint - generates Mongolian hint and Japanese expressions
+app.post('/api/ai/roleplay/hint', async (req, res) => {
+  const { scenarioId, jlptLevel = 'N5', messages = [] } = req.body || {};
+  if (!scenarioId) {
+    return res.status(400).json({ error: 'scenarioId шаардлагатай.' });
+  }
+
+  const scenario = getScenarioById(scenarioId);
+  if (!scenario) {
+    return res.status(404).json({ error: 'Сонгосон хувилбар олдсонгүй.' });
+  }
+
+  try {
+    const hint = await callGeminiRoleplayHint(scenario, jlptLevel as JLPTLevel, messages);
+    res.json({
+      success: true,
+      hintMongolian: hint.hintMongolian,
+      suggestedExpressions: hint.suggestedExpressions
+    });
+  } catch (err: any) {
+    console.error('[Roleplay Hint Error]', err);
+    res.status(500).json({
+      error: 'Тусламж авахад алдаа гарлаа.',
+      details: err?.message || String(err)
+    });
+  }
+});
+
+// 4. POST /api/ai/roleplay/feedback - evaluates transcript and saves session
+app.post('/api/ai/roleplay/feedback', async (req, res) => {
+  const { identifier, userId } = resolveClientAIContext(req);
+  const { scenarioId, jlptLevel = 'N5', messages = [], completedObjectiveIndices = [] } = req.body || {};
+
+  if (!scenarioId) {
+    return res.status(400).json({ error: 'scenarioId шаардлагатай.' });
+  }
+
+  const scenario = getScenarioById(scenarioId);
+  if (!scenario) {
+    return res.status(404).json({ error: 'Сонгосон хувилбар олдсонгүй.' });
+  }
+
+  try {
+    const feedback = await callGeminiRoleplayFeedback(
+      scenario,
+      jlptLevel as JLPTLevel,
+      messages,
+      completedObjectiveIndices
+    );
+
+    const sessionId = 'rps_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    const sessionRecord: RoleplaySessionRecord = {
+      id: sessionId,
+      userId: userId || identifier,
+      scenarioId: scenario.id,
+      scenarioTitle: scenario.titleJapanese,
+      scenarioIcon: scenario.icon,
+      jlptLevel: jlptLevel as JLPTLevel,
+      userRole: scenario.userRole,
+      aiRole: scenario.aiRole,
+      messages: messages.map((m: any, idx: number) => ({
+        id: m.id || `msg_${idx}`,
+        role: m.role,
+        content: m.content,
+        timestamp: m.timestamp || new Date().toISOString()
+      })),
+      completedObjectiveIndices,
+      feedback,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!db.roleplaySessions) {
+      db.roleplaySessions = [];
+    }
+    db.roleplaySessions.unshift(sessionRecord);
+    // Keep max 500 recent sessions in db
+    if (db.roleplaySessions.length > 500) {
+      db.roleplaySessions = db.roleplaySessions.slice(0, 500);
+    }
+    saveDatabase(db);
+
+    res.json({
+      success: true,
+      feedback,
+      sessionId,
+      session: sessionRecord
+    });
+  } catch (err: any) {
+    console.error('[Roleplay Feedback Error]', err);
+    res.status(500).json({
+      error: 'Үнэлгээний тайлан үүсгэхэд алдаа гарлаа.',
+      details: err?.message || String(err)
+    });
+  }
+});
+
+// 5. GET /api/ai/roleplay/history - returns completed roleplay sessions for user
+app.get('/api/ai/roleplay/history', (req, res) => {
+  const { identifier, userId } = resolveClientAIContext(req);
+  const targetUser = userId || identifier;
+
+  const userSessions = (db.roleplaySessions || []).filter(s => {
+    return s.userId === targetUser || (userId && s.userId === userId) || (identifier && s.userId === identifier);
+  });
+
+  res.json({
+    success: true,
+    history: userSessions.map(s => ({
+      id: s.id,
+      scenarioId: s.scenarioId,
+      scenarioTitle: s.scenarioTitle,
+      scenarioIcon: s.scenarioIcon,
+      jlptLevel: s.jlptLevel,
+      createdAt: s.createdAt,
+      messageCount: s.messages.length,
+      objectivesCompleted: s.completedObjectiveIndices.length,
+      score: s.feedback.communication.score
+    }))
+  });
+});
+
+// 6. GET /api/ai/roleplay/session/:id - returns single session with feedback
+app.get('/api/ai/roleplay/session/:id', (req, res) => {
+  const { identifier, userId } = resolveClientAIContext(req);
+  const session = (db.roleplaySessions || []).find(s => s.id === req.params.id);
+
+  if (!session) {
+    return res.status(404).json({ error: 'Хичээлийн түүх олдсонгүй.' });
+  }
+
+  // Security check: ensure session belongs to user or client
+  const isOwner = session.userId === userId || session.userId === identifier || !session.userId;
+  if (!isOwner) {
+    return res.status(403).json({ error: 'Энэ түүхийг үзэх эрхгүй байна.' });
+  }
+
+  res.json({
+    success: true,
+    session
+  });
+});
+
+// ----------------------------------------------------
+// FREE CONVERSATION (ЧӨЛӨӨТ ЯРИА) ENGINE & ROUTES
+// ----------------------------------------------------
+
+function stripFuriganaServer(text: string): string {
+  if (!text) return '';
+  return text.replace(/([\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]+)\s*[（\(\[【]\s*([ぁ-んァ-ヶー・]+)\s*[）\)\]】]/g, '$1').trim();
+}
+
+async function generateNeuralJapaneseAudio(text: string, voiceName: string = 'Aoede'): Promise<string | null> {
+  const clean = stripFuriganaServer(text);
+  if (!clean || clean.length === 0) return null;
+
+  const validVoices = ['Aoede', 'Kore', 'Puck', 'Fenrir'];
+  const safeVoice = validVoices.includes(voiceName) ? voiceName : 'Aoede';
+
+  // In-memory / disk cache key based on hash
+  const hash = crypto.createHash('md5').update(`${safeVoice}:${clean}`).digest('hex');
+  const cacheKey = `tts_${safeVoice}_${hash}`;
+
+  if (audioMemoryCache.has(cacheKey)) {
+    return audioMemoryCache.get(cacheKey)!;
+  }
+
+  const diskPath = path.join(AUDIO_CACHE_DIR, `${cacheKey}.wav`);
+  if (fs.existsSync(diskPath)) {
+    try {
+      const wav = fs.readFileSync(diskPath);
+      const uri = `data:audio/wav;base64,${wav.toString('base64')}`;
+      audioMemoryCache.set(cacheKey, uri);
+      return uri;
+    } catch {}
+  }
+
+  try {
+    const ai = getGeminiClient();
+    const resp = await ai.models.generateContent({
+      model: 'gemini-3.1-flash-tts-preview',
+      contents: clean,
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: {
+              voiceName: safeVoice
+            }
+          }
+        }
+      }
+    });
+
+    const parts = resp.candidates?.[0]?.content?.parts || [];
+    const audioPart = parts.find((p: any) => p.inlineData?.mimeType?.startsWith('audio/'));
+    if (audioPart && audioPart.inlineData?.data) {
+      const pcmBuffer = Buffer.from(audioPart.inlineData.data, 'base64');
+      const wavBuffer = pcmToWavBuffer(pcmBuffer, 24000, 1, 16);
+      const uri = `data:audio/wav;base64,${wavBuffer.toString('base64')}`;
+
+      // Store in memory cache
+      audioMemoryCache.set(cacheKey, uri);
+      // Persist to disk cache
+      try {
+        fs.writeFileSync(diskPath, wavBuffer);
+      } catch {}
+
+      return uri;
+    }
+  } catch (err: any) {
+    console.warn('[Neural Japanese TTS Warning]', err?.message || err);
+  }
+  return null;
+}
+
+async function callGeminiFreeChatTurn(
+  messages: { role: 'user' | 'assistant'; content: string }[],
+  jlptLevel: JLPTLevel = 'N5',
+  style: 'easy' | 'natural' = 'natural'
+): Promise<{
+  reply: string;
+  cleanReply: string;
+  correction: { original: string; corrected: string; explanation: string } | null;
+}> {
+  const ai = getGeminiClient();
+
+  const systemInstruction = `YOU ARE SUNNY (サニー), A WARM, NATURAL, CONVERSATIONAL JAPANESE SPEAKING PARTNER.
+You are having an open-ended, spontaneous Japanese conversation with a learner.
+
+LEARNER'S CURRENT JLPT LEVEL: ${jlptLevel}
+CONVERSATION STYLE: ${style === 'easy' ? 'やさしい日本語 (Easy, accessible Japanese)' : '自然な日本語 (Natural everyday conversational Japanese)'}
+
+CRITICAL CONVERSATIONAL RULES:
+1. PURE CONVERSATION, NOT A LESSON:
+   - Talk naturally about whatever topic the learner brings up (daily life, what they did today, hobbies, work, school, travel, sports, food, cars, movies, music, weather, future goals, or casual life in Japan/Mongolia).
+   - Follow the learner's topic naturally. Do NOT redirect them to a scripted scenario.
+   - Keep responses CONVERSATIONAL AND SHORT (1 to 2 natural sentences, at most 3 short sentences).
+   - React with genuine conversational nuance (e.g. 「そうなんですね！」「いいね！」「へえ、知らなかった！」「それ面白そう！」「なるほど！」).
+   - Ask a friendly, natural follow-up question to keep the conversation flowing comfortably.
+
+2. DO NOT INTERRUPT TO CORRECT:
+   - NEVER interrupt the conversational flow in your reply to lecture about grammar.
+   - If the learner makes a Japanese mistake (e.g. 「バスケするました」), understand their intended meaning and continue naturally (「バスケいいですね！友達とプレーしたんですか？」).
+   - Only if the learner made a clear grammatical/vocabulary slip in their latest message, formulate a subtle correction note for the separate 'correction' field so they can optionally review it later. If their message was natural, set 'correction' to null.
+
+3. JLPT & STYLE ADAPTATION:
+   - N5: Simple daily vocabulary, short clear sentences, friendly and welcoming tone.
+   - N4: Basic natural daily conversation, clear polite or friendly forms.
+   - N3: Intermediate conversational fluency, variety of common expressions and natural conjunctions.
+   - N2: Nuanced conversational Japanese, rich expressions, idioms where natural.
+   - N1: Native-like fluency, natural colloquial or business registers suited to topic.
+   ${style === 'easy' ? '- Use easy, clear sentence structures and gentle vocabulary.' : '- Use completely authentic, conversational Japanese.'}
+
+4. LANGUAGE ACCURACY:
+   - STRICTLY NO Romaji.
+   - STRICTLY NO Cyrillic or Mongolian pronunciation.
+   - Format Kanji with Japanese furigana brackets: 漢字（ふりがな） (e.g. 今日（きょう）はいい天気（てんき）ですね) for the visual transcript.
+
+5. OUTPUT FORMAT:
+You MUST output ONLY a valid JSON object matching:
+{
+  "reply": "Your in-character Japanese response with furigana brackets",
+  "correction": {
+    "original": "Learner's phrase that had an error",
+    "corrected": "More natural Japanese phrasing",
+    "explanation": "Brief, friendly explanation in Mongolian (e.g. 「する」-ийн өнгөрсөн цаг нь 「した」 юм.)"
+  } // OR null if no significant mistake was made
+}
+Return ONLY valid JSON. No markdown code blocks.`;
+
+  const contents: any[] = [];
+  for (const m of messages) {
+    contents.push({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    });
+  }
+
+  const models = ['gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
+  let lastError: any = null;
+
+  for (const model of models) {
+    try {
+      const resp = await ai.models.generateContent({
+        model,
+        contents,
+        config: {
+          systemInstruction,
+          temperature: 0.7
+        }
+      });
+
+      if (resp && resp.text) {
+        const cleaned = cleanJsonText(resp.text);
+        try {
+          const parsed = JSON.parse(cleaned);
+          const reply = String(parsed.reply || '').trim();
+          const cleanReply = stripFuriganaServer(reply);
+          let correction = null;
+          if (parsed.correction && typeof parsed.correction === 'object' && parsed.correction.original && parsed.correction.corrected) {
+            correction = {
+              original: String(parsed.correction.original).trim(),
+              corrected: String(parsed.correction.corrected).trim(),
+              explanation: String(parsed.correction.explanation || '').trim()
+            };
+          }
+
+          return {
+            reply: reply || 'そうなんですね！もっと聞かせてください。',
+            cleanReply: cleanReply || 'そうなんですね！もっと聞かせてください。',
+            correction
+          };
+        } catch {
+          const rawText = resp.text.trim();
+          return {
+            reply: rawText,
+            cleanReply: stripFuriganaServer(rawText),
+            correction: null
+          };
+        }
+      }
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`[FreeChat Turn Model ${model} Warning]`, err?.message || err);
+    }
+  }
+
+  throw lastError || new Error('Чөлөөт ярианы хариулт авахад алдаа гарлаа.');
+}
+
+async function callGeminiFreeChatFeedback(
+  messages: { role: 'user' | 'assistant'; content: string }[],
+  jlptLevel: JLPTLevel = 'N5'
+): Promise<FreeChatFeedbackReport> {
+  const ai = getGeminiClient();
+
+  const prompt = `Evaluate this Japanese free conversation practice session between a Mongolian learner at JLPT level ${jlptLevel} and Sunny AI.
+
+TRANSCRIPT:
+${messages.map(m => `${m.role === 'user' ? 'Learner' : 'AI'}: ${m.content}`).join('\n')}
+
+Analyze the learner's Japanese communication and return ONLY a valid JSON object matching:
+{
+  "overallImpression": "Encouraging comment in natural Japanese praising their effort (1-2 sentences)",
+  "overallImpressionMongolian": "Encouraging, constructive feedback in Mongolian summarizing how well they expressed themselves (2-3 sentences)",
+  "fluencyScore": number (integer between 70 and 98 based on conversational responsiveness and engagement),
+  "keyVocabularyUsed": [
+    { "japanese": "言葉", "reading": "ことば", "mongolian": "үг, хэллэг" }
+  ],
+  "corrections": [
+    {
+      "original": "Learner's mistaken phrase from transcript",
+      "better": "Natural, native-sounding Japanese phrase",
+      "explanationMongolian": "Clear, gentle grammar/usage explanation in Mongolian"
+    }
+  ],
+  "nextPracticeTipMongolian": "One specific, practical tip for their next conversation in Mongolian"
+}
+Return ONLY valid JSON. No markdown code blocks.`;
+
+  const models = ['gemini-3.8-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
+  let lastError: any = null;
+
+  for (const model of models) {
+    try {
+      const resp = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: {
+          temperature: 0.4
+        }
+      });
+
+      if (resp && resp.text) {
+        const cleaned = cleanJsonText(resp.text);
+        const parsed = JSON.parse(cleaned);
+        return {
+          overallImpression: String(parsed.overallImpression || 'よく頑張りました！楽しい会話でした。'),
+          overallImpressionMongolian: String(parsed.overallImpressionMongolian || 'Япон хэлээр чөлөөтэй ярилцах оролдлого маш сайн байлаа.'),
+          fluencyScore: typeof parsed.fluencyScore === 'number' ? Math.min(100, Math.max(50, Math.round(parsed.fluencyScore))) : 85,
+          keyVocabularyUsed: Array.isArray(parsed.keyVocabularyUsed) ? parsed.keyVocabularyUsed : [],
+          corrections: Array.isArray(parsed.corrections) ? parsed.corrections : [],
+          nextPracticeTipMongolian: String(parsed.nextPracticeTipMongolian || 'Дараагийн удаа өөрийн сэтгэгдлийг нэмж илэрхийлээд үзээрэй.')
+        };
+      }
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`[FreeChat Feedback Model ${model} Warning]`, err?.message || err);
+    }
+  }
+
+  return {
+    overallImpression: '最後まで楽しく会話できました！',
+    overallImpressionMongolian: 'Ярианы дадлагаа амжилттай хийлээ. Таны ярих ур чадвар өдрөөс өдөрт сайжирч байна.',
+    fluencyScore: 82,
+    keyVocabularyUsed: [],
+    corrections: [],
+    nextPracticeTipMongolian: 'Богино өгүүлбэрээр ч хамаагүй өөрийн бодлоо шууд илэрхийлэх дадлыг үргэлжлүүлээрэй.'
+  };
+}
+
+// 7. POST /api/ai/free-chat - Free Japanese AI conversation message turn
+app.post('/api/ai/free-chat', async (req: Request, res: Response) => {
+  const { identifier, isPremium } = resolveClientAIContext(req);
+  const usage = getAIUsage(identifier, isPremium);
+
+  if (usage.limitReached) {
+    return res.status(429).json({
+      error: 'Хиймэл оюуны үнэгүй хэрэглээний 20 мессежийн хязгаарт хүрлээ. Premium авснаар AI Чөлөөт яриа, Roleplay болон Sunny AI-г хязгааргүй ашиглах боломжтой.',
+      limitReached: true,
+      usage
+    });
+  }
+
+  const {
+    messages = [],
+    jlptLevel = 'N5',
+    style = 'natural',
+    voiceName = 'Aoede',
+    generateAudio = true
+  } = req.body || {};
+
+  try {
+    const validMessages = Array.isArray(messages) ? messages : [];
+    const turnResult = await callGeminiFreeChatTurn(validMessages, jlptLevel as JLPTLevel, style);
+
+    // Increment AI usage count for non-premium user
+    if (!isPremium) {
+      recordAIUsage(identifier);
+    }
+    const updatedUsage = getAIUsage(identifier, isPremium);
+
+    let audioDataUri: string | null = null;
+    if (generateAudio) {
+      audioDataUri = await generateNeuralJapaneseAudio(turnResult.cleanReply, voiceName);
+    }
+
+    res.json({
+      success: true,
+      reply: turnResult.reply,
+      cleanReply: turnResult.cleanReply,
+      audio: audioDataUri,
+      speechFallback: !audioDataUri,
+      correction: turnResult.correction,
+      usage: updatedUsage
+    });
+  } catch (err: any) {
+    console.error('[Free Chat Turn Error]', err);
+    res.status(500).json({
+      error: 'Чөлөөт ярианы хариулт авахад алдаа гарлаа.',
+      details: err?.message || String(err)
+    });
+  }
+});
+
+// 8. POST /api/ai/free-chat/voice - Generate neural audio on demand
+app.post('/api/ai/free-chat/voice', async (req: Request, res: Response) => {
+  const { text, voiceName = 'Aoede' } = req.body || {};
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'Текст шаардлагатай.' });
+  }
+
+  try {
+    const audioDataUri = await generateNeuralJapaneseAudio(text, voiceName);
+    res.json({
+      success: true,
+      audio: audioDataUri,
+      speechFallback: !audioDataUri
+    });
+  } catch (err: any) {
+    console.error('[Free Chat Voice Error]', err);
+    res.status(500).json({
+      error: 'Дуу үүсгэхэд алдаа гарлаа.',
+      details: err?.message || String(err)
+    });
+  }
+});
+
+// 9. POST /api/ai/free-chat/feedback - Evaluate free conversation session
+app.post('/api/ai/free-chat/feedback', async (req: Request, res: Response) => {
+  const { messages = [], jlptLevel = 'N5' } = req.body || {};
+  if (!Array.isArray(messages) || messages.length < 2) {
+    return res.status(400).json({ error: 'Үнэлгээ хийх хангалттай яриа алга байна.' });
+  }
+
+  try {
+    const feedback = await callGeminiFreeChatFeedback(messages, jlptLevel as JLPTLevel);
+    res.json({
+      success: true,
+      feedback
+    });
+  } catch (err: any) {
+    console.error('[Free Chat Feedback Error]', err);
+    res.status(500).json({
+      error: 'Ярианы үнэлгээ гаргахад алдаа гарлаа.',
       details: err?.message || String(err)
     });
   }

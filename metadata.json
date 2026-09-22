@@ -1,6 +1,6 @@
 {
   "name": "SunnyLearn",
-  "description": "SunnyLearn нь монгол хэрэглэгчдэд зориулсан япон хэл сурах онлайн платформ. JLPT N5, N4, N3, N2, N1 түвшний үг, ханз, дүрэм, дасгал, шалгалтыг цогцоор нь суралцаарай.",
-  "requestFramePermissions": [],
+  "description": "SunnyLearn нь монгол хэрэглэгчдэд зориулсан япон хэл сурах онлайн платформ. JLPT N5, N4, N3, N2, N1 түвшний үг, ханз, дүрэм, интерактив AI Roleplay, AI Чөлөөт яриа болон сорилыг цогцоор нь суралцаарай.",
+  "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

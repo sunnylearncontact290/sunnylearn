@@ -17,7 +17,8 @@ import {
   Layers,
   HelpCircle,
   CheckSquare,
-  Target
+  Target,
+  MessagesSquare
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { JLPTLevel } from '../../types';
@@ -541,8 +542,8 @@ export const HomePage: React.FC = () => {
           </div>
         )}
 
-        {/* Quick Launch: Practice & Quiz */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+        {/* Quick Launch: Practice, Quiz & AI Roleplay */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
           <div
             onClick={() => {
               setActiveTab('practice');
@@ -550,16 +551,16 @@ export const HomePage: React.FC = () => {
             }}
             className="p-4 rounded-2xl bg-gradient-to-br from-red-500/10 via-amber-500/5 to-transparent border border-red-200/80 dark:border-red-900/40 hover:border-red-400 dark:hover:border-red-700 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shadow-md shadow-red-500/20 group-hover:scale-105 transition-transform shrink-0">
                 <CheckSquare className="w-5 h-5" />
               </div>
-              <div>
-                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+              <div className="min-w-0">
+                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors truncate">
                   Дасгал ажиллах
                 </h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400">
-                  {selectedLevel ? `JLPT ${selectedLevel} түвшний ` : ''}Интерактив дасгал, өгүүлбэр угсрах, бататгал
+                <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-1">
+                  {selectedLevel ? `JLPT ${selectedLevel} ` : ''}Интерактив дасгал, угсрах
                 </p>
               </div>
             </div>
@@ -573,16 +574,44 @@ export const HomePage: React.FC = () => {
             }}
             className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent border border-amber-200/80 dark:border-amber-900/40 hover:border-amber-400 dark:hover:border-amber-700 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform shrink-0">
                 <Target className="w-5 h-5" />
               </div>
-              <div>
-                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+              <div className="min-w-0">
+                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate">
                   Сорил шалгалт өгөх
                 </h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400">
-                  {selectedLevel ? `JLPT ${selectedLevel} ` : ''}Цагтай сорил, 10–25 асуулт, дэлгэрэнгүй тайлбар
+                <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-1">
+                  {selectedLevel ? `JLPT ${selectedLevel} ` : ''}Цагтай сорил, 10–25 асуулт
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+          </div>
+
+          <div
+            onClick={() => {
+              setActiveTab('roleplay');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/15 via-rose-500/5 to-transparent border border-amber-300/80 dark:border-amber-800/60 hover:border-amber-500 dark:hover:border-amber-600 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform shrink-0">
+                <MessagesSquare className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate">
+                    AI Roleplay
+                  </h3>
+                  <span className="text-[10px] font-black uppercase px-1.5 py-0.2 rounded-full bg-amber-500 text-white leading-tight">
+                    Шинэ
+                  </span>
+                </div>
+                <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-1">
+                  Бодит нөхцөл байдалд японоор ярилцах
                 </p>
               </div>
             </div>
