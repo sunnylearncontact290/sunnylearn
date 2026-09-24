@@ -21,6 +21,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { JLPTLevel, ContentType, QuizAttemptRecord, QuizQuestionReview } from '../../types';
 import { LevelBadge } from '../common/LevelBadge';
+import { AudioButton } from '../common/AudioButton';
 import { learningEngine, PracticeQuestion, normalizeAnswerText } from '../../services/learningEngine';
 
 export const QuizView: React.FC = () => {
@@ -347,9 +348,16 @@ export const QuizView: React.FC = () => {
                           <span className="text-xs font-semibold text-stone-400">
                             #{idx + 1}
                           </span>
-                          <span className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100">
+                          <span className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 font-jp">
                             {q.question}
                           </span>
+                          <AudioButton
+                            text={q.question}
+                            reading={q.questionReading}
+                            id={`quiz_rev_${q.id}`}
+                            size="xs"
+                            title="Асуултыг сонсох"
+                          />
                         </div>
                         {q.questionReading && (
                           <span className="text-xs text-stone-500 dark:text-stone-400">
@@ -551,9 +559,20 @@ export const QuizView: React.FC = () => {
                 {currentQ.promptInstruction}
               </p>
             )}
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight">
-              {currentQ.prompt}
-            </h2>
+            <div className="flex items-center justify-center gap-3">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight font-jp">
+                {currentQ.prompt}
+              </h2>
+              {(currentQ.audioText || /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(currentQ.prompt)) && (
+                <AudioButton
+                  text={currentQ.audioText || currentQ.prompt}
+                  reading={currentQ.reading}
+                  id={`quiz_q_${currentQ.id}`}
+                  size="md"
+                  title="Асуултыг сонсох"
+                />
+              )}
+            </div>
             {currentQ.promptSub && (
               <p className="text-sm sm:text-base font-medium text-stone-600 dark:text-stone-300 bg-stone-50 dark:bg-stone-800/40 px-3.5 py-1.5 rounded-xl inline-block border border-stone-200/60 dark:border-stone-700/60">
                 {currentQ.promptSub}

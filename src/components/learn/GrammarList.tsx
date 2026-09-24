@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Search, Star, CheckCircle2, ChevronDown, ChevronUp, AlertCircle, Sparkles, BookOpen, Lock } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LevelBadge } from '../common/LevelBadge';
+import { AudioButton } from '../common/AudioButton';
 import { GrammarItem } from '../../types';
 
 export const GrammarList: React.FC = () => {
@@ -128,6 +129,12 @@ export const GrammarList: React.FC = () => {
                     <h3 className="text-lg sm:text-xl font-extrabold text-stone-900 dark:text-stone-100 font-jp">
                       {item.pattern}
                     </h3>
+                    <AudioButton
+                      text={item.pattern}
+                      id={`grammar_pat_${item.id}`}
+                      size="xs"
+                      title={`"${item.pattern}" дуудлага сонсох`}
+                    />
                   </div>
 
                   <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap self-start sm:self-auto">
@@ -204,9 +211,17 @@ export const GrammarList: React.FC = () => {
                             key={idx}
                             className="p-3.5 rounded-xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200/50 dark:border-stone-700/50 space-y-1 text-xs"
                           >
-                            <span className="font-bold text-stone-900 dark:text-stone-100 font-jp text-sm block">
-                              {ex.japanese}
-                            </span>
+                            <div className="flex items-start justify-between gap-2">
+                              <span className="font-bold text-stone-900 dark:text-stone-100 font-jp text-sm block">
+                                {ex.japanese}
+                              </span>
+                              <AudioButton
+                                text={ex.japanese}
+                                id={`grammar_ex_${item.id}_${idx}`}
+                                size="xs"
+                                title="Жишээ өгүүлбэр сонсох"
+                              />
+                            </div>
                             {ex.reading && (
                               <p className="text-[11px] text-stone-500 font-jp">
                                 {ex.reading}

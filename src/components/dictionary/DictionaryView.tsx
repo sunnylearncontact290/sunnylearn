@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Search, BookA, Star, Filter, ArrowUpDown } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LevelBadge } from '../common/LevelBadge';
+import { AudioButton } from '../common/AudioButton';
 import { JLPTLevel } from '../../types';
 import { getCleanVocabExplanation } from '../../utils/vocabUtils';
 
@@ -159,13 +160,20 @@ export const DictionaryView: React.FC = () => {
                     </div>
 
                     <div>
-                      <div className="flex flex-wrap items-baseline gap-1.5 sm:gap-2">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                         <h3 className="text-xl sm:text-2xl font-extrabold text-stone-900 dark:text-stone-100 font-jp">
                           {item.japanese}
                         </h3>
                         <span className="text-xs sm:text-sm font-semibold text-stone-500 font-jp">
                           【{item.reading}】
                         </span>
+                        <AudioButton
+                          text={item.japanese}
+                          reading={item.reading}
+                          id={`dict_word_${item.id}`}
+                          size="xs"
+                          title={`"${item.japanese}" дуудлага сонсох`}
+                        />
                       </div>
 
                       <p className="text-base font-bold text-red-600 dark:text-red-400 mt-1">
@@ -184,9 +192,17 @@ export const DictionaryView: React.FC = () => {
 
                     {item.exampleSentence && (
                       <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/50 text-xs space-y-1">
-                        <span className="font-bold text-stone-900 dark:text-stone-100 font-jp block">
-                          {item.exampleSentence}
-                        </span>
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="font-bold text-stone-900 dark:text-stone-100 font-jp block">
+                            {item.exampleSentence}
+                          </span>
+                          <AudioButton
+                            text={item.exampleSentence}
+                            id={`dict_ex_${item.id}`}
+                            size="xs"
+                            title="Жишээ өгүүлбэр сонсох"
+                          />
+                        </div>
                         {item.exampleReading && (
                           <p className="text-[11px] text-stone-500 font-jp">
                             {item.exampleReading}

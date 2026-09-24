@@ -12,6 +12,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { apiService } from '../../services/api';
 import { LevelBadge } from '../common/LevelBadge';
+import { AudioButton } from '../common/AudioButton';
 
 export const QuizExplanationModal: React.FC = () => {
   const {
@@ -193,16 +194,26 @@ export const QuizExplanationModal: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-200">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 block">
-                      Зөв хариулт
-                    </span>
-                    <span className="font-bold text-xs sm:text-sm font-jp">
-                      {sunnyAIQuizContext.correctAnswer}
-                    </span>
+                <div className="flex items-start justify-between gap-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/40 text-emerald-800 dark:text-emerald-200">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 block">
+                        Зөв хариулт
+                      </span>
+                      <span className="font-bold text-xs sm:text-sm font-jp">
+                        {sunnyAIQuizContext.correctAnswer}
+                      </span>
+                    </div>
                   </div>
+                  {/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(sunnyAIQuizContext.correctAnswer) && (
+                    <AudioButton
+                      text={sunnyAIQuizContext.correctAnswer}
+                      id={`modal_ans_${sunnyAIQuizContext.correctAnswer}`}
+                      size="xs"
+                      title="Зөв хариултыг сонсох"
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -219,10 +230,18 @@ export const QuizExplanationModal: React.FC = () => {
                   <span className="font-bold">Таны хэлсэн:</span> &ldquo;
                   {sunnyAIRoleplayFeedbackContext.originalSentence}&rdquo;
                 </p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                  <span className="font-bold">Илүү зөв хэлбэр:</span> &ldquo;
-                  {sunnyAIRoleplayFeedbackContext.betterSentence}&rdquo;
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-jp">
+                    <span className="font-bold">Илүү зөв хэлбэр:</span> &ldquo;
+                    {sunnyAIRoleplayFeedbackContext.betterSentence}&rdquo;
+                  </p>
+                  <AudioButton
+                    text={sunnyAIRoleplayFeedbackContext.betterSentence}
+                    id={`modal_rp_${sunnyAIRoleplayFeedbackContext.betterSentence}`}
+                    size="xs"
+                    title="Зөв өгүүлбэрийг сонсох"
+                  />
+                </div>
               </div>
             </div>
           )}

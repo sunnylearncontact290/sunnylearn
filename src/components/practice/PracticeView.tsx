@@ -24,6 +24,7 @@ import { JLPTLevel, ContentType, ItemStudyRecord } from '../../types';
 import { LevelBadge } from '../common/LevelBadge';
 import { learningEngine, PracticeCategory, PracticeQuestion, normalizeAnswerText } from '../../services/learningEngine';
 import { SentenceScrambleCard } from './SentenceScrambleCard';
+import { AudioButton } from '../common/AudioButton';
 
 export const PracticeView: React.FC = () => {
   const {
@@ -451,9 +452,20 @@ export const PracticeView: React.FC = () => {
                   </p>
                 )}
 
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight">
-                  {currentQ.prompt}
-                </h2>
+                <div className="flex items-center justify-center gap-3">
+                  <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight font-jp">
+                    {currentQ.prompt}
+                  </h2>
+                  {(currentQ.audioText || /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(currentQ.prompt)) && (
+                    <AudioButton
+                      text={currentQ.audioText || currentQ.prompt}
+                      reading={currentQ.reading}
+                      id={`practice_q_${currentQ.id}`}
+                      size="md"
+                      title="Асуултыг сонсох"
+                    />
+                  )}
+                </div>
 
                 {currentQ.promptSub && (
                   <p className="text-sm sm:text-base font-medium text-stone-600 dark:text-stone-300 bg-stone-50 dark:bg-stone-800/40 px-3.5 py-1.5 rounded-xl inline-block border border-stone-200/60 dark:border-stone-700/60">

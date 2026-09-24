@@ -184,9 +184,9 @@ export const RoleplayView: React.FC = () => {
               }`}
             >
               <Mic className="w-4 h-4 text-amber-500" />
-              <span>Чөлөөт яриа (AI チャット)</span>
+              <span>Чөлөөт дуут яриа (Voice)</span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-500 text-white uppercase tracking-wider">
-                Шинэ
+                Voice
               </span>
             </button>
           </div>

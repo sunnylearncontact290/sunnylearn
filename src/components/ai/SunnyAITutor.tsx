@@ -18,6 +18,7 @@ import { useApp } from '../../context/AppContext';
 import { SunnyAIQuizContext, SunnyAIMessage, JLPTLevel, SunnyAIRoleplayFeedbackContext } from '../../types';
 import { apiService } from '../../services/api';
 import { LevelBadge } from '../common/LevelBadge';
+import { AudioButton } from '../common/AudioButton';
 
 interface SunnyAITutorProps {
   mode?: 'page' | 'modal';
@@ -481,6 +482,15 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
                       Sunny AI Багш
                     </span>
                     <div className="flex items-center gap-1.5">
+                      {/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(msg.content) && (
+                        <AudioButton
+                          text={msg.content}
+                          id={`sunny_msg_${msg.id}`}
+                          size="xs"
+                          variant="ghost"
+                          title="Япон хэсгийг сонсох"
+                        />
+                      )}
                       <button
                         type="button"
                         onClick={() => handleCopyText(msg.id, msg.content)}

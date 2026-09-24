@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Search, Filter, Star, CheckCircle2, BookOpen, Sparkles, Lock, ArrowRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LevelBadge } from '../common/LevelBadge';
+import { AudioButton } from '../common/AudioButton';
 import { VocabularyItem } from '../../types';
 import { getCleanVocabExplanation } from '../../utils/vocabUtils';
 
@@ -189,13 +190,20 @@ export const VocabList: React.FC = () => {
 
                   {/* Japanese Word & Reading */}
                   <div className="space-y-1">
-                    <div className="flex flex-wrap items-baseline gap-1.5 sm:gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                       <h3 className="text-xl sm:text-2xl font-extrabold text-stone-900 dark:text-stone-100 font-jp tracking-tight">
                         {item.japanese}
                       </h3>
                       <span className="text-xs sm:text-sm font-semibold text-stone-500 font-jp">
                         【{item.reading}】
                       </span>
+                      <AudioButton
+                        text={item.japanese}
+                        reading={item.reading}
+                        id={`vocab_main_${item.id}`}
+                        size="xs"
+                        title={`"${item.japanese}" дуудлага сонсох`}
+                      />
                     </div>
 
                     {/* Mongolian Meaning */}
@@ -217,9 +225,17 @@ export const VocabList: React.FC = () => {
                   {/* Example Sentence Section */}
                   {item.exampleSentence && (
                     <div className="mt-4 p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/50 space-y-1.5">
-                      <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">
-                        Жишээ өгүүлбэр:
-                      </span>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">
+                          Жишээ өгүүлбэр:
+                        </span>
+                        <AudioButton
+                          text={item.exampleSentence}
+                          id={`vocab_ex_${item.id}`}
+                          size="xs"
+                          title="Жишээ өгүүлбэр сонсох"
+                        />
+                      </div>
                       <p className="text-xs font-bold text-stone-900 dark:text-stone-100 font-jp">
                         {item.exampleSentence}
                       </p>

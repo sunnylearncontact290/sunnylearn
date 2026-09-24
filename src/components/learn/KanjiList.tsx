@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Search, Star, CheckCircle2, BookOpen, Sparkles, Lock } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LevelBadge } from '../common/LevelBadge';
+import { AudioButton } from '../common/AudioButton';
+import { extractKanjiPronunciation } from '../../services/speech';
 import { KanjiItem } from '../../types';
 
 export const KanjiList: React.FC = () => {
@@ -149,8 +151,24 @@ export const KanjiList: React.FC = () => {
 
                   {/* Large Kanji Character & Core Info */}
                   <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 flex items-center justify-center text-3xl sm:text-4xl font-extrabold font-jp border border-stone-200 dark:border-stone-700 shadow-sm shrink-0">
-                      {item.kanji}
+                    <div className="relative group">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 flex items-center justify-center text-3xl sm:text-4xl font-extrabold font-jp border border-stone-200 dark:border-stone-700 shadow-sm shrink-0">
+                        {item.kanji}
+                      </div>
+                      <div className="absolute -bottom-2 -right-2">
+                        {(() => {
+                          const kp = extractKanjiPronunciation(item);
+                          return (
+                            <AudioButton
+                              text={kp.text}
+                              reading={kp.reading}
+                              id={`kanji_char_${item.id}`}
+                              size="xs"
+                              title={`"${item.kanji}" дуудлага сонсох`}
+                            />
+                          );
+                        })()}
+                      </div>
                     </div>
                     <div className="space-y-1 flex-1 min-w-0">
                       <h3 className="text-base sm:text-lg font-bold text-red-600 dark:text-red-400">
@@ -183,19 +201,29 @@ export const KanjiList: React.FC = () => {
                         {item.exampleWords.map((ew, idx) => (
                           <div
                             key={idx}
-                            className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/50 dark:border-stone-700/40"
+                            className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/50 dark:border-stone-700/40 flex items-center justify-between gap-1"
                           >
-                            <div className="flex items-baseline gap-1">
-                              <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">
-                                {ew.word}
-                              </span>
-                              <span className="text-[11px] text-stone-400 font-jp">
-                                [{ew.reading}]
-                              </span>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-baseline gap-1">
+                                <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">
+                                  {ew.word}
+                                </span>
+                                <span className="text-[11px] text-stone-400 font-jp">
+                                  [{ew.reading}]
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-red-600 dark:text-red-400 font-medium truncate">
+                                {ew.mongolian}
+                              </p>
                             </div>
-                            <p className="text-[11px] text-red-600 dark:text-red-400 font-medium truncate">
-                              {ew.mongolian}
-                            </p>
+                            <AudioButton
+                              text={ew.word}
+                              reading={ew.reading}
+                              id={`kanji_ew_${item.id}_${idx}`}
+                              size="xs"
+                              variant="ghost"
+                              title={`"${ew.word}" дуудлага сонсох`}
+                            />
                           </div>
                         ))}
                       </div>
@@ -205,7 +233,15 @@ export const KanjiList: React.FC = () => {
                   {/* Example Sentence */}
                   {item.exampleSentence && (
                     <div className="mt-3 p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/50 space-y-1 text-xs">
-                      <span className="text-[11px] font-bold text-stone-400 block">Жишээ:</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold text-stone-400 block">Жишээ:</span>
+                        <AudioButton
+                          text={item.exampleSentence}
+                          id={`kanji_ex_${item.id}`}
+                          size="xs"
+                          title="Жишээ өгүүлбэр сонсох"
+                        />
+                      </div>
                       <p className="font-bold text-stone-900 dark:text-stone-100 font-jp">
                         {item.exampleSentence}
                       </p>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RotateCcw, Check, X } from 'lucide-react';
 import { normalizeAnswerText } from '../../services/learningEngine';
+import { AudioButton } from '../common/AudioButton';
 
 interface SentenceScrambleCardProps {
   prompt: string; // Mongolian meaning
@@ -203,11 +204,20 @@ export const SentenceScrambleCard: React.FC<SentenceScrambleCardProps> = ({
           </div>
 
           <div className="pt-2 border-t border-current/10 space-y-1">
-            <p className="text-sm font-semibold">
-              Зөв өгүүлбэр: <span className="font-bold">{correctOrder.join('')}</span>
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold">
+                Зөв өгүүлбэр: <span className="font-bold font-jp">{correctOrder.join('')}</span>
+              </p>
+              <AudioButton
+                text={audioText || correctOrder.join('')}
+                reading={reading}
+                id={`scramble_${correctOrder.join('')}`}
+                size="xs"
+                title="Өгүүлбэрийг сонсох"
+              />
+            </div>
             {reading && (
-              <p className="text-xs opacity-80">
+              <p className="text-xs opacity-80 font-jp">
                 Уншлага: {reading}
               </p>
             )}

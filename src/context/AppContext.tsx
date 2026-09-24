@@ -777,9 +777,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, []);
 
   // Audio helper
-  const playAudio = useCallback(async (text: string, onStart?: () => void): Promise<void> => {
+  const playAudio = useCallback(async (text: string, onStart?: () => void, reading?: string): Promise<void> => {
     try {
-      await speechService.speak(text, userProgress.settings?.speechRate || 0.9, onStart);
+      await speechService.play(text, {
+        reading,
+        rate: userProgress.settings?.speechRate || 0.9,
+        onStart
+      });
     } catch (e) {
       console.warn('playAudio call error caught:', e);
     }

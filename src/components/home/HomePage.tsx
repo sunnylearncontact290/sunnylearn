@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   BookOpen,
   Sparkles,
@@ -24,6 +24,8 @@ import { useApp } from '../../context/AppContext';
 import { JLPTLevel } from '../../types';
 import { LevelBadge } from '../common/LevelBadge';
 import { SunnyLogo } from '../common/SunnyLogo';
+import { AudioButton } from '../common/AudioButton';
+import { speechService, extractKanjiPronunciation, extractVocabPronunciation } from '../../services/speech';
 import { getCleanVocabExplanation } from '../../utils/vocabUtils';
 
 export const HomePage: React.FC = () => {
@@ -92,6 +94,18 @@ export const HomePage: React.FC = () => {
     );
     return filteredKanjiList[(dayOfYear + 2) % filteredKanjiList.length];
   }, [filteredKanjiList, selectedLevel]);
+
+  // Prefetch audio for Daily Highlights so clicking plays in 0ms!
+  useEffect(() => {
+    if (vocabOfTheDay) {
+      const vp = extractVocabPronunciation(vocabOfTheDay);
+      speechService.prefetch(vp.text, vp.reading);
+    }
+    if (kanjiOfTheDay) {
+      const kp = extractKanjiPronunciation(kanjiOfTheDay);
+      speechService.prefetch(kp.text, kp.reading);
+    }
+  }, [vocabOfTheDay, kanjiOfTheDay]);
 
   // Total content statistics across ALL JLPT levels (N5 + N4 + N3 + N2 + N1)
   const totalContentStats = useMemo(() => {
@@ -659,7 +673,9 @@ export const HomePage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Word of the Day Card */}
-            {vocabOfTheDay ? (
+            {vocabOfTheDay ? (() => {
+              const vocabPronounce = extractVocabPronunciation(vocabOfTheDay);
+              return (
               <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm relative overflow-hidden flex flex-col justify-between">
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center justify-between">
@@ -675,6 +691,13 @@ export const HomePage: React.FC = () => {
                       )}
                     </div>
                     <div className="flex items-center gap-1.5">
+                      <AudioButton
+                        text={vocabPronounce.text}
+                        reading={vocabPronounce.reading}
+                        id={`daily_vocab_top_${vocabOfTheDay.id}`}
+                        size="xs"
+                        title={`"${vocabOfTheDay.japanese}" дуудлага сонсох`}
+                      />
                       <button
                         onClick={() => toggleFavorite('vocab', vocabOfTheDay.id)}
                         title="Хадгалах"
@@ -692,13 +715,22 @@ export const HomePage: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
-                      <h3 className="text-2xl sm:text-3xl font-extrabold text-stone-900 dark:text-stone-100 font-jp">
-                        {vocabOfTheDay.japanese}
-                      </h3>
-                      <span className="text-xs sm:text-sm text-stone-500 font-jp">
-                        [{vocabOfTheDay.reading}]
-                      </span>
+                    <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
+                      <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
+                        <h3 className="text-2xl sm:text-3xl font-extrabold text-stone-900 dark:text-stone-100 font-jp">
+                          {vocabOfTheDay.japanese}
+                        </h3>
+                        <span className="text-xs sm:text-sm text-stone-500 font-jp">
+                          [{vocabOfTheDay.reading}]
+                        </span>
+                      </div>
+                      <AudioButton
+                        text={vocabPronounce.text}
+                        reading={vocabPronounce.reading}
+                        id={`daily_vocab_main_${vocabOfTheDay.id}`}
+                        size="sm"
+                        title={`"${vocabOfTheDay.japanese}" дуудлага сонсох`}
+                      />
                     </div>
                     <p className="text-base sm:text-lg font-bold text-red-600 dark:text-red-400">
                       {vocabOfTheDay.mongolian}
@@ -714,8 +746,17 @@ export const HomePage: React.FC = () => {
 
                     {vocabOfTheDay.exampleSentence && (
                       <div className="mt-3 p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 text-xs space-y-1 border border-stone-200/60 dark:border-stone-700/50">
-                        <div className="text-stone-900 dark:text-stone-200 font-jp font-medium">
-                          <span className="break-words">{vocabOfTheDay.exampleSentence}</span>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="text-stone-900 dark:text-stone-200 font-jp font-medium min-w-0">
+                            <span className="break-words">{vocabOfTheDay.exampleSentence}</span>
+                          </div>
+                          <AudioButton
+                            text={vocabOfTheDay.exampleSentence}
+                            id={`daily_vocab_ex_${vocabOfTheDay.id}`}
+                            size="xs"
+                            variant="ghost"
+                            title="Жишээ өгүүлбэр сонсох"
+                          />
                         </div>
                         <p className="text-stone-500 dark:text-stone-400 italic">
                           {vocabOfTheDay.exampleMongolian}
@@ -736,7 +777,8 @@ export const HomePage: React.FC = () => {
                   </button>
                 </div>
               </div>
-            ) : (
+              );
+            })() : (
               <div className="p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm flex flex-col items-center justify-center text-center space-y-2">
                 <BookA className="w-8 h-8 text-stone-400" />
                 <p className="text-sm font-semibold text-stone-700 dark:text-stone-300">
@@ -749,82 +791,111 @@ export const HomePage: React.FC = () => {
             )}
 
             {/* Kanji of the Day Card */}
-            {kanjiOfTheDay ? (
-              <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm relative overflow-hidden flex flex-col justify-between">
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                      <span className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">
-                        Өдрийн ханз
-                      </span>
-                      <LevelBadge level={kanjiOfTheDay.jlptLevel} size="sm" />
-                      {kanjiOfTheDay.strokeCount && (
-                        <span className="text-[11px] px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-500 font-medium">
-                          {kanjiOfTheDay.strokeCount} зуралттай
+            {kanjiOfTheDay ? (() => {
+              const kanjiPronounce = extractKanjiPronunciation(kanjiOfTheDay);
+              return (
+                <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">
+                          Өдрийн ханз
                         </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => toggleFavorite('kanji', kanjiOfTheDay.id)}
-                        title="Хадгалах"
-                        className="p-1.5 rounded-lg text-stone-400 hover:text-amber-500 transition-colors"
-                      >
-                        <Star
-                          className={`w-4 h-4 ${
-                            userProgress.favorites.kanjiIds.includes(kanjiOfTheDay.id)
-                              ? 'fill-amber-400 text-amber-400'
-                              : ''
-                          }`}
+                        <LevelBadge level={kanjiOfTheDay.jlptLevel} size="sm" />
+                        {kanjiOfTheDay.strokeCount && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-500 font-medium">
+                            {kanjiOfTheDay.strokeCount} зуралттай
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <AudioButton
+                          text={kanjiPronounce.text}
+                          reading={kanjiPronounce.reading}
+                          id={`daily_kanji_top_${kanjiOfTheDay.id}`}
+                          size="xs"
+                          title={`"${kanjiOfTheDay.kanji}" дуудлага сонсох`}
                         />
-                      </button>
+                        <button
+                          onClick={() => toggleFavorite('kanji', kanjiOfTheDay.id)}
+                          title="Хадгалах"
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-amber-500 transition-colors"
+                        >
+                          <Star
+                            className={`w-4 h-4 ${
+                              userProgress.favorites.kanjiIds.includes(kanjiOfTheDay.id)
+                                ? 'fill-amber-400 text-amber-400'
+                                : ''
+                            }`}
+                          />
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center text-3xl sm:text-4xl font-extrabold font-jp border border-red-200 dark:border-red-900/60 shadow-sm shrink-0">
-                      {kanjiOfTheDay.kanji}
-                    </div>
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <h3 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 truncate">
-                        {kanjiOfTheDay.mongolian}
-                      </h3>
-                      <div className="text-xs space-y-0.5 text-stone-600 dark:text-stone-400">
-                        <div className="truncate">
-                          <span className="font-semibold text-stone-500">Онь:</span> {kanjiOfTheDay.onyomi || '—'}
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center text-3xl sm:text-4xl font-extrabold font-jp border border-red-200 dark:border-red-900/60 shadow-sm shrink-0">
+                        {kanjiOfTheDay.kanji}
+                      </div>
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 truncate">
+                            {kanjiOfTheDay.mongolian}
+                          </h3>
+                          <AudioButton
+                            text={kanjiPronounce.text}
+                            reading={kanjiPronounce.reading}
+                            id={`daily_kanji_main_${kanjiOfTheDay.id}`}
+                            size="sm"
+                            title={`"${kanjiOfTheDay.kanji}" дуудлага сонсох`}
+                          />
                         </div>
-                        <div className="truncate">
-                          <span className="font-semibold text-stone-500">Күн:</span> {kanjiOfTheDay.kunyomi || '—'}
+                        <div className="text-xs space-y-0.5 text-stone-600 dark:text-stone-400">
+                          <div className="truncate">
+                            <span className="font-semibold text-stone-500">Онь:</span> {kanjiOfTheDay.onyomi || '—'}
+                          </div>
+                          <div className="truncate">
+                            <span className="font-semibold text-stone-500">Күн:</span> {kanjiOfTheDay.kunyomi || '—'}
+                          </div>
                         </div>
                       </div>
                     </div>
+
+                    {kanjiOfTheDay.exampleWords && kanjiOfTheDay.exampleWords.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-stone-100 dark:border-stone-800 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        {kanjiOfTheDay.exampleWords.slice(0, 2).map((ew, idx) => (
+                          <div key={idx} className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/40 min-w-0 flex items-center justify-between gap-1">
+                            <div className="min-w-0 flex-1">
+                              <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">{ew.word}</span>
+                              <span className="text-stone-400 text-[11px] ml-1 font-jp">({ew.reading})</span>
+                              <p className="text-stone-500 text-[11px] truncate">{ew.mongolian}</p>
+                            </div>
+                            <AudioButton
+                              text={ew.word}
+                              reading={ew.reading}
+                              id={`daily_kanji_ew_${kanjiOfTheDay.id}_${idx}`}
+                              size="xs"
+                              variant="ghost"
+                              title={`"${ew.word}" дуудлага сонсох`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  {kanjiOfTheDay.exampleWords && kanjiOfTheDay.exampleWords.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-stone-100 dark:border-stone-800 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      {kanjiOfTheDay.exampleWords.slice(0, 2).map((ew, idx) => (
-                        <div key={idx} className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/40 min-w-0">
-                          <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">{ew.word}</span>
-                          <span className="text-stone-400 text-[11px] ml-1 font-jp">({ew.reading})</span>
-                          <p className="text-stone-500 text-[11px] truncate">{ew.mongolian}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <div className="pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs">
+                    <span className="text-stone-400">JLPT {kanjiOfTheDay.jlptLevel}</span>
+                    <button
+                      onClick={() => handleSubTabSelect(kanjiOfTheDay.jlptLevel, 'kanji')}
+                      className="font-bold text-red-600 dark:text-red-400 hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>Бүх ханзыг үзэх</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
-
-                <div className="pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs">
-                  <span className="text-stone-400">JLPT {kanjiOfTheDay.jlptLevel}</span>
-                  <button
-                    onClick={() => handleSubTabSelect(kanjiOfTheDay.jlptLevel, 'kanji')}
-                    className="font-bold text-red-600 dark:text-red-400 hover:underline inline-flex items-center gap-1"
-                  >
-                    <span>Бүх ханзыг үзэх</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            ) : (
+              );
+            })() : (
               <div className="p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm flex flex-col items-center justify-center text-center space-y-2">
                 <Sparkles className="w-8 h-8 text-stone-400" />
                 <p className="text-sm font-semibold text-stone-700 dark:text-stone-300">

@@ -1,6 +1,8 @@
 import React from 'react';
 import { FreeChatFeedbackReport, JLPTLevel } from '../../types';
 import { LevelBadge } from '../common/LevelBadge';
+import { AudioButton } from '../common/AudioButton';
+import { speechService } from '../../services/speech';
 import { useApp } from '../../context/AppContext';
 import {
   X,
@@ -39,15 +41,7 @@ export const FreeConversationFeedbackModal: React.FC<FreeConversationFeedbackMod
   if (!isOpen) return null;
 
   const handleSpeak = (text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    try {
-      window.speechSynthesis.cancel();
-      const clean = text.replace(/[（\(][ぁ-んァ-ヶー]+[）\)]/g, '');
-      const utterance = new SpeechSynthesisUtterance(clean);
-      utterance.lang = 'ja-JP';
-      utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
-    } catch {}
+    speechService.play(text, { rate: 0.95 });
   };
 
   const score = feedback?.fluencyScore ?? 85;
@@ -187,14 +181,13 @@ export const FreeConversationFeedbackModal: React.FC<FreeConversationFeedbackMod
                               <span className="font-jp text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-300">
                                 {corr.better}
                               </span>
-                              <button
-                                type="button"
-                                onClick={() => handleSpeak(corr.better)}
-                                className="p-1 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
-                                title="Сонсох"
-                              >
-                                <Volume2 className="w-3.5 h-3.5" />
-                              </button>
+                              <AudioButton
+                                text={corr.better}
+                                id={`fcfb_${corr.better}`}
+                                size="xs"
+                                variant="ghost"
+                                title="Илүү байгалийн хувилбарыг сонсох"
+                              />
                             </div>
                           </div>
                         </div>

@@ -7,6 +7,8 @@ import {
 } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { LevelBadge } from '../common/LevelBadge';
+import { AudioButton } from '../common/AudioButton';
+import { speechService } from '../../services/speech';
 import { FuriganaText } from './FuriganaText';
 import {
   Award,
@@ -43,17 +45,7 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
   const { openSunnyAIWithRoleplayFeedback, openSunnyAI } = useApp();
 
   const handleSpeak = (text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    try {
-      window.speechSynthesis.cancel();
-      const cleanText = text.replace(/[（\(][ぁ-んァ-ヶー]+[）\)]/g, '');
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = 'ja-JP';
-      utterance.rate = 0.9;
-      window.speechSynthesis.speak(utterance);
-    } catch (e) {
-      console.error('Speech error', e);
-    }
+    speechService.play(text, { rate: 0.95 });
   };
 
   const handleAskSunnyAI = (
@@ -224,14 +216,13 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
                           <FuriganaText text={betterText} />
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleSpeak(betterText)}
-                        className="p-1 text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-lg shrink-0 cursor-pointer"
-                        title="Сонсох"
-                      >
-                        <Volume2 className="w-3.5 h-3.5" />
-                      </button>
+                      <AudioButton
+                        text={betterText}
+                        id={`rpfb_gram_${idx}`}
+                        size="xs"
+                        variant="ghost"
+                        title="Зөв өгүүлбэрийг сонсох"
+                      />
                     </div>
                   </div>
 
@@ -330,14 +321,13 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
                           <FuriganaText text={naturalSentence} />
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleSpeak(naturalSentence)}
-                        className="p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 rounded-lg shrink-0 cursor-pointer"
-                        title="Сонсох"
-                      >
-                        <Volume2 className="w-3.5 h-3.5" />
-                      </button>
+                      <AudioButton
+                        text={naturalSentence}
+                        id={`rpfb_nat_${idx}`}
+                        size="xs"
+                        variant="ghost"
+                        title="Байгалийн хувилбарыг сонсох"
+                      />
                     </div>
                   </div>
 
@@ -404,14 +394,14 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => handleSpeak(vocab.word)}
-                className="p-2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-700 rounded-xl shrink-0 cursor-pointer"
-                title="Сонсох"
-              >
-                <Volume2 className="w-4 h-4" />
-              </button>
+              <AudioButton
+                text={vocab.word}
+                reading={vocab.furigana}
+                id={`rpfb_voc_${idx}`}
+                size="xs"
+                variant="subtle"
+                title="Үгийг сонсох"
+              />
             </div>
           ))}
         </div>

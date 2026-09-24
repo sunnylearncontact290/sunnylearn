@@ -1042,6 +1042,26 @@ class ApiService {
     return data;
   }
 
+  public async generateTTS(payload: {
+    text: string;
+    voice?: string;
+  }): Promise<{
+    success: boolean;
+    audioUri?: string | null;
+    cleanText?: string;
+    fallback?: boolean;
+    message?: string;
+  }> {
+    const res = await fetch(`${API_BASE_URL}/api/tts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+    return await this.parseJsonResponse(res, 'Япон дуудлага үүсгэхэд алдаа гарлаа.');
+  }
+
   public async getFreeChatVoice(payload: {
     text: string;
     voiceName?: VoicePersona;

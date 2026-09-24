@@ -8,6 +8,8 @@ import {
 import { apiService } from '../../services/api';
 import { useApp } from '../../context/AppContext';
 import { LevelBadge } from '../common/LevelBadge';
+import { AudioButton } from '../common/AudioButton';
+import { speechService } from '../../services/speech';
 import { FuriganaText, stripFurigana } from './FuriganaText';
 import {
   Send,
@@ -370,20 +372,10 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
     }
   };
 
-  // Speak Japanese audio via browser synthesis
+  // Speak Japanese audio via centralized Neural TTS service
   const handleSpeak = (text: string) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    try {
-      window.speechSynthesis.cancel();
-      // Remove furigana parentheses for speech synthesis
-      const cleanText = text.replace(/[（\(][ぁ-んァ-ヶー]+[）\)]/g, '');
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = 'ja-JP';
-      utterance.rate = jlptLevel === 'N5' || jlptLevel === 'N4' ? 0.85 : 0.95;
-      window.speechSynthesis.speak(utterance);
-    } catch (e) {
-      console.error('Speech error', e);
-    }
+    const rate = jlptLevel === 'N5' || jlptLevel === 'N4' ? 0.9 : 1.0;
+    speechService.play(text, { rate });
   };
 
   // Current starters for suggestions
@@ -611,18 +603,14 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
 
                 {/* Audio playback button for Japanese text */}
                 <div className="mt-2 pt-1 flex items-center justify-end gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleSpeak(msg.content)}
-                    className={`p-1 rounded-lg transition-colors cursor-pointer ${
-                      isAI
-                        ? 'text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-200/60 dark:hover:bg-stone-700'
-                        : 'text-white/70 hover:text-white hover:bg-white/20'
-                    }`}
+                  <AudioButton
+                    text={msg.content}
+                    id={`rp_msg_${msg.id}`}
+                    size="xs"
+                    variant="ghost"
+                    className={!isAI ? 'text-white/80 hover:text-white hover:bg-white/20' : ''}
                     title="Япон дуудлага сонсох"
-                  >
-                    <Volume2 className="w-3.5 h-3.5" />
-                  </button>
+                  />
                 </div>
               </div>
 
