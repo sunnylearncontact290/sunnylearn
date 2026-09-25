@@ -454,15 +454,15 @@ async function sendPaymentNotificationEmail(payment: PaymentRequestItem): Promis
       text: `SunnyLearn Premium-ийн шинэ төлбөрийн хүсэлт ирлээ.\n\nRequest ID:\n${payment.id}\n\nUser:\n${payment.userEmail}\n\nAmount:\n¥${payment.amount}\n\nMethod:\nゆうちょ銀行\n\nStatus:\nPENDING\n\nSubmitted:\n${payment.createdAt}\n\nSunnyLearn Admin хэсэгт нэвтэрч банкны шилжүүлгийг шалгаад Approve эсвэл Reject хийнэ үү.\n\nAdmin:\nhttps://ais-dev-seaxwrqdabhqsqbm3l76x6-109960249109.asia-east1.run.app`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; color: #1f2937;">
-          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; padding: 20px 24px; border-radius: 12px; margin-bottom: 24px;">
+          <div style="background: linear-gradient(135deg, #EF233C 0%, #C84A0A 100%); color: #ffffff; padding: 20px 24px; border-radius: 12px; margin-bottom: 24px;">
             <div style="display: inline-block; background: rgba(255,255,255,0.25); font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; margin-bottom: 6px;">SunnyLearn Premium</div>
             <h2 style="margin: 0; font-size: 21px; font-weight: 800; letter-spacing: -0.025em;">🔔 Шинэ төлбөр шалгах хүсэлт</h2>
             <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.95;">Хэрэглэгч банкны шилжүүлэг хийсэн тухай мэдээлэл илгээлээ</p>
           </div>
           
-          <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-            <div style="font-size: 12px; color: #92400e; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Төлбөрийн дүн & Багц</div>
-            <div style="font-size: 24px; font-weight: 900; color: #78350f;">¥880 <span style="font-size: 14px; font-weight: 600; color: #b45309;">/ SunnyLearn Premium — 30 days</span></div>
+          <div style="background: #fff7ed; border: 1px solid #ffedd5; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+            <div style="font-size: 12px; color: #9a3412; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Төлбөрийн дүн & Багц</div>
+            <div style="font-size: 24px; font-weight: 900; color: #7c2d12;">¥880 <span style="font-size: 14px; font-weight: 600; color: #c2410c;">/ SunnyLearn Premium — 30 days</span></div>
           </div>
 
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px;">
@@ -492,7 +492,7 @@ async function sendPaymentNotificationEmail(payment: PaymentRequestItem): Promis
             </tr>
             <tr>
               <td style="padding: 10px 0; color: #6b7280; font-weight: 600;">Status:</td>
-              <td style="padding: 10px 0;"><span style="display: inline-block; background-color: #fef3c7; color: #92400e; font-weight: 800; font-size: 12px; padding: 3px 10px; border-radius: 9999px;">PENDING (Шалгаж байна)</span></td>
+              <td style="padding: 10px 0;"><span style="display: inline-block; background-color: #ffedd5; color: #9a3412; font-weight: 800; font-size: 12px; padding: 3px 10px; border-radius: 9999px;">PENDING (Шалгаж байна)</span></td>
             </tr>
           </table>
 

@@ -156,7 +156,7 @@ export const Navbar: React.FC = () => {
               className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-transparent hover:border-stone-200 dark:hover:border-stone-700 transition-colors shrink-0 cursor-pointer"
             >
               {isDarkMode ? (
-                <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
+                <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-400 shrink-0" />
               ) : (
                 <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-600 shrink-0" />
               )}
@@ -165,10 +165,10 @@ export const Navbar: React.FC = () => {
             {/* Streak / Daily Indicator - NEVER clipped, fully visible at all widths */}
             <div
               onClick={() => handleNavClick('progress')}
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-amber-700 dark:text-amber-300 text-[11px] sm:text-xs font-bold cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors select-none shrink-0 whitespace-nowrap shadow-2xs"
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-orange-700 dark:text-orange-300 text-[11px] sm:text-xs font-bold cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors select-none shrink-0 whitespace-nowrap shadow-2xs"
               title="Таны тасралтгүй суралцсан өдөр"
             >
-              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-500 text-amber-500 shrink-0" />
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-orange-500 text-orange-500 shrink-0" />
               <span className="whitespace-nowrap font-extrabold">{userProgress.streak?.current || 1} өдөр</span>
             </div>
 
@@ -188,7 +188,7 @@ export const Navbar: React.FC = () => {
                       className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover shrink-0"
                     />
                   ) : (
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-red-600 to-orange-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
                       {currentUser.name.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -200,7 +200,7 @@ export const Navbar: React.FC = () => {
                       syncStatus === 'synced'
                         ? 'bg-emerald-500'
                         : syncStatus === 'syncing'
-                        ? 'bg-amber-500 animate-pulse'
+                        ? 'bg-orange-500 animate-pulse'
                         : 'bg-stone-400'
                     }`}
                     title={
@@ -234,8 +234,8 @@ export const Navbar: React.FC = () => {
                           </>
                         ) : syncStatus === 'syncing' ? (
                           <>
-                            <RefreshCw className="w-3 h-3 text-amber-500 animate-spin" />
-                            <span className="text-amber-600 dark:text-amber-400 font-medium">Синк хийгдэж байна...</span>
+                            <RefreshCw className="w-3 h-3 text-orange-500 animate-spin" />
+                            <span className="text-orange-600 dark:text-orange-400 font-medium">Синк хийгдэж байна...</span>
                           </>
                         ) : (
                           <>
@@ -260,7 +260,7 @@ export const Navbar: React.FC = () => {
                         onClick={() => handleNavClick('progress')}
                         className="w-full flex items-center gap-2 px-4 py-2 text-xs text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 font-medium transition-colors"
                       >
-                        <TrendingUp className="w-4 h-4 text-amber-500" />
+                        <TrendingUp className="w-4 h-4 text-orange-500" />
                         <span>Миний явц</span>
                       </button>
                       <button
@@ -295,7 +295,7 @@ export const Navbar: React.FC = () => {
                 className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100/90 dark:bg-stone-800 hover:bg-stone-200/90 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-100 text-[11px] sm:text-xs font-semibold transition-all shadow-2xs shrink-0 whitespace-nowrap cursor-pointer"
                 title="Нэвтрэх"
               >
-                <LogIn className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-500 shrink-0" />
+                <LogIn className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-600 dark:text-orange-400 shrink-0" />
                 <span className="hidden min-[340px]:inline whitespace-nowrap">Нэвтрэх</span>
               </button>
             )}
@@ -334,7 +334,7 @@ export const Navbar: React.FC = () => {
                 {currentUser.picture ? (
                   <img src={currentUser.picture} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-600 to-orange-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
                     {currentUser.name.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -361,7 +361,7 @@ export const Navbar: React.FC = () => {
                 setIsMobileMenuOpen(false);
                 setIsAuthModalOpen(true);
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-2 rounded-xl bg-amber-500 text-white font-semibold text-sm shadow-sm"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-2 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-semibold text-sm shadow-xs cursor-pointer"
             >
               <LogIn className="w-4 h-4" />
               <span>Google-ээр нэвтрэх / Бүртгүүлэх</span>

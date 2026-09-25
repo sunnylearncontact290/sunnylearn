@@ -2,6 +2,57 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Centralized Semantic Brand Color Tokens (Red + Burnt Orange + Dark Magenta) */
+:root {
+  --brand-primary: #e62929;
+  --brand-primary-hover: #b91c2b;
+  --brand-deep: #b91c2b;
+  --brand-crimson: #b91c2b;
+  --brand-burgundy: #6e1028;
+  --brand-magenta: #8f1537;
+
+  --accent-burnt-orange: #c84a0a;
+  --accent-orange: #ea6a0a;
+  --accent-orange-hover: #c84a0a;
+  --accent-warm-orange: #ea6a0a;
+  --accent-amber: #ea6a0a;
+
+  --audio-bg: rgba(255, 245, 245, 0.9);
+  --audio-border: rgba(200, 74, 10, 0.3);
+  --audio-text: #c84a0a;
+  --audio-active-bg: rgba(234, 106, 10, 0.15);
+  --audio-active-ring: rgba(230, 41, 41, 0.45);
+
+  --surface: #ffffff;
+  --surface-secondary: #fdfcfb;
+  --border: #f0eae6;
+}
+
+.dark {
+  --brand-primary: #e62929;
+  --brand-primary-hover: #ff3b53;
+  --brand-deep: #991b1b;
+  --brand-crimson: #b91c2b;
+  --brand-burgundy: #6e1028;
+  --brand-magenta: #8f1537;
+
+  --accent-burnt-orange: #c84a0a;
+  --accent-orange: #ea6a0a;
+  --accent-orange-hover: #ea6a0a;
+  --accent-warm-orange: #ea6a0a;
+  --accent-amber: #ea6a0a;
+
+  --audio-bg: rgba(45, 16, 20, 0.45);
+  --audio-border: rgba(200, 74, 10, 0.45);
+  --audio-text: #ea6a0a;
+  --audio-active-bg: rgba(143, 21, 55, 0.4);
+  --audio-active-ring: rgba(230, 41, 41, 0.55);
+
+  --surface: #0d0a0a;
+  --surface-secondary: #171111;
+  --border: #261c1c;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -84,8 +135,14 @@ rt, .ruby-reading {
 }
 
 @keyframes voice-orb-glow {
-  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 25px rgba(245, 158, 11, 0.4)); }
-  50% { transform: scale(1.03); filter: drop-shadow(0 0 50px rgba(245, 158, 11, 0.75)); }
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 25px rgba(249, 115, 22, 0.45)) drop-shadow(0 0 45px rgba(239, 35, 60, 0.3));
+  }
+  50% {
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 45px rgba(245, 158, 11, 0.65)) drop-shadow(0 0 70px rgba(194, 65, 12, 0.5));
+  }
 }
 
 .animate-voice-wave-1 {

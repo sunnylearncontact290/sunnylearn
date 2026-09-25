@@ -171,8 +171,8 @@ export const HomePage: React.FC = () => {
         title: 'Дунд шат',
         desc: 'Бодит нөхцөл байдалд ашиглах харилцаа, мэдээ нийтлэл ойлгох',
         count: getCounts('N3'),
-        color: 'border-amber-300 dark:border-amber-800 bg-amber-50/40 dark:bg-amber-950/20',
-        ringColor: 'ring-amber-500'
+        color: 'border-orange-300 dark:border-orange-800 bg-orange-50/40 dark:bg-orange-950/20',
+        ringColor: 'ring-orange-500'
       },
       {
         level: 'N2',
@@ -305,7 +305,7 @@ export const HomePage: React.FC = () => {
               <span>{totalContentStats.totalKanji} Ханз</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-amber-400" />
+              <div className="w-2 h-2 rounded-full bg-orange-500" />
               <span>{totalContentStats.totalGrammar} Дүрэм</span>
             </div>
           </div>
@@ -328,7 +328,7 @@ export const HomePage: React.FC = () => {
                   Та одоогоор <span className="font-bold text-red-600 dark:text-red-400">JLPT {selectedLevel}</span> түвшнийг сонгосон байна. Түвшингээ хүссэн үедээ солих боломжтой.
                 </>
               ) : (
-                <span className="font-semibold text-amber-600 dark:text-amber-400">
+                <span className="font-semibold text-orange-600 dark:text-orange-400">
                   Сурах түвшнээ сонгоорой. Танд тохирох түвшний дагуу агуулгууд харагдана.
                 </span>
               )}
@@ -454,10 +454,10 @@ export const HomePage: React.FC = () => {
 
         {/* First time positive guidance when 0 stats */}
         {totalItemsLearned === 0 && (
-          <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="p-4 rounded-2xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
-                <Sparkles className="w-4 h-4" />
+              <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/60 text-orange-700 dark:text-orange-300 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 text-orange-600 fill-orange-500" />
               </div>
               <div>
                 <p className="font-bold text-stone-900 dark:text-stone-100">
@@ -471,7 +471,7 @@ export const HomePage: React.FC = () => {
 
             <button
               onClick={() => handleStartLearning(selectedLevel || 'N5')}
-              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shrink-0 shadow-sm transition-all"
+              className="px-4 py-2 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-xs shrink-0 shadow-xs transition-all cursor-pointer"
             >
               Үгийн сан цээжлэх
             </button>
@@ -512,7 +512,7 @@ export const HomePage: React.FC = () => {
 
           <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200/70 dark:border-stone-700/60">
             <span className="text-xs text-stone-500 font-medium">Дараалан суралцсан өдөр</span>
-            <div className="text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1.5">
+            <div className="text-2xl font-extrabold text-orange-600 dark:text-orange-400 mt-1 flex items-center gap-1.5">
               <span>{streakDays}</span>
               <span className="text-xs font-semibold text-stone-500">өдөр</span>
             </div>
@@ -563,7 +563,7 @@ export const HomePage: React.FC = () => {
               setActiveTab('practice');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="p-4 rounded-2xl bg-gradient-to-br from-red-500/10 via-amber-500/5 to-transparent border border-red-200/80 dark:border-red-900/40 hover:border-red-400 dark:hover:border-red-700 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
+            className="p-4 rounded-2xl bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent border border-red-200/80 dark:border-red-900/40 hover:border-red-400 dark:hover:border-red-700 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shadow-md shadow-red-500/20 group-hover:scale-105 transition-transform shrink-0">
@@ -586,14 +586,14 @@ export const HomePage: React.FC = () => {
               setActiveTab('quiz');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent border border-amber-200/80 dark:border-amber-900/40 hover:border-amber-400 dark:hover:border-amber-700 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
+            className="p-4 rounded-2xl bg-gradient-to-br from-orange-500/10 via-red-500/5 to-transparent border border-orange-200/80 dark:border-orange-900/40 hover:border-orange-400 dark:hover:border-orange-700 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center shadow-md shadow-orange-500/20 group-hover:scale-105 transition-transform shrink-0">
                 <Target className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate">
+                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors truncate">
                   Сорил шалгалт өгөх
                 </h3>
                 <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-1">
@@ -601,7 +601,7 @@ export const HomePage: React.FC = () => {
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+            <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-orange-600 dark:group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all shrink-0" />
           </div>
 
           <div
@@ -609,18 +609,18 @@ export const HomePage: React.FC = () => {
               setActiveTab('roleplay');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/15 via-rose-500/5 to-transparent border border-amber-300/80 dark:border-amber-800/60 hover:border-amber-500 dark:hover:border-amber-600 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
+            className="p-4 rounded-2xl bg-gradient-to-br from-red-500/15 via-orange-500/5 to-transparent border border-red-300/80 dark:border-red-900/60 hover:border-red-500 dark:hover:border-red-600 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
           >
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#EF233C] to-orange-600 text-white flex items-center justify-center shadow-md shadow-red-500/20 group-hover:scale-105 transition-transform shrink-0">
                 <MessagesSquare className="w-5 h-5" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors truncate">
+                  <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors truncate">
                     AI Roleplay
                   </h3>
-                  <span className="text-[10px] font-black uppercase px-1.5 py-0.2 rounded-full bg-amber-500 text-white leading-tight">
+                  <span className="text-[10px] font-black uppercase px-1.5 py-0.2 rounded-full bg-[#EF233C] text-white leading-tight">
                     Шинэ
                   </span>
                 </div>
@@ -629,7 +629,7 @@ export const HomePage: React.FC = () => {
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+            <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-red-600 dark:group-hover:text-red-400 group-hover:translate-x-0.5 transition-all shrink-0" />
           </div>
         </div>
       </section>
@@ -701,12 +701,12 @@ export const HomePage: React.FC = () => {
                       <button
                         onClick={() => toggleFavorite('vocab', vocabOfTheDay.id)}
                         title="Хадгалах"
-                        className="p-1.5 rounded-lg text-stone-400 hover:text-amber-500 transition-colors"
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors"
                       >
                         <Star
                           className={`w-4 h-4 ${
                             userProgress.favorites.vocabIds.includes(vocabOfTheDay.id)
-                              ? 'fill-amber-400 text-amber-400'
+                              ? 'fill-orange-400 text-orange-400'
                               : ''
                           }`}
                         />
@@ -819,12 +819,12 @@ export const HomePage: React.FC = () => {
                         <button
                           onClick={() => toggleFavorite('kanji', kanjiOfTheDay.id)}
                           title="Хадгалах"
-                          className="p-1.5 rounded-lg text-stone-400 hover:text-amber-500 transition-colors"
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors"
                         >
                           <Star
                             className={`w-4 h-4 ${
                               userProgress.favorites.kanjiIds.includes(kanjiOfTheDay.id)
-                                ? 'fill-amber-400 text-amber-400'
+                                ? 'fill-orange-400 text-orange-400'
                                 : ''
                             }`}
                           />
@@ -954,12 +954,12 @@ export const HomePage: React.FC = () => {
 
           <div
             onClick={() => handleSubTabSelect(selectedLevel || 'N5', 'grammar')}
-            className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-amber-400 dark:hover:border-amber-700 shadow-sm cursor-pointer transition-all hover:scale-[1.01] sm:hover:scale-[1.02] group"
+            className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-orange-400 dark:hover:border-orange-700 shadow-sm cursor-pointer transition-all hover:scale-[1.01] sm:hover:scale-[1.02] group"
           >
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-3">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-3">
               <BookOpen className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-base text-stone-900 dark:text-stone-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+            <h3 className="font-bold text-base text-stone-900 dark:text-stone-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
               Дүрэм
             </h3>
             <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">

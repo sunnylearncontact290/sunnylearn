@@ -69,7 +69,7 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
     score >= 85
       ? 'text-emerald-600 dark:text-emerald-400'
       : score >= 70
-      ? 'text-amber-600 dark:text-amber-400'
+      ? 'text-orange-600 dark:text-orange-400'
       : 'text-rose-600 dark:text-rose-400';
 
   const objectivesCount =
@@ -106,7 +106,7 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 animate-fade-in pb-12">
       {/* 1. TOP HERO CARD */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-amber-500/10 via-amber-600/5 to-transparent border border-amber-200/80 dark:border-amber-900/50 shadow-md relative overflow-hidden">
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-red-500/10 via-orange-600/5 to-transparent border border-red-200/80 dark:border-red-900/50 shadow-md relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -161,10 +161,10 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
       <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xs space-y-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 font-bold text-stone-900 dark:text-stone-100 text-sm sm:text-base">
-            <Award className="w-5 h-5 text-amber-500" />
+            <Award className="w-5 h-5 text-orange-600" />
             <span>Харилцааны ерөнхий үнэлгээ</span>
           </div>
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300">
             {politenessText}
           </span>
         </div>
@@ -177,7 +177,7 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
       <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-stone-900 dark:text-stone-100 text-sm sm:text-base">
-            <BookOpen className="w-5 h-5 text-amber-500" />
+            <BookOpen className="w-5 h-5 text-orange-500" />
             <span>Дүрмийн шинжилгээ ба засвар</span>
           </div>
           <span className="text-xs text-stone-400">
@@ -243,9 +243,9 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
                           corr.explanationMongolian
                         )
                       }
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 font-bold text-xs transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/60 font-bold text-xs transition-colors cursor-pointer"
                     >
-                      <Bot className="w-3.5 h-3.5 text-amber-500" />
+                      <Bot className="w-3.5 h-3.5 text-orange-600" />
                       <span>Sunny AI-д дэлгэрүүлж асуух</span>
                     </button>
                   </div>
@@ -260,7 +260,7 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
       <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-stone-900 dark:text-stone-100 text-sm sm:text-base">
-            <Sparkles className="w-5 h-5 text-amber-500" />
+            <Sparkles className="w-5 h-5 text-orange-600" />
             <span>Байгалийн сонсогдох байдал (Naturalness)</span>
           </div>
           <span className="text-xs text-stone-400">
@@ -284,7 +284,7 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
                     ✓ Байгалийн (Natural)
                   </span>
                 ) : item.status === 'unnatural' ? (
-                  <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold text-[11px]">
+                  <span className="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 font-bold text-[11px]">
                     △ Ойлгогдох ч эвгүй (Unnatural)
                   </span>
                 ) : (
@@ -346,9 +346,9 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
                           item.explanationMongolian
                         )
                       }
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 font-bold text-xs transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/60 font-bold text-xs transition-colors cursor-pointer"
                     >
-                      <Bot className="w-3.5 h-3.5 text-amber-500" />
+                      <Bot className="w-3.5 h-3.5 text-orange-600" />
                       <span>Sunny AI-д дэлгэрүүлж асуух</span>
                     </button>
                   </div>
@@ -363,7 +363,7 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
       <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-stone-900 dark:text-stone-100 text-sm sm:text-base">
-            <BookOpen className="w-5 h-5 text-amber-500" />
+            <BookOpen className="w-5 h-5 text-orange-600" />
             <span>Энэ нөхцөл байдалд тогтоох үгс (Vocabulary)</span>
           </div>
           <span className="text-xs text-stone-400">
@@ -424,14 +424,14 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
             onClick={openSunnyAI}
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-sm transition-colors cursor-pointer"
           >
-            <Bot className="w-4 h-4 text-amber-500" />
+            <Bot className="w-4 h-4 text-orange-600" />
             <span>Sunny AI багшаас асуух</span>
           </button>
 
           <button
             type="button"
             onClick={onRetry}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md hover:scale-102 transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-sm shadow-md shadow-red-500/20 hover:scale-102 transition-all cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
             <span>Дахин оролдох</span>

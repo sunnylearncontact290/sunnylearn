@@ -67,7 +67,7 @@ export const LearnHub: React.FC = () => {
                   onClick={() => setSelectedLevel(lvl)}
                   className={`flex-1 sm:flex-initial px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-extrabold text-center transition-all ${
                     isSelected
-                      ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20 scale-105'
+                      ? 'bg-[#EF233C] text-white shadow-md shadow-red-500/20 scale-105'
                       : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                   }`}
                 >

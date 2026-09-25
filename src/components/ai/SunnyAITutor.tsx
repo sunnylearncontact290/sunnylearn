@@ -289,7 +289,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
       {/* 1. TUTOR HEADER */}
       <header className="p-4 sm:px-6 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-3 shrink-0 shadow-2xs">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-amber-500/15 dark:bg-amber-400/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/20">
+          <div className="w-10 h-10 rounded-2xl bg-red-500/15 dark:bg-red-400/20 text-[#EF233C] dark:text-red-400 flex items-center justify-center shrink-0 border border-red-500/20">
             <Sparkles className="w-5 h-5" />
           </div>
           <div className="min-w-0">
@@ -298,7 +298,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
                 Sunny AI
               </h2>
               {isPremium && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-2xs">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-gradient-to-r from-[#EF233C] to-orange-600 text-white shadow-2xs">
                   Premium • Хязгааргүй
                 </span>
               )}
@@ -337,10 +337,10 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
 
       {/* 2. QUIZ CONTEXT CARD (If active) */}
       {activeQuizContext && (
-        <div className="bg-amber-50/80 dark:bg-amber-950/20 border-b border-amber-200 dark:border-amber-900/40 p-3 sm:px-6 flex items-start justify-between gap-3 text-xs sm:text-sm shrink-0">
+        <div className="bg-orange-50/80 dark:bg-orange-950/20 border-b border-orange-200 dark:border-orange-900/40 p-3 sm:px-6 flex items-start justify-between gap-3 text-xs sm:text-sm shrink-0">
           <div className="space-y-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1">
+              <span className="font-bold text-orange-800 dark:text-orange-400 flex items-center gap-1">
                 <HelpCircle className="w-3.5 h-3.5" />
                 Сонжооны алдаа шинжлэх горим:
               </span>
@@ -374,11 +374,11 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
 
       {/* 2.5 ROLEPLAY FEEDBACK CONTEXT CARD (If active) */}
       {activeRoleplayContext && (
-        <div className="bg-amber-50/90 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/40 p-3 sm:px-6 flex items-start justify-between gap-3 text-xs sm:text-sm shrink-0">
+        <div className="bg-orange-50/90 dark:bg-orange-950/30 border-b border-orange-200 dark:border-orange-900/40 p-3 sm:px-6 flex items-start justify-between gap-3 text-xs sm:text-sm shrink-0">
           <div className="space-y-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span className="font-bold text-orange-800 dark:text-orange-400 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-orange-500" />
                 Roleplay тайлангийн зөвлөгөө:
               </span>
               <span className="font-bold font-jp text-stone-900 dark:text-stone-100">
@@ -415,7 +415,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
         {/* Empty state welcome */}
         {messages.length === 0 && (
           <div className="max-w-xl mx-auto py-6 text-center space-y-6 animate-fade-in">
-            <div className="w-16 h-16 rounded-3xl bg-amber-500/10 dark:bg-amber-400/15 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto border border-amber-500/20 shadow-xs">
+            <div className="w-16 h-16 rounded-3xl bg-red-500/10 dark:bg-red-400/15 text-[#EF233C] dark:text-red-400 flex items-center justify-center mx-auto border border-red-500/20 shadow-xs">
               <Sparkles className="w-8 h-8" />
             </div>
 
@@ -427,8 +427,8 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
                 Япон хэлний үг, ханз, дүрэм, өгүүлбэрийн нарийн ялгаа болон сорил шалгалтын алдааг монгол хэлээр тайлбарлаж өгөхөд бэлэн байна.
               </p>
               <div className="pt-1">
-                <p className="text-xs text-amber-700 dark:text-amber-300 bg-amber-500/10 dark:bg-amber-400/10 border border-amber-300/60 dark:border-amber-800/60 rounded-xl py-1.5 px-3 max-w-md mx-auto inline-flex items-center justify-center gap-1.5 font-medium">
-                  <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                <p className="text-xs text-orange-800 dark:text-orange-300 bg-orange-500/10 dark:bg-orange-400/10 border border-orange-300/60 dark:border-orange-800/60 rounded-xl py-1.5 px-3 max-w-md mx-auto inline-flex items-center justify-center gap-1.5 font-medium">
+                  <Sparkles className="w-3.5 h-3.5 shrink-0 text-orange-500" />
                   <span>Premium хэрэглэгч Sunny AI-тай ямар ч мессежийн хязгааргүйгээр чөлөөтэй харилцах боломжтой.</span>
                 </p>
               </div>
@@ -445,9 +445,9 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
                     key={idx}
                     type="button"
                     onClick={() => handleSendMessage(qp.prompt)}
-                    className="p-3 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-amber-400 dark:hover:border-amber-600 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 text-left transition-all group cursor-pointer shadow-2xs"
+                    className="p-3 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-orange-400 dark:hover:border-orange-600 hover:bg-orange-50/50 dark:hover:bg-orange-950/20 text-left transition-all group cursor-pointer shadow-2xs"
                   >
-                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 block mb-0.5">
+                    <span className="text-xs font-bold text-orange-600 dark:text-orange-400 block mb-0.5">
                       {qp.title}
                     </span>
                     <span className="text-xs text-stone-600 dark:text-stone-300 line-clamp-2">
@@ -477,7 +477,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
               >
                 {!isUser && (
                   <div className="flex items-center justify-between gap-3 mb-2 pb-2 border-b border-stone-100 dark:border-stone-800 text-xs text-stone-400">
-                    <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                    <span className="font-bold text-[#EF233C] dark:text-red-400 flex items-center gap-1">
                       <Sparkles className="w-3.5 h-3.5" />
                       Sunny AI Багш
                     </span>
@@ -516,7 +516,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
         {isLoading && (
           <div className="flex items-start gap-2 text-stone-400 text-xs sm:text-sm animate-pulse">
             <div className="p-3.5 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xs flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500 animate-spin" />
+              <Sparkles className="w-4 h-4 text-orange-500 animate-spin" />
               <span>Sunny AI хариултыг боловсруулж байна...</span>
             </div>
           </div>
@@ -536,7 +536,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
               key={i}
               type="button"
               onClick={() => handleSendMessage(sug)}
-              className="px-2.5 py-1 rounded-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs text-stone-700 dark:text-stone-300 hover:border-amber-400 dark:hover:border-amber-500 whitespace-nowrap transition-colors cursor-pointer shrink-0"
+              className="px-2.5 py-1 rounded-full bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs text-stone-700 dark:text-stone-300 hover:border-orange-400 dark:hover:border-orange-500 whitespace-nowrap transition-colors cursor-pointer shrink-0"
             >
               {sug}
             </button>
@@ -546,8 +546,8 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
 
       {/* 5. LIMIT REACHED WARNING BANNER */}
       {isLimitReached && (
-        <div className="p-4 bg-amber-500/10 dark:bg-amber-400/10 border-t border-amber-300 dark:border-amber-800 text-center space-y-3 shrink-0">
-          <div className="flex items-center justify-center gap-2 text-amber-700 dark:text-amber-300 font-bold text-sm">
+        <div className="p-4 bg-orange-500/10 dark:bg-orange-400/10 border-t border-orange-300 dark:border-orange-800 text-center space-y-3 shrink-0">
+          <div className="flex items-center justify-center gap-2 text-orange-800 dark:text-orange-300 font-bold text-sm">
             <AlertCircle className="w-4 h-4" />
             <span>Sunny AI-ийн үнэгүй хэрэглээний хязгаарт хүрлээ.</span>
           </div>
@@ -563,7 +563,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
               if (onClose) onClose();
               setActiveTab('premium');
             }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#EF233C] via-[#B91C1C] to-orange-600 hover:opacity-95 text-white font-black text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
             <span>SunnyLearn Premium авах (Хязгааргүй)</span>
@@ -589,12 +589,12 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
               onChange={e => setInputText(e.target.value)}
               placeholder="Япон хэл, дүрэм, ханз, эсвэл сорилтой холбоотой асуултаа бичнэ үү..."
               disabled={isLoading}
-              className="flex-1 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs sm:text-sm px-4 py-3 rounded-2xl border border-transparent focus:border-amber-500 focus:bg-white dark:focus:bg-stone-900 outline-hidden transition-all"
+              className="flex-1 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs sm:text-sm px-4 py-3 rounded-2xl border border-transparent focus:border-[#EF233C] focus:bg-white dark:focus:bg-stone-900 outline-hidden transition-all"
             />
             <button
               type="submit"
               disabled={!inputText.trim() || isLoading}
-              className="p-3 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-white transition-all cursor-pointer shadow-xs shrink-0"
+              className="p-3 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-white transition-all cursor-pointer shadow-xs shrink-0"
               title="Илгээх"
             >
               <Send className="w-4 h-4 sm:w-5 sm:h-5" />

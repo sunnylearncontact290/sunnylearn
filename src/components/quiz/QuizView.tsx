@@ -194,7 +194,7 @@ export const QuizView: React.FC = () => {
             className={`w-20 h-20 mx-auto rounded-3xl flex items-center justify-center ${
               isPassed
                 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400'
-                : 'bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400'
+                : 'bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400'
             }`}
           >
             <Trophy className="w-10 h-10" />
@@ -220,7 +220,7 @@ export const QuizView: React.FC = () => {
               className={`text-5xl sm:text-6xl font-black tracking-tight ${
                 isPassed
                   ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-amber-600 dark:text-amber-400'
+                  : 'text-orange-600 dark:text-orange-400'
               }`}
             >
               {completedAttempt.score}
@@ -232,7 +232,7 @@ export const QuizView: React.FC = () => {
               className={`ml-3 px-3.5 py-1 rounded-xl text-lg font-bold ${
                 isPassed
                   ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60'
-                  : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60'
+                  : 'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/60'
               }`}
             >
               {completedAttempt.percentage}%
@@ -262,7 +262,7 @@ export const QuizView: React.FC = () => {
                     <div className="text-lg font-bold text-stone-900 dark:text-stone-100">
                       {item.score} / {item.total}
                     </div>
-                    <div className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                    <div className="text-xs font-semibold text-orange-600 dark:text-orange-400">
                       {item.percentage}%
                     </div>
                   </div>
@@ -287,7 +287,7 @@ export const QuizView: React.FC = () => {
             <button
               type="button"
               onClick={startQuiz}
-              className="px-5 py-3 rounded-xl font-bold text-sm sm:text-base bg-amber-500 hover:bg-amber-600 text-white shadow-sm flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
+              className="px-5 py-3 rounded-xl font-bold text-sm sm:text-base bg-[#EF233C] hover:bg-[#D90429] text-white shadow-sm flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
             >
               <RotateCcw className="w-4 h-4" />
               Дахин шалгалт өгөх
@@ -431,8 +431,8 @@ export const QuizView: React.FC = () => {
                       {/* Explanation & Sunny AI help */}
                       <div className="space-y-2 pt-1">
                         {q.explanation && (
-                          <div className="p-3.5 rounded-xl bg-amber-50/60 dark:bg-stone-800/80 border border-amber-200 dark:border-stone-700 text-xs sm:text-sm text-stone-800 dark:text-stone-200 leading-relaxed">
-                            <span className="font-bold text-amber-800 dark:text-amber-400 block mb-1">
+                          <div className="p-3.5 rounded-xl bg-orange-50/60 dark:bg-stone-800/80 border border-orange-200 dark:border-stone-700 text-xs sm:text-sm text-stone-800 dark:text-stone-200 leading-relaxed">
+                            <span className="font-bold text-orange-800 dark:text-orange-400 block mb-1">
                               Тайлбар:
                             </span>
                             {q.explanation}
@@ -461,7 +461,7 @@ export const QuizView: React.FC = () => {
                                   jlptLevel: currentLevel
                                 });
                               }}
-                              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer"
+                              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#EF233C] to-orange-600 hover:from-[#D90429] hover:to-orange-700 text-white font-bold text-xs shadow-md shadow-red-500/20 active:scale-95 transition-all cursor-pointer"
                             >
                               <Sparkles className="w-4 h-4" />
                               <span>Яагаад буруу вэ？ (Sunny AI-аас асуух)</span>
@@ -505,7 +505,7 @@ export const QuizView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsSubmitModalOpen(true)}
-              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition-all cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#EF233C] hover:bg-[#D90429] text-white shadow-sm transition-all cursor-pointer"
             >
               Шалгалт дуусгах
             </button>
@@ -526,7 +526,7 @@ export const QuizView: React.FC = () => {
                   onClick={() => setCurrentIndex(idx)}
                   className={`w-8 h-8 rounded-lg text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center justify-center ${
                     isCurrent
-                      ? 'bg-amber-500 text-white shadow-sm scale-105'
+                      ? 'bg-[#EF233C] text-white shadow-sm scale-105'
                       : hasAnswer
                       ? 'bg-stone-800 text-stone-100 dark:bg-stone-200 dark:text-stone-900'
                       : 'bg-stone-100 dark:bg-stone-800 text-stone-500 hover:bg-stone-200'
@@ -546,7 +546,7 @@ export const QuizView: React.FC = () => {
               Асуулт {currentIndex + 1}
             </span>
             {currentQ.promptBadge && (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300">
                 {currentQ.promptBadge}
               </span>
             )}
@@ -555,7 +555,7 @@ export const QuizView: React.FC = () => {
           {/* Prompt */}
           <div className="text-center space-y-3 py-4">
             {currentQ.promptInstruction && (
-              <p className="text-xs sm:text-sm font-semibold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/40 px-3.5 py-1.5 rounded-xl max-w-lg mx-auto">
+              <p className="text-xs sm:text-sm font-semibold text-orange-800 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/40 border border-orange-200/80 dark:border-orange-900/40 px-3.5 py-1.5 rounded-xl max-w-lg mx-auto">
                 {currentQ.promptInstruction}
               </p>
             )}
@@ -592,15 +592,15 @@ export const QuizView: React.FC = () => {
                   onClick={() => handleSelectOption(idx)}
                   className={`min-h-[56px] p-4 rounded-2xl border-2 font-semibold text-base sm:text-lg transition-all text-left flex items-center justify-between cursor-pointer active:scale-[0.98] ${
                     isSelected
-                      ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200'
-                      : 'border-stone-200 dark:border-stone-700/80 bg-white dark:bg-stone-800/80 text-stone-800 dark:text-stone-100 hover:border-amber-300'
+                      ? 'border-[#EF233C] bg-red-50 dark:bg-red-950/30 text-stone-900 dark:text-white'
+                      : 'border-stone-200 dark:border-stone-700/80 bg-white dark:bg-stone-800/80 text-stone-800 dark:text-stone-100 hover:border-orange-300'
                   }`}
                 >
                   <span>{option}</span>
                   <div
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ml-2 ${
                       isSelected
-                        ? 'border-amber-500 bg-amber-500'
+                        ? 'border-[#EF233C] bg-[#EF233C]'
                         : 'border-stone-300 dark:border-stone-600'
                     }`}
                   >
@@ -633,7 +633,7 @@ export const QuizView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsSubmitModalOpen(true)}
-                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-amber-500 hover:bg-amber-600 text-white shadow-sm cursor-pointer transition-all active:scale-95"
+                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[#EF233C] hover:bg-[#D90429] text-white shadow-sm cursor-pointer transition-all active:scale-95"
               >
                 Шалгалт дуусгах
               </button>
@@ -654,7 +654,7 @@ export const QuizView: React.FC = () => {
         {isSubmitModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
             <div className="bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 p-6 sm:p-8 max-w-md w-full shadow-xl space-y-5 text-center">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center text-amber-600 dark:text-amber-400">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-orange-100 dark:bg-orange-950/60 flex items-center justify-center text-orange-600 dark:text-orange-400">
                 <AlertCircle className="w-8 h-8" />
               </div>
 
@@ -680,7 +680,7 @@ export const QuizView: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleSubmitExam}
-                  className="flex-1 py-3 rounded-xl font-bold text-sm bg-amber-500 hover:bg-amber-600 text-white shadow-sm cursor-pointer transition-all active:scale-95"
+                  className="flex-1 py-3 rounded-xl font-bold text-sm bg-[#EF233C] hover:bg-[#D90429] text-white shadow-sm cursor-pointer transition-all active:scale-95"
                 >
                   Тийм, дуусгах
                 </button>
@@ -700,7 +700,7 @@ export const QuizView: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300">
                 JLPT Сорил Шалгалт
               </span>
               <LevelBadge level={currentLevel} size="sm" />
@@ -722,7 +722,7 @@ export const QuizView: React.FC = () => {
                 onClick={() => setSelectedLevel(lvl)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                   currentLevel === lvl
-                    ? 'bg-white dark:bg-stone-700 text-amber-600 dark:text-amber-300 shadow-sm'
+                    ? 'bg-white dark:bg-stone-700 text-[#EF233C] dark:text-red-400 shadow-sm'
                     : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
                 }`}
               >
@@ -749,7 +749,7 @@ export const QuizView: React.FC = () => {
                 onClick={() => setQuestionCount(item.count)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   questionCount === item.count
-                    ? 'bg-amber-500 text-white shadow-sm'
+                    ? 'bg-[#EF233C] text-white shadow-sm'
                     : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
                 }`}
               >
@@ -772,12 +772,12 @@ export const QuizView: React.FC = () => {
               onClick={() => setCategory(cat.key)}
               className={`p-6 rounded-3xl border transition-all flex flex-col justify-between space-y-5 cursor-pointer ${
                 isSelected
-                  ? 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-400 dark:border-amber-600 shadow-md ring-2 ring-amber-500/20'
-                  : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 shadow-sm hover:border-amber-300'
+                  ? 'bg-orange-50/50 dark:bg-orange-950/20 border-orange-400 dark:border-orange-600 shadow-md ring-2 ring-orange-500/20'
+                  : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 shadow-sm hover:border-orange-300'
               }`}
             >
               <div className="space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 flex items-center justify-center">
                   <Icon className="w-6 h-6" />
                 </div>
                 <div>
@@ -794,7 +794,7 @@ export const QuizView: React.FC = () => {
                 <div
                   className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all ${
                     isSelected
-                      ? 'bg-amber-500 text-white shadow-sm'
+                      ? 'bg-[#EF233C] text-white shadow-sm'
                       : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300'
                   }`}
                 >
@@ -819,7 +819,7 @@ export const QuizView: React.FC = () => {
                   setActiveTab('premium');
                 }
               }}
-              className="px-8 py-4 rounded-2xl font-bold text-base sm:text-lg bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
+              className="px-8 py-4 rounded-2xl font-bold text-base sm:text-lg bg-gradient-to-r from-[#EF233C] via-[#B91C1C] to-orange-600 hover:opacity-95 text-white shadow-lg shadow-red-500/20 flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
             >
               <Lock className="w-5 h-5" />
               <span>Premium идэвхжүүлж {currentLevel} сорилыг нээх (¥880 / 30 хоног)</span>
@@ -832,7 +832,7 @@ export const QuizView: React.FC = () => {
           <button
             type="button"
             onClick={startQuiz}
-            className="px-8 py-4 rounded-2xl font-bold text-base sm:text-lg bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20 flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
+            className="px-8 py-4 rounded-2xl font-bold text-base sm:text-lg bg-[#EF233C] hover:bg-[#D90429] text-white shadow-lg shadow-red-500/20 flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
           >
             <Play className="w-5 h-5 fill-current" />
             <span>{currentLevel} Сорил эхлүүлэх ({questionCount} асуулт)</span>

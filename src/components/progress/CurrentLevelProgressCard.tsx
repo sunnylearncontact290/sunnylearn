@@ -37,7 +37,7 @@ export const CurrentLevelProgressCard: React.FC<CurrentLevelProgressCardProps> =
       {/* Top row: Label, level switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100 dark:border-stone-800">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 flex items-center justify-center text-amber-600 dark:text-amber-400">
+          <div className="w-10 h-10 rounded-2xl bg-orange-500/10 dark:bg-orange-500/15 flex items-center justify-center text-orange-600 dark:text-orange-400">
             <Target className="w-5 h-5" />
           </div>
           <div>
@@ -65,7 +65,7 @@ export const CurrentLevelProgressCard: React.FC<CurrentLevelProgressCardProps> =
                 onClick={() => onSelectLevel(lvl)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-amber-500 text-white shadow-sm'
+                    ? 'bg-[#EF233C] text-white shadow-xs'
                     : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
                 }`}
               >
@@ -87,7 +87,7 @@ export const CurrentLevelProgressCard: React.FC<CurrentLevelProgressCardProps> =
               ({stats.learnedItems} / {stats.totalItems} нийт агуулга эзэмшсэн)
             </span>
           </div>
-          <span className="text-xs font-bold text-amber-600 dark:text-amber-400">
+          <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
             {stats.overallPct === 100 ? 'Бүх агуулгыг эзэмшсэн 🎉' : `${100 - stats.overallPct}% үлдсэн`}
           </span>
         </div>
@@ -95,7 +95,7 @@ export const CurrentLevelProgressCard: React.FC<CurrentLevelProgressCardProps> =
         {/* Progress Bar */}
         <div className="w-full h-3 sm:h-3.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden p-0.5">
           <div
-            className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-500"
+            className="h-full bg-gradient-to-r from-[#EF233C] via-orange-500 to-[#C84A0A] rounded-full transition-all duration-500"
             style={{ width: `${Math.min(100, Math.max(0, stats.overallPct))}%` }}
           />
         </div>

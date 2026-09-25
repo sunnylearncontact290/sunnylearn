@@ -93,8 +93,8 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 dark:border-stone-800 pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-              <Flame className="w-3.5 h-3.5 fill-amber-500 text-amber-500 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
+              <Flame className="w-3.5 h-3.5 fill-[#E62929] text-[#E62929] animate-pulse" />
               Өдөр тутмын даалгавар
             </span>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300">
@@ -105,7 +105,7 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
             🔥 ӨНӨӨДРИЙН ДААЛГАВАР
           </h2>
           <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400">
-            Өнөөдрийн зорилго: <span className="font-bold text-amber-600 dark:text-amber-400">{goalXP} XP</span> цуглуулах
+            Өнөөдрийн зорилго: <span className="font-bold text-[#C84A0A] dark:text-[#EA6A0A]">{goalXP} XP</span> цуглуулах
           </p>
         </div>
 
@@ -116,14 +116,14 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
       </div>
 
       {/* Daily XP Progress Banner */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 space-y-3">
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-600/10 via-orange-500/10 to-[#8F1537]/10 dark:from-[#6E1028]/30 dark:via-[#260E15]/40 dark:to-transparent border border-[#C84A0A]/25 dark:border-red-900/40 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-500" />
+            <Sparkles className="w-4 h-4 text-[#E62929]" />
             <span className="text-xs sm:text-sm font-bold text-stone-800 dark:text-stone-200">
               Өнөөдрийн XP явц:
             </span>
-            <span className="text-sm sm:text-base font-black text-amber-600 dark:text-amber-400">
+            <span className="text-sm sm:text-base font-black text-[#C84A0A] dark:text-[#EA6A0A]">
               {dailyXP} / {goalXP} XP
             </span>
             {dailyXP > goalXP && (
@@ -150,8 +150,8 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
           <div
             className={`h-full rounded-full transition-all duration-500 ${
               isGoalAchieved
-                ? 'bg-gradient-to-r from-amber-500 to-emerald-500'
-                : 'bg-amber-500'
+                ? 'bg-gradient-to-r from-[#C84A0A] to-emerald-500'
+                : 'bg-gradient-to-r from-[#E62929] to-[#C84A0A]'
             }`}
             style={{ width: `${xpPercent}%` }}
           />
@@ -176,7 +176,7 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
               className={`relative rounded-2xl p-4 sm:p-5 border transition-all flex flex-col justify-between space-y-4 ${
                 task.isDone
                   ? 'bg-emerald-500/5 dark:bg-emerald-950/20 border-emerald-500/30 shadow-sm'
-                  : 'bg-stone-50 dark:bg-stone-800/40 border-stone-200 dark:border-stone-800 hover:border-amber-500/40'
+                  : 'bg-stone-50 dark:bg-stone-800/40 border-stone-200 dark:border-stone-800 hover:border-[#C84A0A]/40'
               }`}
             >
               <div className="space-y-3">
@@ -185,7 +185,7 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
                     className={`w-9 h-9 rounded-xl flex items-center justify-center ${
                       task.isDone
                         ? 'bg-emerald-500 text-white'
-                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                        : 'bg-orange-500/10 text-[#C84A0A] dark:text-[#EA6A0A]'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -220,7 +220,7 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
                 <div className="w-full bg-stone-200 dark:bg-stone-700/60 h-1.5 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-300 ${
-                      task.isDone ? 'bg-emerald-500' : 'bg-amber-500'
+                      task.isDone ? 'bg-emerald-500' : 'bg-gradient-to-r from-[#E62929] to-[#C84A0A]'
                     }`}
                     style={{ width: `${taskPercent}%` }}
                   />
@@ -234,7 +234,7 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
                 className={`w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   task.isDone
                     ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/25'
-                    : 'bg-stone-900 dark:bg-stone-700 text-white hover:bg-amber-600 dark:hover:bg-amber-500 shadow-sm'
+                    : 'bg-stone-900 dark:bg-stone-700 text-white hover:bg-[#E62929] dark:hover:bg-[#E62929] shadow-sm'
                 }`}
               >
                 <span>{task.isDone ? 'Суралцсан ✓' : task.actionLabel}</span>

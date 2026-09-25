@@ -288,7 +288,7 @@ export const AuthModal: React.FC = () => {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C] focus:outline-none"
                 />
               </div>
             </div>
@@ -305,7 +305,7 @@ export const AuthModal: React.FC = () => {
                     setError(null);
                     setSuccessMessage(null);
                   }}
-                  className="text-xs text-amber-600 dark:text-amber-400 hover:underline font-medium"
+                  className="text-xs text-orange-600 dark:text-orange-400 hover:underline font-medium"
                 >
                   Нууц үг мартсан?
                 </button>
@@ -318,7 +318,7 @@ export const AuthModal: React.FC = () => {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C] focus:outline-none"
                 />
                 <button
                   type="button"
@@ -333,7 +333,7 @@ export const AuthModal: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md transition-all disabled:opacity-50 mt-1"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-sm shadow-md transition-all disabled:opacity-50 mt-1 cursor-pointer"
             >
               {isSubmitting ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -359,7 +359,7 @@ export const AuthModal: React.FC = () => {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder="Бат, Болд гэх мэт"
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C] focus:outline-none"
                 />
               </div>
             </div>
@@ -376,7 +376,7 @@ export const AuthModal: React.FC = () => {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C] focus:outline-none"
                 />
               </div>
             </div>
@@ -393,7 +393,7 @@ export const AuthModal: React.FC = () => {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C] focus:outline-none"
                 />
                 <button
                   type="button"
@@ -417,7 +417,7 @@ export const AuthModal: React.FC = () => {
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C] focus:outline-none"
                 />
               </div>
             </div>
@@ -425,7 +425,7 @@ export const AuthModal: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md transition-all disabled:opacity-50 mt-1"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-sm shadow-md transition-all disabled:opacity-50 mt-1 cursor-pointer"
             >
               {isSubmitting ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -452,7 +452,7 @@ export const AuthModal: React.FC = () => {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-white text-sm focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C] focus:outline-none"
                 />
               </div>
             </div>
@@ -460,7 +460,7 @@ export const AuthModal: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md transition-all disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-sm shadow-md transition-all disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -554,7 +554,7 @@ export const AuthModal: React.FC = () => {
             </span>
           </div>
           <div className="flex items-start gap-2 text-[11px] text-stone-500 dark:text-stone-400">
-            <CheckCircle2 className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
             <span>
               Нэвтрээгүй үед ч таны сурсан зүйл энэ төхөөрөмж дээрээ хадгалагдсаар байна.
             </span>

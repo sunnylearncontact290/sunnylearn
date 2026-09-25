@@ -20,14 +20,14 @@ export const LevelBadge: React.FC<LevelBadgeProps> = ({ level, size = 'md', clas
       border: 'border-sky-200 dark:border-sky-800/60'
     },
     N3: {
-      bg: 'bg-amber-50 dark:bg-amber-950/50',
-      text: 'text-amber-700 dark:text-amber-300',
-      border: 'border-amber-200 dark:border-amber-800/60'
-    },
-    N2: {
       bg: 'bg-orange-50 dark:bg-orange-950/50',
       text: 'text-orange-700 dark:text-orange-300',
       border: 'border-orange-200 dark:border-orange-800/60'
+    },
+    N2: {
+      bg: 'bg-red-50 dark:bg-red-950/50',
+      text: 'text-red-700 dark:text-red-300',
+      border: 'border-red-200 dark:border-red-800/60'
     },
     N1: {
       bg: 'bg-rose-50 dark:bg-rose-950/50',

@@ -134,7 +134,7 @@ export const QuizExplanationModal: React.FC = () => {
         {/* Header */}
         <div className="px-5 py-4 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between gap-3 bg-stone-50/80 dark:bg-stone-800/40">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#EF233C] to-orange-600 text-white flex items-center justify-center shadow-xs shadow-red-500/20">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
@@ -249,13 +249,13 @@ export const QuizExplanationModal: React.FC = () => {
           {/* AI Explanation Area */}
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300 font-bold text-xs">
-              <Lightbulb className="w-4 h-4 text-amber-500" />
+              <Lightbulb className="w-4 h-4 text-orange-500" />
               <span>Дэлгэрэнгүй тайлбар:</span>
             </div>
 
             {isLoading ? (
-              <div className="p-6 rounded-2xl bg-amber-500/5 dark:bg-amber-400/5 border border-amber-500/20 text-center space-y-3">
-                <Loader2 className="w-6 h-6 text-amber-500 animate-spin mx-auto" />
+              <div className="p-6 rounded-2xl bg-orange-500/5 dark:bg-orange-400/5 border border-orange-500/20 text-center space-y-3">
+                <Loader2 className="w-6 h-6 text-orange-500 animate-spin mx-auto" />
                 <p className="text-xs font-bold text-stone-600 dark:text-stone-400">
                   Sunny AI тайлбарыг бэлтгэж байна…
                 </p>
@@ -285,7 +285,7 @@ export const QuizExplanationModal: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 text-stone-800 dark:text-stone-200 leading-relaxed font-jp text-xs sm:text-sm whitespace-pre-wrap">
+              <div className="p-4 sm:p-5 rounded-2xl bg-orange-50/50 dark:bg-stone-800/60 border border-orange-200/60 dark:border-stone-700/80 text-stone-800 dark:text-stone-200 leading-relaxed font-jp text-xs sm:text-sm whitespace-pre-wrap">
                 {explanationText}
               </div>
             )}
@@ -297,7 +297,7 @@ export const QuizExplanationModal: React.FC = () => {
           <button
             type="button"
             onClick={handleClose}
-            className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#EF233C] to-[#C84A0A] hover:opacity-95 text-white font-bold text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all cursor-pointer"
           >
             Ойлголоо
           </button>

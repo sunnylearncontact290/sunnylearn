@@ -47,7 +47,7 @@ const MainContent: React.FC = () => {
     <div className="w-full max-w-full overflow-x-hidden relative min-h-screen flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-100 font-sans transition-colors duration-200">
       {/* Premium in-app celebratory notification banner */}
       {inAppNotification && !inAppNotification.read && (
-        <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 text-white px-4 py-2.5 shadow-md flex items-center justify-between text-xs sm:text-sm font-bold z-50">
+        <div className="bg-gradient-to-r from-[#EF233C] via-orange-600 to-[#C84A0A] text-white px-4 py-2.5 shadow-md flex items-center justify-between text-xs sm:text-sm font-bold z-50">
           <div className="flex items-center gap-2 max-w-5xl mx-auto flex-1">
             <span className="text-base">🎉</span>
             <span>{inAppNotification.message || 'SunnyLearn Premium 30 хоногийн эрх амжилттай идэвхжлээ! Тавтай морил.'}</span>

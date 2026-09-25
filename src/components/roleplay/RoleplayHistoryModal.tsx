@@ -86,7 +86,7 @@ export const RoleplayHistoryModal: React.FC<RoleplayHistoryModalProps> = ({
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 flex items-center justify-center">
               <History className="w-5 h-5" />
             </div>
             <div>
@@ -112,7 +112,7 @@ export const RoleplayHistoryModal: React.FC<RoleplayHistoryModalProps> = ({
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
           {isLoading ? (
             <div className="py-12 flex flex-col items-center justify-center gap-2 text-stone-400">
-              <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+              <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
               <span className="text-xs">Түүхийг татаж байна...</span>
             </div>
           ) : historyList.length === 0 ? (
@@ -141,7 +141,7 @@ export const RoleplayHistoryModal: React.FC<RoleplayHistoryModalProps> = ({
                 <div
                   key={item.id}
                   onClick={() => handleOpenSession(item.id)}
-                  className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/80 dark:border-stone-700/80 hover:border-amber-400 dark:hover:border-amber-500/60 hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-4 group"
+                  className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/80 dark:border-stone-700/80 hover:border-red-400 dark:hover:border-red-500/60 hover:shadow-xs transition-all cursor-pointer flex items-center justify-between gap-4 group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-11 h-11 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-xl shrink-0">
@@ -150,7 +150,7 @@ export const RoleplayHistoryModal: React.FC<RoleplayHistoryModalProps> = ({
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100 truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors font-jp">
+                        <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100 truncate group-hover:text-[#EF233C] dark:group-hover:text-red-400 transition-colors font-jp">
                           {item.scenarioTitle}
                         </h4>
                         <LevelBadge level={item.jlptLevel} size="sm" />
@@ -162,7 +162,7 @@ export const RoleplayHistoryModal: React.FC<RoleplayHistoryModalProps> = ({
                           {dateStr}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Target className="w-3 h-3 text-amber-500" />
+                          <Target className="w-3 h-3 text-orange-500" />
                           {item.objectivesCompleted} даалгавар
                         </span>
                         <span className="flex items-center gap-1">
@@ -175,16 +175,16 @@ export const RoleplayHistoryModal: React.FC<RoleplayHistoryModalProps> = ({
 
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right">
-                      <div className="text-sm font-black text-amber-600 dark:text-amber-400">
+                      <div className="text-sm font-black text-orange-600 dark:text-orange-400">
                         {item.score}%
                       </div>
                       <span className="text-[10px] text-stone-400">Үнэлгээ</span>
                     </div>
 
                     {isOpening ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+                      <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-amber-500 group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-[#EF233C] group-hover:translate-x-0.5 transition-all" />
                     )}
                   </div>
                 </div>

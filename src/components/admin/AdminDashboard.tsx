@@ -472,8 +472,8 @@ export const AdminDashboard: React.FC = () => {
                             }
                             className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
                               item.status === 'reviewed'
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : 'bg-amber-100 text-amber-700'
+                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                : 'bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300'
                             }`}
                           >
                             {item.status === 'reviewed' ? '✓ Шалгасан' : 'Шинэ'}

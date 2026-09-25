@@ -99,7 +99,7 @@ export const DictionaryView: React.FC = () => {
         </div>
 
         {!isUnlocked && (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800/60 text-xs text-orange-900 dark:text-orange-200">
             <p>
               <span className="font-bold">Free горим:</span> N5 түвшний бүх үгс болон N4–N1 нээлттэй үгсийг харуулж байна. Бүх 5,500+ үгийг толь бичгээс бүрэн хайхын тулд Premium эрхээ идэвхжүүлнэ үү.
             </p>
@@ -108,7 +108,7 @@ export const DictionaryView: React.FC = () => {
                 if (!currentUser) setIsAuthModalOpen(true);
                 else setActiveTab('premium');
               }}
-              className="shrink-0 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-colors cursor-pointer"
+              className="shrink-0 px-3.5 py-1.5 rounded-lg bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-xs transition-colors cursor-pointer shadow-2xs"
             >
               Premium авах (¥880)
             </button>
@@ -151,10 +151,10 @@ export const DictionaryView: React.FC = () => {
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => toggleFavorite('vocab', item.id)}
-                          className="p-1.5 rounded-lg text-stone-400 hover:text-amber-500 transition-colors"
+                          className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors"
                           title="Хадгалах"
                         >
-                          <Star className={`w-4 h-4 ${isFav ? 'fill-amber-400 text-amber-400' : ''}`} />
+                          <Star className={`w-4 h-4 ${isFav ? 'fill-orange-400 text-orange-400' : ''}`} />
                         </button>
                       </div>
                     </div>

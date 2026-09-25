@@ -171,7 +171,7 @@ export const RoleplayView: React.FC = () => {
                   : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
               }`}
             >
-              <MessagesSquare className="w-4 h-4 text-amber-500" />
+              <MessagesSquare className="w-4 h-4 text-orange-600" />
               <span>AI Roleplay (Дүрд хувирах)</span>
             </button>
             <button
@@ -183,9 +183,9 @@ export const RoleplayView: React.FC = () => {
                   : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
               }`}
             >
-              <Mic className="w-4 h-4 text-amber-500" />
+              <Mic className="w-4 h-4 text-orange-600" />
               <span>Чөлөөт дуут яриа (Voice)</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-amber-500 text-white uppercase tracking-wider">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-[#EF233C] text-white uppercase tracking-wider">
                 Voice
               </span>
             </button>
@@ -220,8 +220,8 @@ export const RoleplayView: React.FC = () => {
         <div className="space-y-8">
           {/* Header Banner */}
           <div className="text-center space-y-3 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-extrabold bg-amber-500/10 dark:bg-amber-400/15 text-amber-700 dark:text-amber-300 border border-amber-500/20 shadow-2xs">
-              <Sparkles className="w-4 h-4 text-amber-500" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-extrabold bg-orange-500/10 dark:bg-orange-400/15 text-orange-700 dark:text-orange-300 border border-orange-500/20 shadow-2xs">
+              <Sparkles className="w-4 h-4 text-orange-500" />
               <span>Интерактив Япон Хэлний Ярианы Дадлага</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-stone-900 dark:text-stone-100 font-jp">
@@ -233,10 +233,10 @@ export const RoleplayView: React.FC = () => {
           </div>
 
           {/* FREE CONVERSATION PROMINENT ENTRY BANNER */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-transparent border-2 border-amber-500/30 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-red-500/15 via-orange-500/5 to-transparent border-2 border-red-500/30 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="space-y-1.5 max-w-2xl">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                <div className="w-9 h-9 rounded-2xl bg-[#EF233C] text-white flex items-center justify-center shrink-0 shadow-2xs">
                   <Mic className="w-5 h-5" />
                 </div>
                 <div>
@@ -256,7 +256,7 @@ export const RoleplayView: React.FC = () => {
                 setSpeakingMode('freechat');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all transform active:scale-95 cursor-pointer shrink-0"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all transform active:scale-95 cursor-pointer shrink-0"
             >
               <Mic className="w-4 h-4" />
               <span>Чөлөөт яриа эхлэх</span>
@@ -274,7 +274,7 @@ export const RoleplayView: React.FC = () => {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Хувилбар хайх (Конбини, ярилцлага, эмнэлэг, 病院)..."
-                className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white placeholder-stone-400 text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-500 font-jp"
+                className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white placeholder-stone-400 text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C] font-jp"
               />
             </div>
 
@@ -285,7 +285,7 @@ export const RoleplayView: React.FC = () => {
                 onClick={() => setLevelFilter('ALL')}
                 className={`px-3 py-2 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
                   levelFilter === 'ALL'
-                    ? 'bg-amber-500 text-white shadow-2xs'
+                    ? 'bg-[#EF233C] text-white shadow-2xs'
                     : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
@@ -298,7 +298,7 @@ export const RoleplayView: React.FC = () => {
                   onClick={() => setLevelFilter(lvl)}
                   className={`px-3 py-2 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
                     levelFilter === lvl
-                      ? 'bg-amber-500 text-white shadow-2xs'
+                      ? 'bg-[#EF233C] text-white shadow-2xs'
                       : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                   }`}
                 >
@@ -311,9 +311,9 @@ export const RoleplayView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsHistoryModalOpen(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-amber-100 dark:hover:bg-amber-950/60 border border-stone-200 dark:border-stone-700 hover:border-amber-300 text-stone-700 dark:text-stone-200 hover:text-amber-800 dark:hover:text-amber-300 font-bold text-xs transition-colors cursor-pointer shrink-0"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-orange-100 dark:hover:bg-orange-950/60 border border-stone-200 dark:border-stone-700 hover:border-orange-300 text-stone-700 dark:text-stone-200 hover:text-orange-800 dark:hover:text-orange-300 font-bold text-xs transition-colors cursor-pointer shrink-0"
             >
-              <History className="w-4 h-4 text-amber-500" />
+              <History className="w-4 h-4 text-orange-600" />
               <span>Миний түүх</span>
             </button>
           </div>
@@ -345,9 +345,9 @@ export const RoleplayView: React.FC = () => {
           )}
 
           {/* Informational Banner */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="p-5 sm:p-6 rounded-3xl bg-orange-50/60 dark:bg-orange-950/20 border border-orange-200/80 dark:border-orange-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-orange-600 text-white flex items-center justify-center shrink-0">
                 <Bot className="w-5 h-5" />
               </div>
               <div>
@@ -363,7 +363,7 @@ export const RoleplayView: React.FC = () => {
             <button
               type="button"
               onClick={openSunnyAI}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-stone-900 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 font-bold text-xs hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-stone-900 border border-orange-300 dark:border-orange-800 text-orange-800 dark:text-orange-300 font-bold text-xs hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors cursor-pointer shrink-0"
             >
               <span>Sunny AI Багш нээх</span>
               <ArrowRight className="w-3.5 h-3.5" />

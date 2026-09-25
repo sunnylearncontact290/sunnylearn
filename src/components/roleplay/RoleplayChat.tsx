@@ -395,7 +395,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
             <ArrowLeft className="w-5 h-5" />
           </button>
 
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center text-xl shrink-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 flex items-center justify-center text-xl shrink-0">
             {scenario.icon}
           </div>
 
@@ -420,7 +420,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
             onClick={() => setShowFurigana(!showFurigana)}
             className={`p-2 rounded-xl border text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1 ${
               showFurigana
-                ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300'
+                ? 'bg-orange-50 dark:bg-orange-950/40 border-orange-200 dark:border-orange-800 text-orange-800 dark:text-orange-300'
                 : 'border-stone-200 dark:border-stone-700 text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800'
             }`}
             title={showFurigana ? 'Фуригана нуух' : 'Фуригана харуулах'}
@@ -438,7 +438,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
                 onClick={() => handleLevelSelect(lvl)}
                 className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
                   jlptLevel === lvl
-                    ? 'bg-amber-500 text-white shadow-2xs'
+                    ? 'bg-[#EF233C] text-white shadow-2xs'
                     : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
@@ -480,11 +480,11 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
       </header>
 
       {/* 2. OBJECTIVES PROGRESS BAR & COLLAPSIBLE DRAWER */}
-      <div className="bg-amber-50/70 dark:bg-amber-950/20 border-b border-amber-200/80 dark:border-amber-900/40 px-4 sm:px-6 py-2.5 flex flex-col justify-between shrink-0">
+      <div className="bg-orange-50/70 dark:bg-orange-950/20 border-b border-orange-200/80 dark:border-orange-900/40 px-4 sm:px-6 py-2.5 flex flex-col justify-between shrink-0">
         <div className="flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 font-bold text-stone-800 dark:text-stone-200">
-            <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span className="flex items-center gap-1 text-orange-800 dark:text-orange-400">
+              <Sparkles className="w-3.5 h-3.5 text-orange-500" />
               Зорилтууд:
             </span>
             <span>
@@ -506,7 +506,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
             <button
               type="button"
               onClick={() => setShowObjectives(!showObjectives)}
-              className="text-[11px] font-bold text-amber-800 dark:text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
+              className="text-[11px] font-bold text-orange-800 dark:text-orange-300 hover:underline flex items-center gap-1 cursor-pointer"
             >
               <span>{showObjectives ? 'Хураах' : 'Харах'}</span>
               {showObjectives ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -516,7 +516,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
 
         {/* Collapsible Objectives List */}
         {showObjectives && (
-          <div className="mt-3 pt-3 border-t border-amber-200/60 dark:border-amber-900/40 space-y-2 animate-fade-in text-xs">
+          <div className="mt-3 pt-3 border-t border-orange-200/60 dark:border-orange-900/40 space-y-2 animate-fade-in text-xs">
             {scenario.objectives.map((obj, idx) => {
               const isCompleted = completedObjectiveIndices.includes(idx);
               return (
@@ -576,7 +576,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
               className={`flex items-start gap-2.5 sm:gap-3 ${isAI ? 'justify-start' : 'justify-end'}`}
             >
               {isAI && (
-                <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800/80 flex items-center justify-center text-sm shrink-0 mt-0.5">
+                <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-800/80 flex items-center justify-center text-sm shrink-0 mt-0.5">
                   {scenario.icon}
                 </div>
               )}
@@ -585,7 +585,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
                 className={`group relative max-w-[85%] sm:max-w-[75%] rounded-2xl p-3.5 sm:p-4 text-sm shadow-2xs ${
                   isAI
                     ? 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 border border-stone-200/80 dark:border-stone-700/80'
-                    : 'bg-amber-500 text-white rounded-br-xs user-bubble'
+                    : 'bg-gradient-to-r from-red-600 to-[#EF233C] text-white rounded-br-xs user-bubble shadow-xs'
                 }`}
               >
                 {/* Role label header */}
@@ -626,7 +626,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
         {/* AI Typing indicator */}
         {isLoading && (
           <div className="flex items-start gap-2.5 sm:gap-3 justify-start animate-fade-in">
-            <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800/80 flex items-center justify-center text-sm shrink-0">
+            <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-800/80 flex items-center justify-center text-sm shrink-0">
               {scenario.icon}
             </div>
             <div className="p-3.5 rounded-2xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700/80 flex items-center gap-2">
@@ -634,9 +634,9 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
                 {scenario.aiRole} хариулж байна...
               </span>
               <div className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           </div>
@@ -647,23 +647,23 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
 
       {/* 5. HINT DRAWER / POPOVER */}
       {isHintOpen && (
-        <div className="p-4 bg-amber-50/95 dark:bg-amber-950/90 border-t border-amber-200 dark:border-amber-900/60 shadow-lg animate-slide-up relative">
+        <div className="p-4 bg-orange-50/95 dark:bg-orange-950/90 border-t border-orange-200 dark:border-orange-900/60 shadow-lg animate-slide-up relative">
           <button
             type="button"
             onClick={() => setIsHintOpen(false)}
-            className="absolute top-3 right-3 p-1 rounded-lg text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 cursor-pointer"
+            className="absolute top-3 right-3 p-1 rounded-lg text-orange-800 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-900 dark:text-amber-200 mb-2">
-            <Lightbulb className="w-4 h-4 text-amber-500" />
+          <div className="flex items-center gap-2 text-xs font-bold text-orange-900 dark:text-orange-200 mb-2">
+            <Lightbulb className="w-4 h-4 text-orange-500" />
             <span>💡 Тусламж ба Санал болгох илэрхийлэл</span>
           </div>
 
           {isHintLoading ? (
             <div className="flex items-center gap-2 text-xs text-stone-500 py-2">
-              <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+              <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
               <span>Тохирох тусламжийг боловсруулж байна...</span>
             </div>
           ) : hintData ? (
@@ -674,7 +674,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
 
               {hintData.suggestedExpressions && hintData.suggestedExpressions.length > 0 && (
                 <div className="pt-1">
-                  <p className="text-[11px] font-bold text-amber-800 dark:text-amber-300 mb-1.5">
+                  <p className="text-[11px] font-bold text-orange-800 dark:text-orange-300 mb-1.5">
                     Ашиглаж болох хэллэгүүд (дарж бичвэрт оруулах):
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -688,7 +688,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
                             setInputText(cleanExpr);
                             if (inputRef.current) inputRef.current.focus();
                           }}
-                          className="px-3 py-1.5 rounded-xl bg-white dark:bg-stone-800 border border-amber-300 dark:border-amber-800 hover:border-amber-500 text-stone-900 dark:text-white font-jp text-xs font-medium transition-all hover:scale-102 cursor-pointer shadow-2xs text-left"
+                          className="px-3 py-1.5 rounded-xl bg-white dark:bg-stone-800 border border-orange-200 dark:border-orange-800 hover:border-orange-400 text-stone-900 dark:text-white font-jp text-xs font-medium transition-all hover:scale-102 cursor-pointer shadow-2xs text-left"
                         >
                           <FuriganaText text={cleanExpr} showFurigana={false} />
                         </button>
@@ -716,7 +716,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
                   setInputText(cleanStarter);
                   if (inputRef.current) inputRef.current.focus();
                 }}
-                className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-amber-100 dark:hover:bg-amber-950/60 border border-stone-200 dark:border-stone-700 hover:border-amber-300 text-stone-700 dark:text-stone-300 hover:text-amber-800 dark:hover:text-amber-200 font-jp whitespace-nowrap transition-colors cursor-pointer text-xs"
+                className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-orange-50 dark:hover:bg-orange-950/60 border border-stone-200 dark:border-stone-700 hover:border-orange-300 text-stone-700 dark:text-stone-300 hover:text-orange-800 dark:hover:text-orange-200 font-jp whitespace-nowrap transition-colors cursor-pointer text-xs"
               >
                 <FuriganaText text={cleanStarter} showFurigana={false} />
               </button>
@@ -732,10 +732,10 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
           type="button"
           onClick={handleRequestHint}
           disabled={isLoading || isFinishing}
-          className="p-2.5 sm:px-3 sm:py-2.5 rounded-xl border border-amber-200 dark:border-amber-800/80 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+          className="p-2.5 sm:px-3 sm:py-2.5 rounded-xl border border-orange-200 dark:border-orange-800/80 bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/60 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
           title="Юу гэж хэлэхээ мэдэхгүй байвал тусламж авах"
         >
-          <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
+          <Lightbulb className="w-4 h-4 text-orange-500 shrink-0" />
           <span className="hidden sm:inline">💡 Тусламж</span>
         </button>
 
@@ -754,7 +754,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
             }}
             placeholder="Японоор хариултаа бичнэ үү (жишээ: すみません、水はどこですか？)..."
             disabled={isLoading || isFinishing}
-            className="w-full pl-3.5 pr-4 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-amber-500 text-xs sm:text-sm font-jp"
+            className="w-full pl-3.5 pr-4 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C] text-xs sm:text-sm font-jp"
           />
         </div>
 
@@ -763,7 +763,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
           type="button"
           onClick={() => handleSend()}
           disabled={!inputText.trim() || isLoading || isFinishing}
-          className="p-2.5 sm:p-3 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white font-bold transition-all shadow-xs cursor-pointer shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="p-2.5 sm:p-3 rounded-xl bg-[#EF233C] hover:bg-[#D90429] disabled:opacity-40 text-white font-bold transition-all shadow-xs cursor-pointer shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
           title="Илгээх"
         >
           <Send className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -774,7 +774,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
       {isLimitModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
           <div className="w-full max-w-md p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xl space-y-4 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center mx-auto">
+            <div className="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-950/60 text-orange-600 flex items-center justify-center mx-auto">
               <Sparkles className="w-7 h-7" />
             </div>
 
@@ -793,7 +793,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
                   setIsLimitModalOpen(false);
                   setIsAuthModalOpen(true);
                 }}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold text-sm shadow-md hover:from-amber-600 hover:to-amber-700 transition-all cursor-pointer"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-[#EF233C] hover:from-red-700 hover:to-rose-700 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
               >
                 Premium эрх идэвхжүүлэх
               </button>

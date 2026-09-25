@@ -125,30 +125,30 @@ export const PremiumView: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fadeIn">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white p-6 sm:p-10 shadow-lg shadow-amber-500/20">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#EF233C] via-[#B91C1C] to-[#8F1537] text-white p-6 sm:p-10 shadow-lg shadow-red-500/20">
         <div className="absolute -right-8 -bottom-8 w-60 h-60 bg-white/10 rounded-full blur-2xl pointer-events-none" />
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider text-amber-100">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider text-rose-100">
               <Sparkles className="w-3.5 h-3.5" />
               SunnyLearn Premium
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
               Япон хэлийг хязгааргүй, үр дүнтэй суралц
             </h1>
-            <p className="text-sm sm:text-base text-amber-100/90 leading-relaxed">
+            <p className="text-sm sm:text-base text-rose-100/90 leading-relaxed">
               30 хоногийн хугацаатай бүх түвшний сургалтын хөтөлбөр, интерактив сорил, дүрэм, толь бичгийг бүрэн ашиглах боломж.
             </p>
           </div>
 
           <div className="shrink-0 flex flex-col items-start md:items-end gap-2 bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20">
-            <span className="text-xs text-amber-200 font-semibold">Багцын үнэ</span>
+            <span className="text-xs text-rose-200 font-semibold">Багцын үнэ</span>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl sm:text-4xl font-black text-white">¥880</span>
-              <span className="text-xs text-amber-100 font-medium">/ 30 хоног</span>
+              <span className="text-xs text-rose-100 font-medium">/ 30 хоног</span>
             </div>
-            <span className="text-[11px] text-amber-200/80">Гар шилжүүлэг (Банк)</span>
+            <span className="text-[11px] text-rose-200/80">Гар шилжүүлэг (Банк)</span>
           </div>
         </div>
       </div>
@@ -186,22 +186,22 @@ export const PremiumView: React.FC = () => {
 
       {/* Pending Request Status Banner (If user has one) */}
       {latestPendingPayment ? (
-        <div className="bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-300 dark:border-amber-700 p-6 sm:p-8 rounded-3xl space-y-4 shadow-sm">
+        <div className="bg-orange-50 dark:bg-orange-950/40 border-2 border-orange-300 dark:border-orange-700 p-6 sm:p-8 rounded-3xl space-y-4 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
+              <div className="w-10 h-10 rounded-2xl bg-orange-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-orange-500/20">
                 <Clock className="w-5 h-5 animate-pulse" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-extrabold text-amber-950 dark:text-amber-100">
+                  <h3 className="text-lg font-extrabold text-orange-950 dark:text-orange-100">
                     Төлбөр шалгагдаж байна (PENDING)
                   </h3>
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 text-[11px] font-bold">
+                  <span className="px-2.5 py-0.5 rounded-full bg-orange-200 dark:bg-orange-900/60 text-orange-900 dark:text-orange-200 text-[11px] font-bold">
                     Шалгаж байна
                   </span>
                 </div>
-                <p className="text-xs text-amber-800 dark:text-amber-300 mt-1">
+                <p className="text-xs text-orange-800 dark:text-orange-300 mt-1">
                   Таны шилжүүлгийн хүсэлтийг хүлээн авлаа. Админ ゆうちょ銀行 дансны хуулгыг шалгаад Premium эрхийг шууд нээнэ.
                 </p>
               </div>
@@ -210,7 +210,7 @@ export const PremiumView: React.FC = () => {
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="p-2 rounded-xl text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors shrink-0"
+              className="p-2 rounded-xl text-orange-800 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors shrink-0"
               title="Төлөв дахин шалгах"
             >
               <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -218,25 +218,25 @@ export const PremiumView: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
-            <div className="p-3 bg-white/80 dark:bg-stone-900/80 rounded-xl border border-amber-200 dark:border-amber-800/80">
+            <div className="p-3 bg-white/80 dark:bg-stone-900/80 rounded-xl border border-orange-200 dark:border-orange-800/80">
               <span className="text-[10px] uppercase font-bold text-stone-500 dark:text-stone-400 block">Хүсэлтийн дугаар</span>
               <span className="text-xs font-mono font-extrabold text-stone-900 dark:text-stone-100 truncate block">
                 {latestPendingPayment.id}
               </span>
             </div>
-            <div className="p-3 bg-white/80 dark:bg-stone-900/80 rounded-xl border border-amber-200 dark:border-amber-800/80">
+            <div className="p-3 bg-white/80 dark:bg-stone-900/80 rounded-xl border border-orange-200 dark:border-orange-800/80">
               <span className="text-[10px] uppercase font-bold text-stone-500 dark:text-stone-400 block">Шилжүүлэгч (振込名義)</span>
               <span className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate block">
                 {latestPendingPayment.senderName}
               </span>
             </div>
-            <div className="p-3 bg-white/80 dark:bg-stone-900/80 rounded-xl border border-amber-200 dark:border-amber-800/80">
+            <div className="p-3 bg-white/80 dark:bg-stone-900/80 rounded-xl border border-orange-200 dark:border-orange-800/80">
               <span className="text-[10px] uppercase font-bold text-stone-500 dark:text-stone-400 block">Шилжүүлсэн дүн</span>
-              <span className="text-xs font-extrabold text-amber-700 dark:text-amber-400 block">
+              <span className="text-xs font-extrabold text-orange-700 dark:text-orange-400 block">
                 ¥{latestPendingPayment.amount} (30 хоног)
               </span>
             </div>
-            <div className="p-3 bg-white/80 dark:bg-stone-900/80 rounded-xl border border-amber-200 dark:border-amber-800/80">
+            <div className="p-3 bg-white/80 dark:bg-stone-900/80 rounded-xl border border-orange-200 dark:border-orange-800/80">
               <span className="text-[10px] uppercase font-bold text-stone-500 dark:text-stone-400 block">Шилжүүлсэн огноо</span>
               <span className="text-xs font-semibold text-stone-800 dark:text-stone-200 block">
                 {latestPendingPayment.transferDate}
@@ -244,8 +244,8 @@ export const PremiumView: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-amber-100/60 dark:bg-amber-900/30 p-3.5 rounded-xl text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
-            <Info className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
+          <div className="bg-orange-100/60 dark:bg-orange-900/30 p-3.5 rounded-xl text-xs text-orange-900 dark:text-orange-200 flex items-start gap-2">
+            <Info className="w-4 h-4 shrink-0 mt-0.5 text-orange-600" />
             <p>
               <strong>Санамж:</strong> Та дахин ¥880 шилжүүлэх шаардлагагүй. Таны хүсэлт аюулгүй хадгалагдсан тул админ хуулга шалгаад баталгаажуулна. Энэ хугацаанд та сайтын үндсэн хичээлүүдээ чөлөөтэй үзэж болно.
             </p>
@@ -254,9 +254,9 @@ export const PremiumView: React.FC = () => {
       ) : null}
 
       {/* Section 30: Informative Notice Before Paying */}
-      <div className="bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 p-5 sm:p-6 rounded-3xl space-y-3">
+      <div className="bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200/80 dark:border-orange-900/50 p-5 sm:p-6 rounded-3xl space-y-3">
         <div className="flex items-center gap-2 text-stone-900 dark:text-stone-100 font-extrabold text-base">
-          <Info className="w-5 h-5 text-amber-500 shrink-0" />
+          <Info className="w-5 h-5 text-orange-600 shrink-0" />
           <span>「Төлбөр баталгаажуулах тухай」</span>
         </div>
         <div className="text-xs sm:text-sm text-stone-700 dark:text-stone-300 leading-relaxed space-y-2">
@@ -267,8 +267,8 @@ export const PremiumView: React.FC = () => {
             Төлбөрөө хийсний дараа “Төлбөр хийсэн” товчийг дарж хүсэлтээ илгээнэ үү. Таны төлбөр баталгаажмагц Premium эрх таны бүртгэлд идэвхжинэ.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-amber-200/60 dark:border-amber-900/40">
-          <span className="px-3 py-1 rounded-full bg-amber-200/70 dark:bg-amber-900/60 text-amber-950 dark:text-amber-200 font-black text-xs">
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-orange-200/60 dark:border-orange-900/40">
+          <span className="px-3 py-1 rounded-full bg-orange-200/70 dark:bg-orange-900/60 text-orange-950 dark:text-orange-200 font-black text-xs">
             ¥880
           </span>
           <span className="px-3 py-1 rounded-full bg-stone-200/70 dark:bg-stone-800 text-stone-800 dark:text-stone-200 font-bold text-xs">
@@ -282,9 +282,9 @@ export const PremiumView: React.FC = () => {
 
       {latestPendingPayment ? (
         /* Section 33 & 35: Pending Confirmation Screen (Replaces bank transfer form & prevents duplicate submissions) */
-        <div className="bg-white dark:bg-stone-900 p-6 sm:p-8 rounded-3xl border-2 border-amber-400 dark:border-amber-600 shadow-md space-y-6">
+        <div className="bg-white dark:bg-stone-900 p-6 sm:p-8 rounded-3xl border-2 border-orange-400 dark:border-orange-600 shadow-md space-y-6">
           <div className="flex items-center gap-3.5 pb-4 border-b border-stone-200 dark:border-stone-800">
-            <div className="w-11 h-11 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-black shrink-0 shadow-md shadow-amber-500/20 text-lg">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#EF233C] to-orange-600 text-white flex items-center justify-center font-black shrink-0 shadow-md shadow-red-500/20 text-lg">
               ✓
             </div>
             <div>
@@ -292,7 +292,7 @@ export const PremiumView: React.FC = () => {
                 Төлбөрийн хүсэлт илгээгдлээ
               </h2>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 font-extrabold">
+                <span className="inline-flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400 font-extrabold">
                   <Clock className="w-3.5 h-3.5 animate-pulse" />
                   Төлөв: Шалгаж байна (PENDING)
                 </span>
@@ -330,20 +330,20 @@ export const PremiumView: React.FC = () => {
           </div>
 
           {/* Reassuring Message */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/80 space-y-2.5">
-            <p className="text-xs sm:text-sm text-amber-950 dark:text-amber-100 font-semibold">
+          <div className="p-4 sm:p-5 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-300 dark:border-orange-800/80 space-y-2.5">
+            <p className="text-xs sm:text-sm text-orange-950 dark:text-orange-100 font-semibold">
               Таны төлбөрийн мэдээлэл амжилттай илгээгдлээ.
             </p>
-            <p className="text-xs sm:text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
+            <p className="text-xs sm:text-sm text-orange-900 dark:text-orange-200 leading-relaxed">
               Одоогоор төлбөрийг шалгаж байна. Баталгаажмагц SunnyLearn Premium эрх таны бүртгэлд идэвхжинэ.
             </p>
-            <p className="text-xs sm:text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
+            <p className="text-xs sm:text-sm text-orange-900 dark:text-orange-200 leading-relaxed">
               Шалгаж байх хугацаанд та SunnyLearn-ийн үнэгүй боломжуудыг хэвийн ашиглаж болно.
             </p>
 
             {/* Prominent Mandatory Banner */}
-            <div className="p-3 mt-3 rounded-xl bg-amber-200/80 dark:bg-amber-900/60 border border-amber-400 dark:border-amber-700 text-center">
-              <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-100 tracking-wide">
+            <div className="p-3 mt-3 rounded-xl bg-orange-200/80 dark:bg-orange-900/60 border border-orange-400 dark:border-orange-700 text-center">
+              <span className="text-xs sm:text-sm font-black text-orange-950 dark:text-orange-100 tracking-wide">
                 ⚠️ Дахин төлбөр хийх шаардлагагүй.
               </span>
             </div>
@@ -354,7 +354,7 @@ export const PremiumView: React.FC = () => {
             <button
               type="button"
               onClick={() => setActiveTab('learn')}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs sm:text-sm shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-black text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               Үргэлжлүүлэн сурах →
             </button>
@@ -406,17 +406,17 @@ export const PremiumView: React.FC = () => {
               </div>
 
               {/* 記号番号 */}
-              <div className="p-3 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 rounded-xl flex items-center justify-between">
+              <div className="p-3 bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900/60 rounded-xl flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] text-amber-800 dark:text-amber-400 block font-semibold">記号番号</span>
-                  <span className="font-extrabold text-amber-950 dark:text-amber-100 text-base font-mono tracking-wider">
+                  <span className="text-[11px] text-orange-800 dark:text-orange-400 block font-semibold">記号番号</span>
+                  <span className="font-extrabold text-stone-900 dark:text-stone-100 text-base font-mono tracking-wider">
                     11370-18362191
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleCopy('11370-18362191', 'account')}
-                  className="p-2 rounded-lg bg-amber-200/60 dark:bg-amber-900/50 text-amber-900 dark:text-amber-200 hover:bg-amber-200 transition-colors"
+                  className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/50 text-orange-900 dark:text-orange-200 hover:bg-orange-200 transition-colors"
                   title="記号番号 хуулах"
                 >
                   {copiedField === 'account' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
@@ -477,7 +477,7 @@ export const PremiumView: React.FC = () => {
                   const formEl = document.getElementById('payment-verify-form');
                   formEl?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="w-full py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs sm:text-sm shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 px-4 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] text-white font-black text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Төлбөр хийсэн (Хүсэлт илгээх) ↓</span>
               </button>
@@ -504,9 +504,9 @@ export const PremiumView: React.FC = () => {
             </div>
 
             {!currentUser && (
-              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/80 space-y-2.5">
-                <div className="flex items-center gap-2 text-xs font-bold text-amber-900 dark:text-amber-200">
-                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <div className="p-4 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-300 dark:border-orange-800/80 space-y-2.5">
+                <div className="flex items-center gap-2 text-xs font-bold text-orange-900 dark:text-orange-200">
+                  <AlertCircle className="w-4 h-4 text-orange-600 shrink-0" />
                   <span>Зочноор үзэж байна — Нэвтрэх эсвэл бүртгүүлнэ үү</span>
                 </div>
                 <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
@@ -515,7 +515,7 @@ export const PremiumView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAuthModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow-sm transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-extrabold text-xs shadow-xs transition-all cursor-pointer"
                 >
                   <span>Нэвтрэх / Шинээр бүртгүүлэх</span>
                 </button>
@@ -534,7 +534,7 @@ export const PremiumView: React.FC = () => {
                   placeholder="Жишээ: BAT-ERDENE эсвэл バトエルデネ"
                   value={senderName}
                   onChange={e => setSenderName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
                 />
                 <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1">
                   Банкны апп эсвэл ATM дээр оруулсан яг тэр нэрээр нь бичнэ үү.
@@ -552,7 +552,7 @@ export const PremiumView: React.FC = () => {
                     required
                     value={transferDate}
                     onChange={e => setTransferDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
                   />
                 </div>
 
@@ -577,10 +577,10 @@ export const PremiumView: React.FC = () => {
                   placeholder="таны-имэйл@gmail.com"
                   value={userEmail}
                   onChange={e => setUserEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
                 />
                 {!currentUser && (
-                  <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                  <p className="text-[11px] text-orange-600 dark:text-orange-400 mt-1 flex items-center gap-1">
                     <span>Хэрэв та өмнө нь Google-ээр нэвтэрсэн бол тэр хаягаа оруулаарай.</span>
                     <button
                       type="button"
@@ -603,7 +603,7 @@ export const PremiumView: React.FC = () => {
                   placeholder="Таны нэр"
                   value={userName}
                   onChange={e => setUserName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
                 />
               </div>
 
@@ -617,14 +617,14 @@ export const PremiumView: React.FC = () => {
                   placeholder="Жишээ: SMBC банкнаас шилжүүлэв гэх мэт"
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-600 active:scale-[0.99] text-white font-extrabold text-sm sm:text-base shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#EF233C] via-[#B91C1C] to-orange-600 hover:opacity-95 active:scale-[0.99] text-white font-extrabold text-sm sm:text-base shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -681,7 +681,7 @@ export const PremiumView: React.FC = () => {
                       <CheckCircle2 className="w-3 h-3" /> Баталгаажсан
                     </span>
                   ) : p.status === 'PENDING' ? (
-                    <span className="px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold text-[11px] flex items-center gap-1">
+                    <span className="px-2.5 py-1 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 font-bold text-[11px] flex items-center gap-1">
                       <Clock className="w-3 h-3" /> Шалгаж байна
                     </span>
                   ) : (
@@ -700,7 +700,7 @@ export const PremiumView: React.FC = () => {
       <div className="p-6 rounded-3xl bg-stone-100 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h4 className="font-bold text-sm text-stone-900 dark:text-white flex items-center gap-1.5">
-            <HelpCircle className="w-4 h-4 text-amber-600" />
+            <HelpCircle className="w-4 h-4 text-orange-600" />
             Асуулт эсвэл тусламж хэрэгтэй юу?
           </h4>
           <p className="text-xs text-stone-600 dark:text-stone-400">
@@ -720,7 +720,7 @@ export const PremiumView: React.FC = () => {
       {showAuthPrompt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white dark:bg-stone-900 rounded-3xl p-6 sm:p-8 max-w-md w-full border border-stone-200 dark:border-stone-800 shadow-2xl space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 flex items-center justify-center mx-auto">
               <Lock className="w-6 h-6" />
             </div>
             <div className="text-center space-y-1.5">
@@ -738,7 +738,7 @@ export const PremiumView: React.FC = () => {
                   setShowAuthPrompt(false);
                   setIsAuthModalOpen(true);
                 }}
-                className="w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+                className="w-full py-3 px-4 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all cursor-pointer"
               >
                 Нэвтрэх / Бүртгүүлэх
               </button>

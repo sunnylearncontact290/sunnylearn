@@ -29,7 +29,7 @@ export const BadgesSection: React.FC<BadgesSectionProps> = ({
     const props = {
       className: `w-5 h-5 ${
         isUnlocked
-          ? 'text-amber-500 fill-amber-500'
+          ? 'text-orange-500 fill-orange-500'
           : 'text-stone-400 dark:text-stone-500'
       }`
     };
@@ -67,7 +67,7 @@ export const BadgesSection: React.FC<BadgesSectionProps> = ({
           </p>
         </div>
 
-        <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50">
+        <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50">
           Нээсэн: {unlockedCount} / {badges.length}
         </span>
       </div>
@@ -78,7 +78,7 @@ export const BadgesSection: React.FC<BadgesSectionProps> = ({
             key={badge.id}
             className={`rounded-2xl p-4 border transition-all flex flex-col justify-between space-y-3 ${
               badge.isUnlocked
-                ? 'bg-amber-500/5 dark:bg-amber-950/20 border-amber-500/30 shadow-xs'
+                ? 'bg-orange-500/5 dark:bg-orange-950/20 border-orange-500/30 shadow-xs'
                 : 'bg-stone-50 dark:bg-stone-800/40 border-stone-200/80 dark:border-stone-800 opacity-80'
             }`}
           >
@@ -86,7 +86,7 @@ export const BadgesSection: React.FC<BadgesSectionProps> = ({
               <div
                 className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
                   badge.isUnlocked
-                    ? 'bg-amber-500/15 dark:bg-amber-500/20'
+                    ? 'bg-orange-500/15 dark:bg-orange-500/20'
                     : 'bg-stone-200/70 dark:bg-stone-800'
                 }`}
               >

@@ -52,15 +52,15 @@ export const GrammarList: React.FC = () => {
     <div className="space-y-6">
       {/* Premium Preview Info Banner */}
       {isLevelPremium && !isUnlocked && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-300 dark:border-amber-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-500/10 via-orange-500/5 to-transparent border border-red-200/80 dark:border-red-900/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm shadow-amber-500/20">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EF233C] to-orange-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-red-500/20">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <h4 className="text-sm font-extrabold text-stone-900 dark:text-stone-100 flex items-center gap-2">
                 <span>JLPT {effectiveLevel} Дүрэм — Танилцуулга хувилбар</span>
-                <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 text-[10px] font-bold">
                   {filteredGrammar.length} дүрэм нээлттэй
                 </span>
               </h4>
@@ -78,7 +78,7 @@ export const GrammarList: React.FC = () => {
                 setActiveTab('premium');
               }
             }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow-sm shadow-amber-500/20 transition-all shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#EF233C] via-[#B91C1C] to-orange-600 hover:opacity-95 text-white font-extrabold text-xs shadow-md shadow-red-500/20 transition-all shrink-0 cursor-pointer"
           >
             <Lock className="w-3.5 h-3.5" />
             <span>Premium нээх (¥880 / 30 хоног)</span>
@@ -140,10 +140,10 @@ export const GrammarList: React.FC = () => {
                   <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap self-start sm:self-auto">
                     <button
                       onClick={() => toggleFavorite('grammar', item.id)}
-                      className="p-1.5 rounded-lg text-stone-400 hover:text-amber-500 transition-colors"
+                      className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors"
                       title="Хадгалах"
                     >
-                      <Star className={`w-4 h-4 ${isFav ? 'fill-amber-400 text-amber-400' : ''}`} />
+                      <Star className={`w-4 h-4 ${isFav ? 'fill-orange-400 text-orange-400' : ''}`} />
                     </button>
                     <button
                       onClick={() => toggleGrammarLearned(item.id)}
@@ -262,11 +262,11 @@ export const GrammarList: React.FC = () => {
                             </div>
                           )}
                           {item.commonMistakes && (
-                            <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 flex items-start gap-2">
-                              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                            <div className="p-3 rounded-lg bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900/50 flex items-start gap-2">
+                              <AlertCircle className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
                               <div>
-                                <span className="font-bold text-amber-900 dark:text-amber-200">Нийтлэг гаргадаг алдаа:</span>
-                                <p className="text-amber-800 dark:text-amber-300 mt-0.5">{item.commonMistakes}</p>
+                                <span className="font-bold text-orange-900 dark:text-orange-200">Нийтлэг гаргадаг алдаа:</span>
+                                <p className="text-orange-800 dark:text-orange-300 mt-0.5">{item.commonMistakes}</p>
                               </div>
                             </div>
                           )}
@@ -281,8 +281,8 @@ export const GrammarList: React.FC = () => {
 
           {/* Locked Card Teaser */}
           {isLevelPremium && !isUnlocked && (
-            <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-stone-50 to-amber-50/40 dark:from-stone-900 dark:to-amber-950/20 border-2 border-dashed border-amber-300 dark:border-amber-800/60 flex flex-col items-center justify-center text-center space-y-3 shadow-sm">
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-stone-50 to-orange-50/30 dark:from-stone-900 dark:to-orange-950/20 border-2 border-dashed border-orange-300 dark:border-orange-800/60 flex flex-col items-center justify-center text-center space-y-3 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 flex items-center justify-center">
                 <Lock className="w-6 h-6" />
               </div>
               <div>
@@ -301,7 +301,7 @@ export const GrammarList: React.FC = () => {
                     setActiveTab('premium');
                   }
                 }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#EF233C] via-[#B91C1C] to-orange-600 hover:opacity-95 text-white font-extrabold text-xs shadow-md shadow-red-500/20 transition-all cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>Premium идэвхжүүлэх (¥880 / 30 хоног)</span>

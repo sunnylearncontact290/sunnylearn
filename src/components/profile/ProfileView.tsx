@@ -87,7 +87,7 @@ export const ProfileView: React.FC = () => {
                   className="w-9 h-9 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-sm">
+                <div className="w-9 h-9 rounded-full bg-[#EF233C] text-white flex items-center justify-center font-bold text-sm shadow-xs">
                   {currentUser.name.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -101,7 +101,7 @@ export const ProfileView: React.FC = () => {
                       <Check className="w-3 h-3" /> Синк хийгдсэн
                     </span>
                   ) : syncStatus === 'syncing' ? (
-                    <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold">
+                    <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400 font-semibold">
                       <RefreshCw className="w-3 h-3 animate-spin" /> Синк хийгдэж байна...
                     </span>
                   ) : (
@@ -124,7 +124,7 @@ export const ProfileView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsAuthModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#EF233C] to-orange-600 hover:opacity-95 text-white text-xs font-bold shadow-md shadow-red-500/20 transition-all cursor-pointer"
             >
               <LogIn className="w-4 h-4" />
               <span>Google-ээр нэвтрэх / Бүртгүүлэх</span>
@@ -132,8 +132,8 @@ export const ProfileView: React.FC = () => {
           )}
         </div>
 
-        <div className="p-3.5 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-200">
-          <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        <div className="p-3.5 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-900/40 flex items-start gap-2.5 text-xs text-orange-900 dark:text-orange-200">
+          <ShieldCheck className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
           <span>
             SunnyLearn нь бүртгэлгүй үед ч таны явцыг хөтөч дээрээ бүрэн хадгалдаг. Google хаягаараа нэвтэрснээр утас, таблет, компьютер дээрээ хаанаас ч хамаагүй сургалтаа үргэлжлүүлэх боломжтой болно.
           </span>
@@ -151,7 +151,7 @@ export const ProfileView: React.FC = () => {
               : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
           }`}
         >
-          <Settings className="w-4 h-4 text-amber-500" />
+          <Settings className="w-4 h-4 text-orange-500" />
           <span>Сургалтын тохиргоо</span>
         </button>
 
@@ -160,8 +160,8 @@ export const ProfileView: React.FC = () => {
           onClick={() => setActiveSection('premium')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all ${
             activeSection === 'premium'
-              ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md shadow-amber-500/20'
-              : 'text-amber-700 dark:text-amber-400 hover:bg-amber-100/50 dark:hover:bg-amber-950/40'
+              ? 'bg-gradient-to-r from-[#EF233C] via-[#B91C1C] to-[#8F1537] text-white shadow-md shadow-red-500/20'
+              : 'text-orange-700 dark:text-orange-400 hover:bg-orange-100/50 dark:hover:bg-orange-950/40'
           }`}
         >
           <Sparkles className="w-4 h-4" />
@@ -171,11 +171,11 @@ export const ProfileView: React.FC = () => {
               Идэвхтэй
             </span>
           ) : latestPendingPayment ? (
-            <span className="px-2 py-0.5 rounded-full bg-amber-400/30 text-[10px] font-black animate-pulse">
+            <span className="px-2 py-0.5 rounded-full bg-orange-400/30 text-[10px] font-black animate-pulse">
               Шалгаж байна
             </span>
           ) : (
-            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-[10px] font-black">
+            <span className="px-2 py-0.5 rounded-full bg-orange-500/20 text-[10px] font-black">
               ¥880
             </span>
           )}
@@ -189,28 +189,28 @@ export const ProfileView: React.FC = () => {
         <>
           {/* Section 36: Pending Status in User Profile */}
           {latestPendingPayment ? (
-            <div className="p-5 rounded-3xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-300 dark:border-amber-700 space-y-3 shadow-xs">
+            <div className="p-5 rounded-3xl bg-orange-50 dark:bg-orange-950/40 border-2 border-orange-300 dark:border-orange-700 space-y-3 shadow-xs">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shadow-xs">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-600 to-orange-600 text-white flex items-center justify-center font-bold shadow-xs">
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm text-amber-950 dark:text-amber-100">
+                    <h3 className="font-extrabold text-sm text-orange-950 dark:text-orange-100">
                       SunnyLearn Premium
                     </h3>
-                    <span className="text-[11px] text-amber-800 dark:text-amber-300">
+                    <span className="text-[11px] text-orange-800 dark:text-orange-300">
                       ¥880 • 30 хоног
                     </span>
                   </div>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-amber-200 dark:bg-amber-900/80 text-amber-950 dark:text-amber-200 text-xs font-black flex items-center gap-1.5">
+                <span className="px-3 py-1 rounded-full bg-orange-200 dark:bg-orange-900/80 text-orange-950 dark:text-orange-200 text-xs font-black flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5" />
                   🕒 Төлбөр шалгаж байна
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-white/70 dark:bg-stone-900/60 p-3 rounded-xl border border-amber-200 dark:border-amber-800/80">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs bg-white/70 dark:bg-stone-900/60 p-3 rounded-xl border border-orange-200 dark:border-orange-800/80">
                 <div>
                   <span className="text-stone-500 block text-[10px] uppercase font-bold">Request ID</span>
                   <span className="font-mono font-bold text-stone-900 dark:text-white">{latestPendingPayment.id}</span>
@@ -221,14 +221,14 @@ export const ProfileView: React.FC = () => {
                 </div>
               </div>
 
-              <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed font-medium">
+              <p className="text-xs text-orange-900 dark:text-orange-200 leading-relaxed font-medium">
                 Таны төлбөрийг шалгаж байна. Баталгаажмагц Premium эрх автоматаар идэвхжинэ. <strong>Дахин төлбөр хийх шаардлагагүй.</strong>
               </p>
 
               <button
                 type="button"
                 onClick={() => setActiveSection('premium')}
-                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
               >
                 Төлбөрийн мэдээлэл харах →
               </button>
@@ -236,14 +236,14 @@ export const ProfileView: React.FC = () => {
           ) : !isPremium ? (
             <div
               onClick={() => setActiveSection('premium')}
-              className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-300 dark:border-amber-800/80 flex items-center justify-between gap-4 cursor-pointer hover:border-amber-500 transition-all group"
+              className="p-4 rounded-2xl bg-gradient-to-r from-red-500/10 via-orange-500/5 to-transparent border border-orange-300 dark:border-orange-800/80 flex items-center justify-between gap-4 cursor-pointer hover:border-[#EF233C] transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 shadow-md shadow-amber-500/20">
-                  <Sparkles className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-[#EF233C] text-white flex items-center justify-center font-bold shrink-0 shadow-md shadow-red-500/20">
+                  <Sparkles className="w-5 h-5 text-orange-200" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm text-stone-900 dark:text-stone-100 group-hover:text-amber-600 transition-colors">
+                  <h3 className="font-extrabold text-sm text-stone-900 dark:text-stone-100 group-hover:text-[#EF233C] transition-colors">
                     SunnyLearn Premium гишүүн болох (¥880 / 30 хоног)
                   </h3>
                   <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -251,7 +251,7 @@ export const ProfileView: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <span className="text-xs font-bold text-amber-600 dark:text-amber-400 group-hover:translate-x-1 transition-transform">
+              <span className="text-xs font-bold text-[#EF233C] dark:text-red-400 group-hover:translate-x-1 transition-transform">
                 Төлбөр шилжүүлэх →
               </span>
             </div>
@@ -284,7 +284,7 @@ export const ProfileView: React.FC = () => {
         {/* Daily Goal */}
         <div className="p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-4">
           <div className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-amber-500" />
+            <Target className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
               Өдрийн зорилтот үг
             </h2>
@@ -299,10 +299,10 @@ export const ProfileView: React.FC = () => {
                 key={cnt}
                 type="button"
                 onClick={() => setDailyGoal(cnt)}
-                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
+                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                   dailyGoal === cnt
-                    ? 'bg-amber-500 text-white border-amber-500 shadow-sm'
-                    : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700'
+                    ? 'bg-[#EF233C] text-white border-[#EF233C] shadow-xs'
+                    : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700'
                 }`}
               >
                 {cnt}
@@ -314,7 +314,7 @@ export const ProfileView: React.FC = () => {
         {/* Furigana Display */}
         <div className="p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-4">
           <div className="flex items-center gap-2">
-            <Eye className="w-5 h-5 text-amber-500" />
+            <Eye className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
               Фуригана (Ханзан дээрх уншлага)
             </h2>
@@ -327,10 +327,10 @@ export const ProfileView: React.FC = () => {
             <button
               type="button"
               onClick={() => setAutoFurigana(true)}
-              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                 autoFurigana
-                  ? 'bg-amber-500 text-white border-amber-500 shadow-sm'
-                  : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700'
+                  ? 'bg-[#EF233C] text-white border-[#EF233C] shadow-xs'
+                  : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700'
               }`}
             >
               Ил харуулах
@@ -338,10 +338,10 @@ export const ProfileView: React.FC = () => {
             <button
               type="button"
               onClick={() => setAutoFurigana(false)}
-              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border ${
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                 !autoFurigana
-                  ? 'bg-amber-500 text-white border-amber-500 shadow-sm'
-                  : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700'
+                  ? 'bg-[#EF233C] text-white border-[#EF233C] shadow-xs'
+                  : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700'
               }`}
             >
               Нуух (Өөрөө унших)
@@ -352,7 +352,7 @@ export const ProfileView: React.FC = () => {
         {/* Theme Settings */}
         <div className="p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-4">
           <div className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-amber-500" />
+            <Settings className="w-5 h-5 text-orange-600 dark:text-orange-400" />
             <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
               Харагдах орчин (Theme)
             </h2>
@@ -365,10 +365,10 @@ export const ProfileView: React.FC = () => {
             <button
               type="button"
               onClick={() => setDarkMode(false)}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 cursor-pointer ${
                 !isDarkMode
-                  ? 'bg-amber-500 text-white border-amber-500 shadow-sm'
-                  : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#EF233C] text-white border-[#EF233C] shadow-xs'
+                  : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700'
               }`}
             >
               ☀️ Гэгээлэг (Light)
@@ -376,10 +376,10 @@ export const ProfileView: React.FC = () => {
             <button
               type="button"
               onClick={() => setDarkMode(true)}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 cursor-pointer ${
                 isDarkMode
-                  ? 'bg-amber-500 text-white border-amber-500 shadow-sm'
-                  : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100'
+                  ? 'bg-[#EF233C] text-white border-[#EF233C] shadow-xs'
+                  : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700'
               }`}
             >
               🌙 Бараан (Dark)
@@ -393,7 +393,7 @@ export const ProfileView: React.FC = () => {
         <button
           type="button"
           onClick={saveSettings}
-          className="px-8 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm shadow-md transition-all flex items-center gap-2"
+          className="px-8 py-3 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>Тохиргоог хадгалах</span>

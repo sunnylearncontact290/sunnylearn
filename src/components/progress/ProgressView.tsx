@@ -113,7 +113,7 @@ export const ProgressView: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
                 Миний Явц
               </span>
               <LevelBadge level={viewLevel} size="sm" />
@@ -138,7 +138,7 @@ export const ProgressView: React.FC = () => {
                 }}
                 className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                   viewLevel === lvl
-                    ? 'bg-white dark:bg-stone-700 text-amber-600 dark:text-amber-300 shadow-sm'
+                    ? 'bg-[#E62929] text-white shadow-xs'
                     : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
                 }`}
               >
@@ -155,7 +155,7 @@ export const ProgressView: React.FC = () => {
             onClick={() => setActiveTabLocal('overview')}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
               activeTab === 'overview'
-                ? 'bg-amber-500 text-white shadow-sm'
+                ? 'bg-[#E62929] text-white shadow-xs'
                 : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
             }`}
           >
@@ -167,7 +167,7 @@ export const ProgressView: React.FC = () => {
             onClick={() => setActiveTabLocal('weak')}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'weak'
-                ? 'bg-rose-600 text-white shadow-sm'
+                ? 'bg-[#B91C2B] text-white shadow-xs'
                 : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
             }`}
           >
@@ -184,7 +184,7 @@ export const ProgressView: React.FC = () => {
             onClick={() => setActiveTabLocal('history')}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
               activeTab === 'history'
-                ? 'bg-amber-500 text-white shadow-sm'
+                ? 'bg-[#E62929] text-white shadow-xs'
                 : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
             }`}
           >
@@ -196,7 +196,7 @@ export const ProgressView: React.FC = () => {
             onClick={() => setActiveTabLocal('favorites')}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer ${
               activeTab === 'favorites'
-                ? 'bg-amber-500 text-white shadow-sm'
+                ? 'bg-[#E62929] text-white shadow-xs'
                 : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
             }`}
           >
@@ -235,7 +235,7 @@ export const ProgressView: React.FC = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
               <h3 className="text-base sm:text-lg font-extrabold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-500" />
+                <Sparkles className="w-4 h-4 text-[#EF233C]" />
                 <span>Сургалтын Нарийвчилсан Үзүүлэлт ({viewLevel})</span>
               </h3>
             </div>
@@ -246,14 +246,14 @@ export const ProgressView: React.FC = () => {
               <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
                   <span className="text-xs font-semibold">Нийт явц</span>
-                  <Sparkles className="w-5 h-5 text-amber-500" />
+                  <Sparkles className="w-5 h-5 text-[#EF233C]" />
                 </div>
                 <div className="text-3xl sm:text-4xl font-black text-stone-900 dark:text-stone-100">
                   {stats.overallPct}%
                 </div>
                 <div className="w-full bg-stone-100 dark:bg-stone-800 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-amber-500 h-full rounded-full transition-all"
+                    className="bg-[#EF233C] h-full rounded-full transition-all"
                     style={{ width: `${stats.overallPct}%` }}
                   />
                 </div>
@@ -322,7 +322,7 @@ export const ProgressView: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                    <BarChart2 className="w-5 h-5 text-amber-500" />
+                    <BarChart2 className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                     Сүүлийн 7 хоногийн идэвх
                   </h3>
                   <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -345,9 +345,9 @@ export const ProgressView: React.FC = () => {
                         <div
                           className={`w-full rounded-xl transition-all duration-500 ${
                             day.isToday
-                              ? 'bg-amber-500 shadow-md shadow-amber-500/20'
+                              ? 'bg-[#EF233C] shadow-md shadow-red-500/20'
                               : day.count > 0
-                              ? 'bg-amber-300 dark:bg-amber-600/60'
+                              ? 'bg-orange-500/80 dark:bg-orange-600/60'
                               : 'bg-transparent'
                           }`}
                           style={{ height: `${barHeightPct}%` }}
@@ -356,7 +356,7 @@ export const ProgressView: React.FC = () => {
                       <span
                         className={`text-xs font-semibold ${
                           day.isToday
-                            ? 'text-amber-600 dark:text-amber-400 font-bold'
+                            ? 'text-red-600 dark:text-red-400 font-bold'
                             : 'text-stone-500 dark:text-stone-400'
                         }`}
                       >
@@ -368,7 +368,7 @@ export const ProgressView: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between text-xs text-stone-400 pt-1">
-                <span>Цэнхэр / Шар багана: суралцсан өдрүүд</span>
+                <span>Улаан / Улбар шар багана: суралцсан өдрүүд</span>
                 <span>Өнөөдөр: {streak.current > 0 ? 'Идэвхтэй 🔥' : 'Эхлэх'}</span>
               </div>
             </div>
@@ -384,7 +384,7 @@ export const ProgressView: React.FC = () => {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-semibold">
                     <span className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300">
-                      <Languages className="w-4 h-4 text-amber-500" />
+                      <Languages className="w-4 h-4 text-[#EF233C]" />
                       Үгсийн сан
                     </span>
                     <span className="text-stone-500">
@@ -393,7 +393,7 @@ export const ProgressView: React.FC = () => {
                   </div>
                   <div className="w-full bg-stone-100 dark:bg-stone-800 h-2 rounded-full overflow-hidden">
                     <div
-                      className="bg-amber-500 h-full rounded-full transition-all"
+                      className="bg-[#EF233C] h-full rounded-full transition-all"
                       style={{ width: `${stats.vocabPct}%` }}
                     />
                   </div>
@@ -506,7 +506,7 @@ export const ProgressView: React.FC = () => {
               {stats.weakVocab.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-base font-bold text-stone-800 dark:text-stone-200 flex items-center gap-2 px-1">
-                    <Languages className="w-4 h-4 text-amber-500" />
+                    <Languages className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                     Давтах үгс ({stats.weakVocab.length})
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -616,7 +616,7 @@ export const ProgressView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('quiz')}
-                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-amber-500 hover:bg-amber-600 text-white cursor-pointer"
+                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[#EF233C] hover:bg-[#D90429] text-white cursor-pointer"
               >
                 Сорил эхлүүлэх
               </button>
@@ -657,7 +657,7 @@ export const ProgressView: React.FC = () => {
                         className={`text-2xl font-black block ${
                           isPassed
                             ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-amber-600 dark:text-amber-400'
+                            : 'text-orange-600 dark:text-orange-400'
                         }`}
                       >
                         {quiz.percentage}%
@@ -666,7 +666,7 @@ export const ProgressView: React.FC = () => {
                         className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
                           isPassed
                             ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
-                            : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300'
+                            : 'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300'
                         }`}
                       >
                         {isPassed ? 'Тэнцсэн' : 'Дахин өгөх'}
@@ -702,7 +702,7 @@ export const ProgressView: React.FC = () => {
               {favVocab.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-base font-bold text-stone-800 dark:text-stone-200 flex items-center gap-2">
-                    <Languages className="w-4 h-4 text-amber-500" />
+                    <Languages className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                     Хадгалсан үгс ({favVocab.length})
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -731,7 +731,7 @@ export const ProgressView: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => toggleFavorite('vocab', v.id)}
-                            className="p-2 rounded-xl text-amber-500 hover:bg-amber-50 dark:hover:bg-stone-800 cursor-pointer"
+                            className="p-2 rounded-xl text-orange-500 hover:bg-orange-50 dark:hover:bg-stone-800 cursor-pointer"
                             title="Хадгалснаас хасах"
                           >
                             <Star className="w-4 h-4 fill-current" />
@@ -771,7 +771,7 @@ export const ProgressView: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => toggleFavorite('kanji', k.id)}
-                            className="p-2 rounded-xl text-amber-500 hover:bg-amber-50 dark:hover:bg-stone-800 cursor-pointer"
+                            className="p-2 rounded-xl text-orange-500 hover:bg-orange-50 dark:hover:bg-stone-800 cursor-pointer"
                             title="Хадгалснаас хасах"
                           >
                             <Star className="w-4 h-4 fill-current" />
@@ -810,7 +810,7 @@ export const ProgressView: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => toggleFavorite('grammar', g.id)}
-                          className="p-2 rounded-xl text-amber-500 hover:bg-amber-50 dark:hover:bg-stone-800 cursor-pointer shrink-0"
+                          className="p-2 rounded-xl text-orange-500 hover:bg-orange-50 dark:hover:bg-stone-800 cursor-pointer shrink-0"
                           title="Хадгалснаас хасах"
                         >
                           <Star className="w-4 h-4 fill-current" />

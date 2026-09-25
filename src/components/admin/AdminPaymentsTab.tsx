@@ -118,7 +118,7 @@ export const AdminPaymentsTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-amber-500" />
+            <CreditCard className="w-5 h-5 text-[#EF233C]" />
             Төлбөр баталгаажуулалт (¥880 / 30 хоног)
           </h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
@@ -137,9 +137,9 @@ export const AdminPaymentsTab: React.FC = () => {
       </div>
 
       {/* Critical Admin Security Warning Box */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 flex items-start gap-3.5">
-        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-        <div className="space-y-1 text-xs text-amber-950 dark:text-amber-100">
+      <div className="p-4 sm:p-5 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-300 dark:border-orange-800 flex items-start gap-3.5">
+        <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" />
+        <div className="space-y-1 text-xs text-orange-950 dark:text-orange-100">
           <p className="font-extrabold text-sm">
             Админы шалгалтын анхааруулга (ゆうちょ銀行):
           </p>
@@ -151,12 +151,12 @@ export const AdminPaymentsTab: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1">
+        <div className="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-amber-700 dark:text-amber-400">Хүлээгдэж буй</span>
-            <Clock className="w-4 h-4 text-amber-600" />
+            <span className="text-xs font-bold text-orange-700 dark:text-orange-400">Хүлээгдэж буй</span>
+            <Clock className="w-4 h-4 text-orange-600" />
           </div>
-          <p className="text-2xl font-black text-amber-900 dark:text-amber-200">
+          <p className="text-2xl font-black text-orange-900 dark:text-orange-200">
             {adminPaymentStats.pendingCount}
           </p>
           <span className="text-[10px] text-stone-500">Шалгах шаардлагатай</span>
@@ -216,8 +216,8 @@ export const AdminPaymentsTab: React.FC = () => {
             onClick={() => setStatusFilter('PENDING')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
               statusFilter === 'PENDING'
-                ? 'bg-amber-500 text-white shadow-xs'
-                : 'text-amber-700 dark:text-amber-400 hover:bg-amber-100/50'
+                ? 'bg-[#EF233C] text-white shadow-xs'
+                : 'text-orange-700 dark:text-orange-400 hover:bg-orange-100/50'
             }`}
           >
             <span>Хүлээгдэж буй</span>
@@ -259,7 +259,7 @@ export const AdminPaymentsTab: React.FC = () => {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Шилжүүлэгчийн нэр, имэйлээр хайх..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full pl-9 pr-4 py-2 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
           />
         </div>
       </div>
@@ -279,7 +279,7 @@ export const AdminPaymentsTab: React.FC = () => {
                 key={item.id}
                 className={`p-5 rounded-2xl border transition-all ${
                   item.status === 'PENDING'
-                    ? 'bg-white dark:bg-stone-900 border-amber-300 dark:border-amber-800/80 shadow-md shadow-amber-500/5'
+                    ? 'bg-white dark:bg-stone-900 border-orange-300 dark:border-orange-800/80 shadow-md shadow-orange-500/5'
                     : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 opacity-90'
                 }`}
               >
@@ -292,8 +292,8 @@ export const AdminPaymentsTab: React.FC = () => {
                       </span>
 
                       {item.status === 'PENDING' && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 font-extrabold text-[11px] flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> Шалгаж байна (PENDING)
+                        <span className="px-2.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/80 text-orange-800 dark:text-orange-300 font-extrabold text-[11px] flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-orange-500" /> Шалгаж байна (PENDING)
                         </span>
                       )}
                       {item.status === 'APPROVED' && (
@@ -435,11 +435,11 @@ export const AdminPaymentsTab: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/80 text-xs text-amber-950 dark:text-amber-100 space-y-1">
+            <div className="p-4 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-300 dark:border-orange-800/80 text-xs text-orange-950 dark:text-orange-100 space-y-1">
               <p className="font-extrabold text-sm">
                 ⚠️ ¥880の入金を実際に確認してから承認してください。
               </p>
-              <p className="leading-relaxed text-amber-900 dark:text-amber-200">
+              <p className="leading-relaxed text-orange-900 dark:text-orange-200">
                 ゆうちょ銀行 дансны хуулга дээр шилжүүлэгчийн нэр, огноо, ¥880 дүн бодитоор орж ирснийг шалгасны дараа зөвшөөрнө үү.
               </p>
             </div>
