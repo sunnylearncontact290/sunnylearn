@@ -690,28 +690,19 @@ export const HomePage: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <AudioButton
-                        text={vocabPronounce.text}
-                        reading={vocabPronounce.reading}
-                        id={`daily_vocab_top_${vocabOfTheDay.id}`}
-                        size="xs"
-                        title={`"${vocabOfTheDay.japanese}" дуудлага сонсох`}
+                    <button
+                      onClick={() => toggleFavorite('vocab', vocabOfTheDay.id)}
+                      title="Хадгалах"
+                      className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors"
+                    >
+                      <Star
+                        className={`w-4 h-4 ${
+                          userProgress.favorites.vocabIds.includes(vocabOfTheDay.id)
+                            ? 'fill-orange-400 text-orange-400'
+                            : ''
+                        }`}
                       />
-                      <button
-                        onClick={() => toggleFavorite('vocab', vocabOfTheDay.id)}
-                        title="Хадгалах"
-                        className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors"
-                      >
-                        <Star
-                          className={`w-4 h-4 ${
-                            userProgress.favorites.vocabIds.includes(vocabOfTheDay.id)
-                              ? 'fill-orange-400 text-orange-400'
-                              : ''
-                          }`}
-                        />
-                      </button>
-                    </div>
+                    </button>
                   </div>
 
                   <div className="space-y-2">
@@ -808,28 +799,19 @@ export const HomePage: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <AudioButton
-                          text={kanjiPronounce.text}
-                          reading={kanjiPronounce.reading}
-                          id={`daily_kanji_top_${kanjiOfTheDay.id}`}
-                          size="xs"
-                          title={`"${kanjiOfTheDay.kanji}" дуудлага сонсох`}
+                      <button
+                        onClick={() => toggleFavorite('kanji', kanjiOfTheDay.id)}
+                        title="Хадгалах"
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors"
+                      >
+                        <Star
+                          className={`w-4 h-4 ${
+                            userProgress.favorites.kanjiIds.includes(kanjiOfTheDay.id)
+                              ? 'fill-orange-400 text-orange-400'
+                              : ''
+                          }`}
                         />
-                        <button
-                          onClick={() => toggleFavorite('kanji', kanjiOfTheDay.id)}
-                          title="Хадгалах"
-                          className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors"
-                        >
-                          <Star
-                            className={`w-4 h-4 ${
-                              userProgress.favorites.kanjiIds.includes(kanjiOfTheDay.id)
-                                ? 'fill-orange-400 text-orange-400'
-                                : ''
-                            }`}
-                          />
-                        </button>
-                      </div>
+                      </button>
                     </div>
 
                     <div className="flex items-start gap-3 sm:gap-4">
