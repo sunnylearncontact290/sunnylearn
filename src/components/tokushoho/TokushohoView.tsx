@@ -113,7 +113,7 @@ export const TokushohoView: React.FC = () => {
               <Mail className="w-4 h-4 text-orange-500 shrink-0" />
               <a
                 href="mailto:sunnylearn.contact@gmail.com"
-                className="hover:text-[#EF233C] dark:hover:text-red-400 underline decoration-stone-300 dark:decoration-stone-700 underline-offset-4"
+                className="hover:text-[#FF0000] dark:hover:text-[#FF6699] underline decoration-stone-300 dark:decoration-stone-700 underline-offset-4"
               >
                 sunnylearn.contact@gmail.com
               </a>
@@ -130,7 +130,7 @@ export const TokushohoView: React.FC = () => {
                 href="https://sunnylearn.online/"
                 target="_blank"
                 rel="noreferrer"
-                className="hover:text-[#EF233C] dark:hover:text-red-400 inline-flex items-center gap-1"
+                className="hover:text-[#FF0000] dark:hover:text-[#FF6699] inline-flex items-center gap-1"
               >
                 <span>https://sunnylearn.online/</span>
                 <ExternalLink className="w-3.5 h-3.5 text-stone-400" />
@@ -145,7 +145,7 @@ export const TokushohoView: React.FC = () => {
             </dt>
             <dd className="sm:col-span-2 text-xs sm:text-sm text-stone-800 dark:text-stone-200 space-y-1">
               <div className="flex items-baseline gap-2">
-                <span className="text-base sm:text-lg font-black text-[#EF233C] dark:text-red-400">
+                <span className="text-base sm:text-lg font-black text-[#FF0000] dark:text-[#FF6699]">
                   SunnyLearn Premium: 880円（税込）
                 </span>
                 <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">/ 30日間</span>

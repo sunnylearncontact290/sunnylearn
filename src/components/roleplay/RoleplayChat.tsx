@@ -438,7 +438,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
                 onClick={() => handleLevelSelect(lvl)}
                 className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
                   jlptLevel === lvl
-                    ? 'bg-[#EF233C] text-white shadow-2xs'
+                    ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-xs'
                     : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
@@ -585,7 +585,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
                 className={`group relative max-w-[85%] sm:max-w-[75%] rounded-2xl p-3.5 sm:p-4 text-sm shadow-2xs ${
                   isAI
                     ? 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 border border-stone-200/80 dark:border-stone-700/80'
-                    : 'bg-gradient-to-r from-red-600 to-[#EF233C] text-white rounded-br-xs user-bubble shadow-xs'
+                    : 'bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] text-white rounded-br-xs user-bubble shadow-xs'
                 }`}
               >
                 {/* Role label header */}
@@ -754,7 +754,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
             }}
             placeholder="Японоор хариултаа бичнэ үү (жишээ: すみません、水はどこですか？)..."
             disabled={isLoading || isFinishing}
-            className="w-full pl-3.5 pr-4 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C] text-xs sm:text-sm font-jp"
+            className="w-full pl-3.5 pr-4 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-[#FF3366]/30 focus:border-[#FF3366] text-xs sm:text-sm font-jp"
           />
         </div>
 
@@ -763,7 +763,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
           type="button"
           onClick={() => handleSend()}
           disabled={!inputText.trim() || isLoading || isFinishing}
-          className="p-2.5 sm:p-3 rounded-xl bg-[#EF233C] hover:bg-[#D90429] disabled:opacity-40 text-white font-bold transition-all shadow-xs cursor-pointer shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          className="p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] disabled:opacity-40 text-white font-bold transition-all shadow-xs cursor-pointer shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
           title="Илгээх"
         >
           <Send className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -793,7 +793,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
                   setIsLimitModalOpen(false);
                   setIsAuthModalOpen(true);
                 }}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-[#EF233C] hover:from-red-700 hover:to-rose-700 text-white font-bold text-sm shadow-md transition-all cursor-pointer"
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:from-[#990000] hover:to-[#CC0000] text-white font-bold text-sm shadow-md transition-all cursor-pointer"
               >
                 Premium эрх идэвхжүүлэх
               </button>

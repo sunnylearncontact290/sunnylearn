@@ -98,7 +98,7 @@ export const GamificationStatsSection: React.FC<GamificationStatsSectionProps> =
               <span>⭐</span>
               <span>Level {learnerLevel.level}</span>
             </div>
-            <span className="text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400">
+            <span className="text-xs sm:text-sm font-bold text-[#CC0000] dark:text-[#FF6699]">
               {learnerLevel.title}
             </span>
           </div>
@@ -113,7 +113,7 @@ export const GamificationStatsSection: React.FC<GamificationStatsSectionProps> =
             </div>
             <div className="w-full bg-stone-100 dark:bg-stone-800 h-3 rounded-full overflow-hidden p-0.5">
               <div
-                className="bg-gradient-to-r from-[#EF233C] via-orange-500 to-[#C84A0A] h-full rounded-full transition-all duration-500"
+                className="bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] h-full rounded-full transition-all duration-500"
                 style={{ width: `${learnerLevel.progressPercent}%` }}
               />
             </div>
@@ -122,7 +122,7 @@ export const GamificationStatsSection: React.FC<GamificationStatsSectionProps> =
 
         <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800 flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
           <div className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+            <Sparkles className="w-3.5 h-3.5 text-[#FF3366]" />
             <span>Энэ түвшинд {learnerLevel.nextXP - learnerLevel.totalXP} XP дутуу байна</span>
           </div>
           <span className="text-[11px] font-semibold text-stone-400">

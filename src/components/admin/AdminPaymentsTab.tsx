@@ -118,7 +118,7 @@ export const AdminPaymentsTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-stone-900 dark:text-stone-100 flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-[#EF233C]" />
+            <CreditCard className="w-5 h-5 text-[#FF0000] dark:text-[#FF6699]" />
             Төлбөр баталгаажуулалт (¥880 / 30 хоног)
           </h2>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
@@ -216,8 +216,8 @@ export const AdminPaymentsTab: React.FC = () => {
             onClick={() => setStatusFilter('PENDING')}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
               statusFilter === 'PENDING'
-                ? 'bg-[#EF233C] text-white shadow-xs'
-                : 'text-orange-700 dark:text-orange-400 hover:bg-orange-100/50'
+                ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-xs'
+                : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100/50'
             }`}
           >
             <span>Хүлээгдэж буй</span>
@@ -259,7 +259,7 @@ export const AdminPaymentsTab: React.FC = () => {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Шилжүүлэгчийн нэр, имэйлээр хайх..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
+            className="w-full pl-9 pr-4 py-2 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#FF3366]"
           />
         </div>
       </div>

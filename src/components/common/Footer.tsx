@@ -14,7 +14,7 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="w-full max-w-full overflow-hidden bg-stone-100 dark:bg-stone-900 border-t border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 mt-12 sm:mt-20 transition-colors">
+    <footer className="glass-footer w-full max-w-full overflow-hidden text-stone-600 dark:text-stone-400 mt-12 sm:mt-20 transition-colors">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-8 sm:mb-10">
           {/* Brand Col */}

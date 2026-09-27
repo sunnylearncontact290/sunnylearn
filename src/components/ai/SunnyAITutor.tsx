@@ -289,7 +289,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
       {/* 1. TUTOR HEADER */}
       <header className="p-4 sm:px-6 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-3 shrink-0 shadow-2xs">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-2xl bg-red-500/15 dark:bg-red-400/20 text-[#EF233C] dark:text-red-400 flex items-center justify-center shrink-0 border border-red-500/20">
+          <div className="w-10 h-10 rounded-2xl bg-red-500/15 dark:bg-red-400/20 text-[#FF0000] dark:text-[#FF6699] flex items-center justify-center shrink-0 border border-red-500/20">
             <Sparkles className="w-5 h-5" />
           </div>
           <div className="min-w-0">
@@ -298,7 +298,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
                 Sunny AI
               </h2>
               {isPremium && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-gradient-to-r from-[#EF233C] to-orange-600 text-white shadow-2xs">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-2xs">
                   Premium • Хязгааргүй
                 </span>
               )}
@@ -415,7 +415,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
         {/* Empty state welcome */}
         {messages.length === 0 && (
           <div className="max-w-xl mx-auto py-6 text-center space-y-6 animate-fade-in">
-            <div className="w-16 h-16 rounded-3xl bg-red-500/10 dark:bg-red-400/15 text-[#EF233C] dark:text-red-400 flex items-center justify-center mx-auto border border-red-500/20 shadow-xs">
+            <div className="w-16 h-16 rounded-3xl bg-red-500/10 dark:bg-red-400/15 text-[#FF0000] dark:text-[#FF6699] flex items-center justify-center mx-auto border border-red-500/20 shadow-xs">
               <Sparkles className="w-8 h-8" />
             </div>
 
@@ -477,7 +477,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
               >
                 {!isUser && (
                   <div className="flex items-center justify-between gap-3 mb-2 pb-2 border-b border-stone-100 dark:border-stone-800 text-xs text-stone-400">
-                    <span className="font-bold text-[#EF233C] dark:text-red-400 flex items-center gap-1">
+                    <span className="font-bold text-[#FF0000] dark:text-[#FF6699] flex items-center gap-1">
                       <Sparkles className="w-3.5 h-3.5" />
                       Sunny AI Багш
                     </span>
@@ -563,7 +563,7 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
               if (onClose) onClose();
               setActiveTab('premium');
             }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#EF233C] via-[#B91C1C] to-orange-600 hover:opacity-95 text-white font-black text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white font-black text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
             <span>SunnyLearn Premium авах (Хязгааргүй)</span>
@@ -589,12 +589,12 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
               onChange={e => setInputText(e.target.value)}
               placeholder="Япон хэл, дүрэм, ханз, эсвэл сорилтой холбоотой асуултаа бичнэ үү..."
               disabled={isLoading}
-              className="flex-1 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs sm:text-sm px-4 py-3 rounded-2xl border border-transparent focus:border-[#EF233C] focus:bg-white dark:focus:bg-stone-900 outline-hidden transition-all"
+              className="flex-1 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs sm:text-sm px-4 py-3 rounded-2xl border border-transparent focus:border-[#FF3366] focus:bg-white dark:focus:bg-stone-900 outline-hidden transition-all"
             />
             <button
               type="submit"
               disabled={!inputText.trim() || isLoading}
-              className="p-3 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-white transition-all cursor-pointer shadow-xs shrink-0"
+              className="p-3 rounded-2xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#E60000] hover:to-[#E62E5C] active:scale-95 disabled:opacity-40 disabled:pointer-events-none text-white transition-all cursor-pointer shadow-xs shrink-0"
               title="Илгээх"
             >
               <Send className="w-4 h-4 sm:w-5 sm:h-5" />

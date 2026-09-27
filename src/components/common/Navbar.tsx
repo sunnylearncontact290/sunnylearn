@@ -80,7 +80,7 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full max-w-full bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border-b border-stone-200 dark:border-stone-800 transition-colors shadow-2xs box-border">
+    <header className="glass-header sticky top-0 z-40 w-full max-w-full transition-colors shadow-2xs box-border">
       <div className="w-full max-w-[1720px] mx-auto px-2 sm:px-4 md:px-6 lg:px-7 xl:px-8 2xl:px-10 box-border">
         <div className="flex items-center justify-between h-14 sm:h-16 xl:h-18 gap-1.5 sm:gap-2 md:gap-4 lg:gap-6 w-full max-w-full min-w-0 box-border">
           {/* 1. LEFT: SunnyLearn / JLPT Logo */}
@@ -188,7 +188,7 @@ export const Navbar: React.FC = () => {
                       className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover shrink-0"
                     />
                   ) : (
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-red-600 to-orange-600 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-[#FF0000] to-[#FF3366] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
                       {currentUser.name.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -334,7 +334,7 @@ export const Navbar: React.FC = () => {
                 {currentUser.picture ? (
                   <img src={currentUser.picture} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-600 to-orange-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF0000] to-[#FF3366] text-white flex items-center justify-center text-xs font-bold shrink-0">
                     {currentUser.name.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -361,7 +361,7 @@ export const Navbar: React.FC = () => {
                 setIsMobileMenuOpen(false);
                 setIsAuthModalOpen(true);
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-2 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-semibold text-sm shadow-xs cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-2 rounded-xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-semibold text-sm shadow-xs cursor-pointer"
             >
               <LogIn className="w-4 h-4" />
               <span>Google-ээр нэвтрэх / Бүртгүүлэх</span>

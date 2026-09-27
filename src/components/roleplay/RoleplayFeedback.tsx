@@ -431,7 +431,7 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
           <button
             type="button"
             onClick={onRetry}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-sm shadow-md shadow-red-500/20 hover:scale-102 transition-all cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-bold text-sm shadow-md shadow-red-500/20 hover:scale-102 transition-all cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
             <span>Дахин оролдох</span>

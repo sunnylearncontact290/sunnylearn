@@ -10,8 +10,8 @@ export const SunnyAIView: React.FC = () => {
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 animate-fade-in">
       {/* Top Banner / Heading */}
       <div className="text-center space-y-3 max-w-2xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-extrabold bg-red-500/10 dark:bg-red-400/15 text-[#EF233C] dark:text-red-400 border border-red-500/20 shadow-2xs">
-          <Sparkles className="w-4 h-4 text-[#EF233C]" />
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-extrabold bg-red-500/10 dark:bg-red-400/15 text-[#FF0000] dark:text-[#FF6699] border border-red-500/20 shadow-2xs">
+          <Sparkles className="w-4 h-4 text-[#FF0000] dark:text-[#FF6699]" />
           <span>JLPT N5-N1 Хиймэл Оюуны Багш</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-stone-900 dark:text-stone-100">

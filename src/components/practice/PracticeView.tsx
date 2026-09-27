@@ -346,7 +346,7 @@ export const PracticeView: React.FC = () => {
             <button
               type="button"
               onClick={() => startSession(activeCategory)}
-              className="px-5 py-3 rounded-xl font-bold text-sm sm:text-base bg-[#EF233C] hover:bg-[#D90429] text-white shadow-sm flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
+              className="px-5 py-3 rounded-xl font-bold text-sm sm:text-base bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#E60000] hover:to-[#E62E5C] text-white shadow-md shadow-[#FF0000]/20 flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
             >
               <RotateCcw className="w-4 h-4" />
               Дахин хийх
@@ -415,7 +415,7 @@ export const PracticeView: React.FC = () => {
 
             <div className="w-24 sm:w-32 bg-stone-100 dark:bg-stone-800 h-2.5 rounded-full overflow-hidden">
               <div
-                className="bg-[#EF233C] h-full rounded-full transition-all duration-300"
+                className="bg-gradient-to-r from-[#FF0000] to-[#FF3366] h-full rounded-full transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -570,7 +570,7 @@ export const PracticeView: React.FC = () => {
                             jlptLevel: currentLevel
                           });
                         }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#EF233C] to-orange-600 hover:from-[#D90429] hover:to-orange-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
                       >
                         <Sparkles className="w-3.5 h-3.5" />
                         <span>Яагаад буруу вэ？ (Sunny AI)</span>
@@ -588,7 +588,7 @@ export const PracticeView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleNextQuestion}
-                className="px-6 py-3 rounded-2xl font-bold text-base bg-[#EF233C] hover:bg-[#D90429] text-white shadow-md shadow-red-500/20 flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
+                className="px-6 py-3 rounded-2xl font-bold text-base bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#E60000] hover:to-[#E62E5C] text-white shadow-md shadow-red-500/20 flex items-center gap-2 cursor-pointer active:scale-95 transition-all"
               >
                 <span>
                   {currentIndex + 1 < questions.length ? 'Дараагийн асуулт' : 'Үр дүн харах'}
@@ -632,7 +632,7 @@ export const PracticeView: React.FC = () => {
                 onClick={() => setSelectedLevel(lvl)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                   currentLevel === lvl
-                    ? 'bg-white dark:bg-stone-700 text-[#EF233C] dark:text-red-400 shadow-sm'
+                    ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-xs'
                     : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
                 }`}
               >
@@ -655,7 +655,7 @@ export const PracticeView: React.FC = () => {
                 onClick={() => setQuestionCount(cnt)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   questionCount === cnt
-                    ? 'bg-[#EF233C] text-white shadow-sm'
+                    ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-xs'
                     : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200'
                 }`}
               >
@@ -679,7 +679,7 @@ export const PracticeView: React.FC = () => {
               className={`p-6 rounded-3xl border transition-all flex flex-col justify-between space-y-4 ${
                 isReview && weakCount > 0
                   ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/60'
-                  : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 shadow-sm hover:border-orange-400 dark:hover:border-orange-500/60 hover:shadow-md'
+                  : 'bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-800 shadow-sm hover:border-[#FF3366]/40 dark:hover:border-[#FF3366]/50 hover:shadow-md'
               }`}
             >
               <div className="space-y-3">
@@ -687,8 +687,8 @@ export const PracticeView: React.FC = () => {
                   <div
                     className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
                       isReview
-                        ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400'
-                        : 'bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400'
+                        ? 'bg-rose-100 dark:bg-rose-900/40 text-[#FF0000] dark:text-[#FF6699]'
+                        : 'bg-red-50 dark:bg-red-950/60 text-[#FF0000] dark:text-[#FF6699]'
                     }`}
                   >
                     <Icon className="w-6 h-6" />
@@ -698,7 +698,7 @@ export const PracticeView: React.FC = () => {
                     <span
                       className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                         weakCount > 0
-                          ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300'
+                          ? 'bg-red-100 dark:bg-red-950 text-[#CC0000] dark:text-red-300'
                           : 'bg-stone-100 dark:bg-stone-800 text-stone-400'
                       }`}
                     >
@@ -726,7 +726,7 @@ export const PracticeView: React.FC = () => {
                     ? 'bg-stone-100 dark:bg-stone-800 text-stone-400 cursor-not-allowed'
                     : isReview
                     ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm active:scale-95'
-                    : 'bg-[#EF233C] hover:bg-[#D90429] text-white shadow-sm active:scale-95'
+                    : 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#E60000] hover:to-[#E62E5C] text-white shadow-sm active:scale-95'
                 }`}
               >
                 <Play className="w-4 h-4 fill-current" />

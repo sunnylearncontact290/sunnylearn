@@ -65,7 +65,7 @@ export const CurrentLevelProgressCard: React.FC<CurrentLevelProgressCardProps> =
                 onClick={() => onSelectLevel(lvl)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-[#EF233C] text-white shadow-xs'
+                    ? 'bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white shadow-xs'
                     : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100'
                 }`}
               >
@@ -87,7 +87,7 @@ export const CurrentLevelProgressCard: React.FC<CurrentLevelProgressCardProps> =
               ({stats.learnedItems} / {stats.totalItems} нийт агуулга эзэмшсэн)
             </span>
           </div>
-          <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
+          <span className="text-xs font-bold text-[#CC0000] dark:text-[#FF6699]">
             {stats.overallPct === 100 ? 'Бүх агуулгыг эзэмшсэн 🎉' : `${100 - stats.overallPct}% үлдсэн`}
           </span>
         </div>
@@ -95,7 +95,7 @@ export const CurrentLevelProgressCard: React.FC<CurrentLevelProgressCardProps> =
         {/* Progress Bar */}
         <div className="w-full h-3 sm:h-3.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden p-0.5">
           <div
-            className="h-full bg-gradient-to-r from-[#EF233C] via-orange-500 to-[#C84A0A] rounded-full transition-all duration-500"
+            className="h-full bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] rounded-full transition-all duration-500"
             style={{ width: `${Math.min(100, Math.max(0, stats.overallPct))}%` }}
           />
         </div>
@@ -106,7 +106,7 @@ export const CurrentLevelProgressCard: React.FC<CurrentLevelProgressCardProps> =
         {/* Vocabulary */}
         <div className="p-3 sm:p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-100 dark:border-stone-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-red-500/10 text-[#CC0000] dark:text-[#FF6699] flex items-center justify-center">
               <BookOpen className="w-3.5 h-3.5" />
             </div>
             <div>
@@ -124,7 +124,7 @@ export const CurrentLevelProgressCard: React.FC<CurrentLevelProgressCardProps> =
         {/* Kanji */}
         <div className="p-3 sm:p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-100 dark:border-stone-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-pink-500/10 text-[#CC0066] dark:text-[#FF6699] flex items-center justify-center">
               <Layers className="w-3.5 h-3.5" />
             </div>
             <div>

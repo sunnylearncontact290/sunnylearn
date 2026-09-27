@@ -118,7 +118,7 @@ export const SentenceScrambleCard: React.FC<SentenceScrambleCardProps> = ({
                     ? isCorrect
                       ? 'bg-emerald-600 text-white'
                       : 'bg-rose-600 text-white'
-                    : 'bg-gradient-to-r from-[#EF233C] to-orange-600 hover:opacity-95 text-white active:scale-95 cursor-pointer'
+                    : 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:opacity-95 text-white active:scale-95 cursor-pointer'
                 }`}
               >
                 <span>{scrambleWords[wordIdx]}</span>
@@ -146,7 +146,7 @@ export const SentenceScrambleCard: React.FC<SentenceScrambleCardProps> = ({
                 className={`px-3.5 py-2 rounded-xl text-sm sm:text-base font-semibold transition-all shadow-sm ${
                   isUsed
                     ? 'opacity-30 bg-stone-200 dark:bg-stone-800 text-stone-400 cursor-not-allowed border border-transparent'
-                    : 'bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-100 hover:bg-orange-50 dark:hover:bg-stone-700 hover:border-orange-500 border border-stone-200 dark:border-stone-700 cursor-pointer active:scale-95'
+                    : 'bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-100 hover:bg-red-50 dark:hover:bg-stone-700 hover:border-[#FF3366]/40 border border-stone-200 dark:border-stone-700 cursor-pointer active:scale-95'
                 }`}
               >
                 {word}
@@ -165,7 +165,7 @@ export const SentenceScrambleCard: React.FC<SentenceScrambleCardProps> = ({
             onClick={handleCheck}
             className={`px-6 py-2.5 rounded-xl font-bold text-sm sm:text-base shadow-sm transition-all ${
               isAllPlaced
-                ? 'bg-[#EF233C] hover:bg-[#D90429] text-white cursor-pointer active:scale-95 shadow-[#EF233C]/20'
+                ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#E60000] hover:to-[#E62E5C] text-white cursor-pointer active:scale-95 shadow-[#FF0000]/20'
                 : 'bg-stone-200 dark:bg-stone-800 text-stone-400 cursor-not-allowed'
             }`}
           >

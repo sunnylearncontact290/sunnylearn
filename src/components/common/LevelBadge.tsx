@@ -10,29 +10,29 @@ interface LevelBadgeProps {
 export const LevelBadge: React.FC<LevelBadgeProps> = ({ level, size = 'md', className = '' }) => {
   const colorMap: Record<JLPTLevel, { bg: string; text: string; border: string }> = {
     N5: {
-      bg: 'bg-emerald-50 dark:bg-emerald-950/50',
-      text: 'text-emerald-700 dark:text-emerald-300',
-      border: 'border-emerald-200 dark:border-emerald-800/60'
+      bg: 'bg-red-500/10 dark:bg-red-500/15',
+      text: 'text-[#FF0000] dark:text-[#FF4D4D]',
+      border: 'border-[#FF0000]/25 dark:border-[#FF0000]/30'
     },
     N4: {
-      bg: 'bg-sky-50 dark:bg-sky-950/50',
-      text: 'text-sky-700 dark:text-sky-300',
-      border: 'border-sky-200 dark:border-sky-800/60'
+      bg: 'bg-[#FF3366]/10 dark:bg-[#FF3366]/15',
+      text: 'text-[#FF3366] dark:text-[#FF6688]',
+      border: 'border-[#FF3366]/25 dark:border-[#FF3366]/30'
     },
     N3: {
-      bg: 'bg-orange-50 dark:bg-orange-950/50',
-      text: 'text-orange-700 dark:text-orange-300',
-      border: 'border-orange-200 dark:border-orange-800/60'
+      bg: 'bg-[#FF6666]/10 dark:bg-[#FF6666]/15',
+      text: 'text-[#E64C4C] dark:text-[#FF8080]',
+      border: 'border-[#FF6666]/25 dark:border-[#FF6666]/30'
     },
     N2: {
-      bg: 'bg-red-50 dark:bg-red-950/50',
-      text: 'text-red-700 dark:text-red-300',
-      border: 'border-red-200 dark:border-red-800/60'
+      bg: 'bg-[#CC0066]/10 dark:bg-[#CC0066]/15',
+      text: 'text-[#CC0066] dark:text-[#FF3399]',
+      border: 'border-[#CC0066]/25 dark:border-[#CC0066]/30'
     },
     N1: {
-      bg: 'bg-rose-50 dark:bg-rose-950/50',
-      text: 'text-rose-700 dark:text-rose-300',
-      border: 'border-rose-200 dark:border-rose-800/60'
+      bg: 'bg-[#990066]/10 dark:bg-[#990066]/15',
+      text: 'text-[#990066] dark:text-[#E639B0]',
+      border: 'border-[#990066]/25 dark:border-[#990066]/30'
     }
   };
 

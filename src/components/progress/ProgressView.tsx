@@ -235,7 +235,7 @@ export const ProgressView: React.FC = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
               <h3 className="text-base sm:text-lg font-extrabold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#EF233C]" />
+                <Sparkles className="w-4 h-4 text-[#FF3366]" />
                 <span>Сургалтын Нарийвчилсан Үзүүлэлт ({viewLevel})</span>
               </h3>
             </div>
@@ -246,14 +246,14 @@ export const ProgressView: React.FC = () => {
               <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
                   <span className="text-xs font-semibold">Нийт явц</span>
-                  <Sparkles className="w-5 h-5 text-[#EF233C]" />
+                  <Sparkles className="w-5 h-5 text-[#FF3366]" />
                 </div>
                 <div className="text-3xl sm:text-4xl font-black text-stone-900 dark:text-stone-100">
                   {stats.overallPct}%
                 </div>
                 <div className="w-full bg-stone-100 dark:bg-stone-800 h-2 rounded-full overflow-hidden">
                   <div
-                    className="bg-[#EF233C] h-full rounded-full transition-all"
+                    className="bg-gradient-to-r from-[#CC0000] to-[#FF3366] h-full rounded-full transition-all"
                     style={{ width: `${stats.overallPct}%` }}
                   />
                 </div>
@@ -266,9 +266,9 @@ export const ProgressView: React.FC = () => {
               <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
                   <span className="text-xs font-semibold">Дараалсан өдөр</span>
-                  <Flame className="w-5 h-5 text-orange-500 fill-orange-500/20" />
+                  <Flame className="w-5 h-5 text-[#FF3366] fill-[#FF3366]/20" />
                 </div>
-                <div className="text-3xl sm:text-4xl font-black text-orange-600 dark:text-orange-400">
+                <div className="text-3xl sm:text-4xl font-black text-[#CC0000] dark:text-[#FF6699]">
                   {gamification.currentStreak} өдөр
                 </div>
                 <div className="text-xs text-stone-500 dark:text-stone-400">
@@ -283,9 +283,9 @@ export const ProgressView: React.FC = () => {
               <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
                   <span className="text-xs font-semibold">Сорилын дундаж</span>
-                  <Target className="w-5 h-5 text-emerald-500" />
+                  <Target className="w-5 h-5 text-[#FF3366]" />
                 </div>
-                <div className="text-3xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-400">
+                <div className="text-3xl sm:text-4xl font-black text-[#CC0000] dark:text-[#FF6699]">
                   {stats.quizAverage}%
                 </div>
                 <div className="text-xs text-stone-500 dark:text-stone-400">
@@ -300,9 +300,9 @@ export const ProgressView: React.FC = () => {
               <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3">
                 <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
                   <span className="text-xs font-semibold">Дасгалын нарийвчлал</span>
-                  <Award className="w-5 h-5 text-indigo-500" />
+                  <Award className="w-5 h-5 text-[#CC0066]" />
                 </div>
-                <div className="text-3xl sm:text-4xl font-black text-indigo-600 dark:text-indigo-400">
+                <div className="text-3xl sm:text-4xl font-black text-[#CC0066] dark:text-[#FF6699]">
                   {stats.practiceAccuracy}%
                 </div>
                 <div className="text-xs text-stone-500 dark:text-stone-400">
@@ -322,7 +322,7 @@ export const ProgressView: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                    <BarChart2 className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    <BarChart2 className="w-5 h-5 text-[#CC0000] dark:text-[#FF6699]" />
                     Сүүлийн 7 хоногийн идэвх
                   </h3>
                   <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -345,9 +345,9 @@ export const ProgressView: React.FC = () => {
                         <div
                           className={`w-full rounded-xl transition-all duration-500 ${
                             day.isToday
-                              ? 'bg-[#EF233C] shadow-md shadow-red-500/20'
+                              ? 'bg-gradient-to-t from-[#CC0000] to-[#FF3366] shadow-md shadow-red-500/20'
                               : day.count > 0
-                              ? 'bg-orange-500/80 dark:bg-orange-600/60'
+                              ? 'bg-[#FF6699]/60 dark:bg-[#FF3366]/40'
                               : 'bg-transparent'
                           }`}
                           style={{ height: `${barHeightPct}%` }}
@@ -356,7 +356,7 @@ export const ProgressView: React.FC = () => {
                       <span
                         className={`text-xs font-semibold ${
                           day.isToday
-                            ? 'text-red-600 dark:text-red-400 font-bold'
+                            ? 'text-[#CC0000] dark:text-[#FF6699] font-bold'
                             : 'text-stone-500 dark:text-stone-400'
                         }`}
                       >
@@ -368,7 +368,7 @@ export const ProgressView: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between text-xs text-stone-400 pt-1">
-                <span>Улаан / Улбар шар багана: суралцсан өдрүүд</span>
+                <span>Улаан / Ягаан багана: суралцсан өдрүүд</span>
                 <span>Өнөөдөр: {streak.current > 0 ? 'Идэвхтэй 🔥' : 'Эхлэх'}</span>
               </div>
             </div>
@@ -384,7 +384,7 @@ export const ProgressView: React.FC = () => {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-semibold">
                     <span className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300">
-                      <Languages className="w-4 h-4 text-[#EF233C]" />
+                      <Languages className="w-4 h-4 text-[#CC0000]" />
                       Үгсийн сан
                     </span>
                     <span className="text-stone-500">
@@ -393,7 +393,7 @@ export const ProgressView: React.FC = () => {
                   </div>
                   <div className="w-full bg-stone-100 dark:bg-stone-800 h-2 rounded-full overflow-hidden">
                     <div
-                      className="bg-[#EF233C] h-full rounded-full transition-all"
+                      className="bg-gradient-to-r from-[#CC0000] to-[#FF3366] h-full rounded-full transition-all"
                       style={{ width: `${stats.vocabPct}%` }}
                     />
                   </div>
@@ -403,7 +403,7 @@ export const ProgressView: React.FC = () => {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-semibold">
                     <span className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300">
-                      <PenTool className="w-4 h-4 text-emerald-500" />
+                      <PenTool className="w-4 h-4 text-[#CC0066]" />
                       Ханз
                     </span>
                     <span className="text-stone-500">
@@ -412,7 +412,7 @@ export const ProgressView: React.FC = () => {
                   </div>
                   <div className="w-full bg-stone-100 dark:bg-stone-800 h-2 rounded-full overflow-hidden">
                     <div
-                      className="bg-emerald-500 h-full rounded-full transition-all"
+                      className="bg-gradient-to-r from-[#CC0066] to-[#FF6699] h-full rounded-full transition-all"
                       style={{ width: `${stats.kanjiPct}%` }}
                     />
                   </div>
@@ -422,7 +422,7 @@ export const ProgressView: React.FC = () => {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-semibold">
                     <span className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300">
-                      <BookOpen className="w-4 h-4 text-indigo-500" />
+                      <BookOpen className="w-4 h-4 text-[#990000] dark:text-[#FF3366]" />
                       Дүрэм
                     </span>
                     <span className="text-stone-500">
@@ -431,7 +431,7 @@ export const ProgressView: React.FC = () => {
                   </div>
                   <div className="w-full bg-stone-100 dark:bg-stone-800 h-2 rounded-full overflow-hidden">
                     <div
-                      className="bg-indigo-500 h-full rounded-full transition-all"
+                      className="bg-gradient-to-r from-[#990000] to-[#CC0000] h-full rounded-full transition-all"
                       style={{ width: `${stats.grammarPct}%` }}
                     />
                   </div>
@@ -568,7 +568,7 @@ export const ProgressView: React.FC = () => {
               {stats.weakGrammar.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-base font-bold text-stone-800 dark:text-stone-200 flex items-center gap-2 px-1">
-                    <BookOpen className="w-4 h-4 text-indigo-500" />
+                    <BookOpen className="w-4 h-4 text-[#CC0000] dark:text-[#FF6699]" />
                     Давтах дүрэм ({stats.weakGrammar.length})
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -616,7 +616,7 @@ export const ProgressView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('quiz')}
-                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[#EF233C] hover:bg-[#D90429] text-white cursor-pointer"
+                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white shadow-md shadow-red-500/20 cursor-pointer transition-all"
               >
                 Сорил эхлүүлэх
               </button>
@@ -787,7 +787,7 @@ export const ProgressView: React.FC = () => {
               {favGrammar.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-base font-bold text-stone-800 dark:text-stone-200 flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-indigo-500" />
+                    <BookOpen className="w-4 h-4 text-[#CC0000] dark:text-[#FF6699]" />
                     Хадгалсан дүрэм ({favGrammar.length})
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

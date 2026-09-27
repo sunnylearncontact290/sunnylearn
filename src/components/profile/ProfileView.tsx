@@ -87,7 +87,7 @@ export const ProfileView: React.FC = () => {
                   className="w-9 h-9 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-[#EF233C] text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#FF0000] to-[#FF3366] text-white flex items-center justify-center font-bold text-sm shadow-xs">
                   {currentUser.name.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -124,7 +124,7 @@ export const ProfileView: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsAuthModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#EF233C] to-orange-600 hover:opacity-95 text-white text-xs font-bold shadow-md shadow-red-500/20 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:opacity-95 text-white text-xs font-bold shadow-md shadow-red-500/20 transition-all cursor-pointer"
             >
               <LogIn className="w-4 h-4" />
               <span>Google-ээр нэвтрэх / Бүртгүүлэх</span>
@@ -160,11 +160,11 @@ export const ProfileView: React.FC = () => {
           onClick={() => setActiveSection('premium')}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold transition-all ${
             activeSection === 'premium'
-              ? 'bg-gradient-to-r from-[#EF233C] via-[#B91C1C] to-[#8F1537] text-white shadow-md shadow-red-500/20'
-              : 'text-orange-700 dark:text-orange-400 hover:bg-orange-100/50 dark:hover:bg-orange-950/40'
+              ? 'bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] text-white shadow-md shadow-red-500/20'
+              : 'text-stone-700 dark:text-stone-300 hover:bg-stone-100/50 dark:hover:bg-stone-800/40'
           }`}
         >
-          <Sparkles className="w-4 h-4" />
+          <Sparkles className="w-4 h-4 text-[#FF3366]" />
           <span>Premium гишүүнчлэл & Төлбөр</span>
           {isPremium ? (
             <span className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-black">
@@ -175,7 +175,7 @@ export const ProfileView: React.FC = () => {
               Шалгаж байна
             </span>
           ) : (
-            <span className="px-2 py-0.5 rounded-full bg-orange-500/20 text-[10px] font-black">
+            <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-[10px] font-black text-red-600 dark:text-red-300">
               ¥880
             </span>
           )}
@@ -192,7 +192,7 @@ export const ProfileView: React.FC = () => {
             <div className="p-5 rounded-3xl bg-orange-50 dark:bg-orange-950/40 border-2 border-orange-300 dark:border-orange-700 space-y-3 shadow-xs">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-600 to-orange-600 text-white flex items-center justify-center font-bold shadow-xs">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#FF0000] to-[#FF3366] text-white flex items-center justify-center font-bold shadow-xs">
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
@@ -228,7 +228,7 @@ export const ProfileView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveSection('premium')}
-                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#E60000] hover:to-[#E62E5C] text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
               >
                 Төлбөрийн мэдээлэл харах →
               </button>
@@ -236,14 +236,14 @@ export const ProfileView: React.FC = () => {
           ) : !isPremium ? (
             <div
               onClick={() => setActiveSection('premium')}
-              className="p-4 rounded-2xl bg-gradient-to-r from-red-500/10 via-orange-500/5 to-transparent border border-orange-300 dark:border-orange-800/80 flex items-center justify-between gap-4 cursor-pointer hover:border-[#EF233C] transition-all group"
+              className="p-4 rounded-2xl bg-gradient-to-r from-red-500/10 via-[#FF3366]/5 to-transparent border border-[rgba(255,51,102,0.20)] flex items-center justify-between gap-4 cursor-pointer hover:border-[#FF3366] transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-[#EF233C] text-white flex items-center justify-center font-bold shrink-0 shadow-md shadow-red-500/20">
-                  <Sparkles className="w-5 h-5 text-orange-200" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF0000] to-[#FF3366] text-white flex items-center justify-center font-bold shrink-0 shadow-md shadow-red-500/20">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm text-stone-900 dark:text-stone-100 group-hover:text-[#EF233C] transition-colors">
+                  <h3 className="font-extrabold text-sm text-stone-900 dark:text-stone-100 group-hover:text-[#FF3366] transition-colors">
                     SunnyLearn Premium гишүүн болох (¥880 / 30 хоног)
                   </h3>
                   <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -251,7 +251,7 @@ export const ProfileView: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <span className="text-xs font-bold text-[#EF233C] dark:text-red-400 group-hover:translate-x-1 transition-transform">
+              <span className="text-xs font-bold text-[#FF3366] dark:text-red-400 group-hover:translate-x-1 transition-transform">
                 Төлбөр шилжүүлэх →
               </span>
             </div>
@@ -301,7 +301,7 @@ export const ProfileView: React.FC = () => {
                 onClick={() => setDailyGoal(cnt)}
                 className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                   dailyGoal === cnt
-                    ? 'bg-[#EF233C] text-white border-[#EF233C] shadow-xs'
+                    ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
                     : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700'
                 }`}
               >
@@ -314,7 +314,7 @@ export const ProfileView: React.FC = () => {
         {/* Furigana Display */}
         <div className="p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-4">
           <div className="flex items-center gap-2">
-            <Eye className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+            <Eye className="w-5 h-5 text-[#FF3366]" />
             <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
               Фуригана (Ханзан дээрх уншлага)
             </h2>
@@ -329,7 +329,7 @@ export const ProfileView: React.FC = () => {
               onClick={() => setAutoFurigana(true)}
               className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                 autoFurigana
-                  ? 'bg-[#EF233C] text-white border-[#EF233C] shadow-xs'
+                  ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
                   : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700'
               }`}
             >
@@ -340,7 +340,7 @@ export const ProfileView: React.FC = () => {
               onClick={() => setAutoFurigana(false)}
               className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                 !autoFurigana
-                  ? 'bg-[#EF233C] text-white border-[#EF233C] shadow-xs'
+                  ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
                   : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700'
               }`}
             >
@@ -352,7 +352,7 @@ export const ProfileView: React.FC = () => {
         {/* Theme Settings */}
         <div className="p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-4">
           <div className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+            <Settings className="w-5 h-5 text-[#FF3366]" />
             <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
               Харагдах орчин (Theme)
             </h2>
@@ -367,7 +367,7 @@ export const ProfileView: React.FC = () => {
               onClick={() => setDarkMode(false)}
               className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 cursor-pointer ${
                 !isDarkMode
-                  ? 'bg-[#EF233C] text-white border-[#EF233C] shadow-xs'
+                  ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
                   : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700'
               }`}
             >
@@ -378,7 +378,7 @@ export const ProfileView: React.FC = () => {
               onClick={() => setDarkMode(true)}
               className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-1.5 cursor-pointer ${
                 isDarkMode
-                  ? 'bg-[#EF233C] text-white border-[#EF233C] shadow-xs'
+                  ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
                   : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700'
               }`}
             >
@@ -393,7 +393,7 @@ export const ProfileView: React.FC = () => {
         <button
           type="button"
           onClick={saveSettings}
-          className="px-8 py-3 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
+          className="px-8 py-3 rounded-2xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#E60000] hover:to-[#E62E5C] text-white font-bold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer"
         >
           <CheckCircle2 className="w-4 h-4" />
           <span>Тохиргоог хадгалах</span>

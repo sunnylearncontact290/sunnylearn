@@ -108,7 +108,7 @@ export const DictionaryView: React.FC = () => {
                 if (!currentUser) setIsAuthModalOpen(true);
                 else setActiveTab('premium');
               }}
-              className="shrink-0 px-3.5 py-1.5 rounded-lg bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-xs transition-colors cursor-pointer shadow-2xs"
+              className="shrink-0 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#E60000] hover:to-[#E62E5C] text-white font-bold text-xs transition-colors cursor-pointer shadow-2xs"
             >
               Premium авах (¥880)
             </button>

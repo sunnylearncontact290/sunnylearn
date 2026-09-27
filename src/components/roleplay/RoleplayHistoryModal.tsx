@@ -150,7 +150,7 @@ export const RoleplayHistoryModal: React.FC<RoleplayHistoryModalProps> = ({
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100 truncate group-hover:text-[#EF233C] dark:group-hover:text-red-400 transition-colors font-jp">
+                        <h4 className="font-bold text-sm text-stone-900 dark:text-stone-100 truncate group-hover:text-[#FF3366] dark:group-hover:text-[#FF6699] transition-colors font-jp">
                           {item.scenarioTitle}
                         </h4>
                         <LevelBadge level={item.jlptLevel} size="sm" />
@@ -184,7 +184,7 @@ export const RoleplayHistoryModal: React.FC<RoleplayHistoryModalProps> = ({
                     {isOpening ? (
                       <Loader2 className="w-4 h-4 animate-spin text-orange-500" />
                     ) : (
-                      <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-[#EF233C] group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-[#FF3366] group-hover:translate-x-0.5 transition-all" />
                     )}
                   </div>
                 </div>

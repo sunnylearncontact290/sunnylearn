@@ -171,7 +171,7 @@ export const RoleplayView: React.FC = () => {
                   : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
               }`}
             >
-              <MessagesSquare className="w-4 h-4 text-orange-600" />
+              <MessagesSquare className="w-4 h-4 text-red-600 dark:text-red-400" />
               <span>AI Roleplay (Дүрд хувирах)</span>
             </button>
             <button
@@ -183,9 +183,9 @@ export const RoleplayView: React.FC = () => {
                   : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
               }`}
             >
-              <Mic className="w-4 h-4 text-orange-600" />
+              <Mic className="w-4 h-4 text-[#C85A54] dark:text-[#D48B97]" />
               <span>Чөлөөт дуут яриа (Voice)</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-[#EF233C] text-white uppercase tracking-wider">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-[#E52B32] text-white uppercase tracking-wider">
                 Voice
               </span>
             </button>
@@ -236,7 +236,7 @@ export const RoleplayView: React.FC = () => {
           <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-red-500/15 via-orange-500/5 to-transparent border-2 border-red-500/30 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="space-y-1.5 max-w-2xl">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-2xl bg-[#EF233C] text-white flex items-center justify-center shrink-0 shadow-2xs">
+                <div className="w-9 h-9 rounded-2xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white flex items-center justify-center shrink-0 shadow-xs">
                   <Mic className="w-5 h-5" />
                 </div>
                 <div>
@@ -256,7 +256,7 @@ export const RoleplayView: React.FC = () => {
                 setSpeakingMode('freechat');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all transform active:scale-95 cursor-pointer shrink-0"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all transform active:scale-95 cursor-pointer shrink-0"
             >
               <Mic className="w-4 h-4" />
               <span>Чөлөөт яриа эхлэх</span>
@@ -274,7 +274,7 @@ export const RoleplayView: React.FC = () => {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Хувилбар хайх (Конбини, ярилцлага, эмнэлэг, 病院)..."
-                className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white placeholder-stone-400 text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C] font-jp"
+                className="w-full pl-9 pr-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white placeholder-stone-400 text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-[#FF3366]/30 focus:border-[#FF3366] font-jp"
               />
             </div>
 
@@ -285,7 +285,7 @@ export const RoleplayView: React.FC = () => {
                 onClick={() => setLevelFilter('ALL')}
                 className={`px-3 py-2 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
                   levelFilter === 'ALL'
-                    ? 'bg-[#EF233C] text-white shadow-2xs'
+                    ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-xs'
                     : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
@@ -298,7 +298,7 @@ export const RoleplayView: React.FC = () => {
                   onClick={() => setLevelFilter(lvl)}
                   className={`px-3 py-2 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
                     levelFilter === lvl
-                      ? 'bg-[#EF233C] text-white shadow-2xs'
+                      ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-xs'
                       : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                   }`}
                 >

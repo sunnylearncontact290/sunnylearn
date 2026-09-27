@@ -42,7 +42,7 @@ export const RoleplayCard: React.FC<RoleplayCardProps> = ({
 
         {/* Titles */}
         <div className="space-y-1">
-          <h3 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100 group-hover:text-[#EF233C] dark:group-hover:text-red-400 transition-colors font-jp flex items-center gap-2">
+          <h3 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100 group-hover:text-[#FF3366] dark:group-hover:text-[#FF6699] transition-colors font-jp flex items-center gap-2">
             {scenario.titleJapanese}
           </h3>
           <p className="text-xs sm:text-sm font-bold text-stone-700 dark:text-stone-300">
@@ -92,7 +92,7 @@ export const RoleplayCard: React.FC<RoleplayCardProps> = ({
 
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#EF233C] to-orange-600 hover:opacity-95 text-white font-bold text-xs shadow-md shadow-red-500/20 group-hover:scale-102 transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#E60000] hover:to-[#E62E5C] text-white font-bold text-xs shadow-md shadow-red-500/20 group-hover:scale-102 transition-all cursor-pointer"
         >
           <span>Эхлэх</span>
           <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />

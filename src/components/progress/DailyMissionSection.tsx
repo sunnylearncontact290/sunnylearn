@@ -105,7 +105,7 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
             🔥 ӨНӨӨДРИЙН ДААЛГАВАР
           </h2>
           <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400">
-            Өнөөдрийн зорилго: <span className="font-bold text-[#C84A0A] dark:text-[#EA6A0A]">{goalXP} XP</span> цуглуулах
+            Өнөөдрийн зорилго: <span className="font-bold text-[#CC0000] dark:text-[#FF6699]">{goalXP} XP</span> цуглуулах
           </p>
         </div>
 
@@ -116,14 +116,14 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
       </div>
 
       {/* Daily XP Progress Banner */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-600/10 via-orange-500/10 to-[#8F1537]/10 dark:from-[#6E1028]/30 dark:via-[#260E15]/40 dark:to-transparent border border-[#C84A0A]/25 dark:border-red-900/40 space-y-3">
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#990000]/10 via-[#FF3366]/10 to-[#CC0000]/10 dark:from-[#3A101C]/40 dark:via-[#260E15]/40 dark:to-transparent border border-[#FF3366]/25 dark:border-[#FF3366]/30 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#E62929]" />
+            <Sparkles className="w-4 h-4 text-[#FF3366]" />
             <span className="text-xs sm:text-sm font-bold text-stone-800 dark:text-stone-200">
               Өнөөдрийн XP явц:
             </span>
-            <span className="text-sm sm:text-base font-black text-[#C84A0A] dark:text-[#EA6A0A]">
+            <span className="text-sm sm:text-base font-black text-[#CC0000] dark:text-[#FF6699]">
               {dailyXP} / {goalXP} XP
             </span>
             {dailyXP > goalXP && (
@@ -150,8 +150,8 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
           <div
             className={`h-full rounded-full transition-all duration-500 ${
               isGoalAchieved
-                ? 'bg-gradient-to-r from-[#C84A0A] to-emerald-500'
-                : 'bg-gradient-to-r from-[#E62929] to-[#C84A0A]'
+                ? 'bg-gradient-to-r from-[#CC0000] to-emerald-500'
+                : 'bg-gradient-to-r from-[#CC0000] to-[#FF3366]'
             }`}
             style={{ width: `${xpPercent}%` }}
           />
@@ -176,7 +176,7 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
               className={`relative rounded-2xl p-4 sm:p-5 border transition-all flex flex-col justify-between space-y-4 ${
                 task.isDone
                   ? 'bg-emerald-500/5 dark:bg-emerald-950/20 border-emerald-500/30 shadow-sm'
-                  : 'bg-stone-50 dark:bg-stone-800/40 border-stone-200 dark:border-stone-800 hover:border-[#C84A0A]/40'
+                  : 'bg-stone-50 dark:bg-stone-800/40 border-stone-200 dark:border-stone-800 hover:border-[#FF3366]/40'
               }`}
             >
               <div className="space-y-3">
@@ -185,7 +185,7 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
                     className={`w-9 h-9 rounded-xl flex items-center justify-center ${
                       task.isDone
                         ? 'bg-emerald-500 text-white'
-                        : 'bg-orange-500/10 text-[#C84A0A] dark:text-[#EA6A0A]'
+                        : 'bg-red-500/10 text-[#CC0000] dark:text-[#FF6699]'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -220,7 +220,7 @@ export const DailyMissionSection: React.FC<DailyMissionSectionProps> = ({
                 <div className="w-full bg-stone-200 dark:bg-stone-700/60 h-1.5 rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-300 ${
-                      task.isDone ? 'bg-emerald-500' : 'bg-gradient-to-r from-[#E62929] to-[#C84A0A]'
+                      task.isDone ? 'bg-emerald-500' : 'bg-gradient-to-r from-[#CC0000] to-[#FF3366]'
                     }`}
                     style={{ width: `${taskPercent}%` }}
                   />

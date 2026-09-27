@@ -125,7 +125,7 @@ export const PremiumView: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fadeIn">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#EF233C] via-[#B91C1C] to-[#8F1537] text-white p-6 sm:p-10 shadow-lg shadow-red-500/20">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#990000] via-[#CC0000] to-[#FF3366] text-white p-6 sm:p-10 shadow-lg shadow-red-500/20">
         <div className="absolute -right-8 -bottom-8 w-60 h-60 bg-white/10 rounded-full blur-2xl pointer-events-none" />
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -284,7 +284,7 @@ export const PremiumView: React.FC = () => {
         /* Section 33 & 35: Pending Confirmation Screen (Replaces bank transfer form & prevents duplicate submissions) */
         <div className="bg-white dark:bg-stone-900 p-6 sm:p-8 rounded-3xl border-2 border-orange-400 dark:border-orange-600 shadow-md space-y-6">
           <div className="flex items-center gap-3.5 pb-4 border-b border-stone-200 dark:border-stone-800">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#EF233C] to-orange-600 text-white flex items-center justify-center font-black shrink-0 shadow-md shadow-red-500/20 text-lg">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#FF0000] to-[#FF3366] text-white flex items-center justify-center font-black shrink-0 shadow-md shadow-red-500/20 text-lg">
               ✓
             </div>
             <div>
@@ -354,7 +354,7 @@ export const PremiumView: React.FC = () => {
             <button
               type="button"
               onClick={() => setActiveTab('learn')}
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-black text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-black text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               Үргэлжлүүлэн сурах →
             </button>
@@ -477,7 +477,7 @@ export const PremiumView: React.FC = () => {
                   const formEl = document.getElementById('payment-verify-form');
                   formEl?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="w-full py-3 px-4 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] text-white font-black text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-black text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Төлбөр хийсэн (Хүсэлт илгээх) ↓</span>
               </button>
@@ -515,7 +515,7 @@ export const PremiumView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAuthModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-extrabold text-xs shadow-xs transition-all cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-extrabold text-xs shadow-xs transition-all cursor-pointer"
                 >
                   <span>Нэвтрэх / Шинээр бүртгүүлэх</span>
                 </button>
@@ -534,7 +534,7 @@ export const PremiumView: React.FC = () => {
                   placeholder="Жишээ: BAT-ERDENE эсвэл バトエルデネ"
                   value={senderName}
                   onChange={e => setSenderName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF3366]/30 focus:border-[#FF3366]"
                 />
                 <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1">
                   Банкны апп эсвэл ATM дээр оруулсан яг тэр нэрээр нь бичнэ үү.
@@ -552,7 +552,7 @@ export const PremiumView: React.FC = () => {
                     required
                     value={transferDate}
                     onChange={e => setTransferDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF3366]/30 focus:border-[#FF3366]"
                   />
                 </div>
 
@@ -577,7 +577,7 @@ export const PremiumView: React.FC = () => {
                   placeholder="таны-имэйл@gmail.com"
                   value={userEmail}
                   onChange={e => setUserEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF3366]/30 focus:border-[#FF3366]"
                 />
                 {!currentUser && (
                   <p className="text-[11px] text-orange-600 dark:text-orange-400 mt-1 flex items-center gap-1">
@@ -603,7 +603,7 @@ export const PremiumView: React.FC = () => {
                   placeholder="Таны нэр"
                   value={userName}
                   onChange={e => setUserName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#FF3366]/30 focus:border-[#FF3366]"
                 />
               </div>
 
@@ -617,14 +617,14 @@ export const PremiumView: React.FC = () => {
                   placeholder="Жишээ: SMBC банкнаас шилжүүлэв гэх мэт"
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#EF233C]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-[#FF3366]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#EF233C] via-[#B91C1C] to-orange-600 hover:opacity-95 active:scale-[0.99] text-white font-extrabold text-sm sm:text-base shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 active:scale-[0.99] text-white font-extrabold text-sm sm:text-base shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>
@@ -738,7 +738,7 @@ export const PremiumView: React.FC = () => {
                   setShowAuthPrompt(false);
                   setIsAuthModalOpen(true);
                 }}
-                className="w-full py-3 px-4 rounded-xl bg-[#EF233C] hover:bg-[#D90429] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all cursor-pointer"
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#E60000] hover:to-[#E62E5C] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all cursor-pointer"
               >
                 Нэвтрэх / Бүртгүүлэх
               </button>

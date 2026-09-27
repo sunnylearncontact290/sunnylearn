@@ -67,7 +67,7 @@ export const LearnHub: React.FC = () => {
                   onClick={() => setSelectedLevel(lvl)}
                   className={`flex-1 sm:flex-initial px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-extrabold text-center transition-all ${
                     isSelected
-                      ? 'bg-[#EF233C] text-white shadow-md shadow-red-500/20 scale-105'
+                      ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-md shadow-[#FF0000]/25 scale-105'
                       : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                   }`}
                 >
@@ -89,17 +89,17 @@ export const LearnHub: React.FC = () => {
                 onClick={() => setLearnSubTab(tab.id)}
                 className={`inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all shrink-0 ${
                   isActive
-                    ? 'bg-stone-900 dark:bg-white text-white dark:text-stone-900 shadow-sm'
+                    ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-md shadow-[#FF0000]/20'
                     : 'bg-stone-50 dark:bg-stone-800/50 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/60 dark:border-stone-700/60'
                 }`}
               >
-                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-red-500 dark:text-red-600' : 'text-stone-400'}`} />
+                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-stone-400'}`} />
                 <span>{tab.label}</span>
                 {tab.count !== undefined && (
                   <span
                     className={`text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-full font-mono ${
                       isActive
-                        ? 'bg-stone-800 dark:bg-stone-100 text-stone-200 dark:text-stone-800'
+                        ? 'bg-white/20 text-white'
                         : 'bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300'
                     }`}
                   >

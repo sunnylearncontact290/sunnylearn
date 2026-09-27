@@ -263,7 +263,7 @@ export const FreeConversationFeedbackModal: React.FC<FreeConversationFeedbackMod
                 onClose();
                 onNewConversation();
               }}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
             >
               <span>Шинэ яриа эхлэх</span>
               <ArrowRight className="w-3.5 h-3.5" />

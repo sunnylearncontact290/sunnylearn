@@ -134,7 +134,7 @@ export const QuizExplanationModal: React.FC = () => {
         {/* Header */}
         <div className="px-5 py-4 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between gap-3 bg-stone-50/80 dark:bg-stone-800/40">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#EF233C] to-orange-600 text-white flex items-center justify-center shadow-xs shadow-red-500/20">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#FF0000] to-[#FF3366] text-white flex items-center justify-center shadow-xs shadow-red-500/20">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
@@ -285,7 +285,7 @@ export const QuizExplanationModal: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="p-4 sm:p-5 rounded-2xl bg-orange-50/50 dark:bg-stone-800/60 border border-orange-200/60 dark:border-stone-700/80 text-stone-800 dark:text-stone-200 leading-relaxed font-jp text-xs sm:text-sm whitespace-pre-wrap">
+              <div className="p-4 sm:p-5 rounded-2xl bg-red-50/40 dark:bg-stone-800/60 border border-red-200/50 dark:border-stone-700/80 text-stone-800 dark:text-stone-200 leading-relaxed font-jp text-xs sm:text-sm whitespace-pre-wrap">
                 {explanationText}
               </div>
             )}
@@ -297,7 +297,7 @@ export const QuizExplanationModal: React.FC = () => {
           <button
             type="button"
             onClick={handleClose}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#EF233C] to-[#C84A0A] hover:opacity-95 text-white font-bold text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white font-bold text-xs sm:text-sm shadow-md shadow-red-500/20 transition-all cursor-pointer"
           >
             Ойлголоо
           </button>

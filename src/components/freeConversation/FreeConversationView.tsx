@@ -645,7 +645,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
                 onClick={() => setCurrentLevel(lvl)}
                 className={`px-2.5 py-1 rounded-xl font-bold transition-all cursor-pointer ${
                   currentLevel === lvl
-                    ? 'bg-[#EF233C] text-white shadow-2xs'
+                    ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-xs'
                     : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
@@ -813,12 +813,12 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
         <div
           className={`absolute w-72 h-72 sm:w-96 sm:h-96 rounded-full blur-3xl pointer-events-none transition-all duration-700 ${
             voiceState === 'listening'
-              ? 'bg-red-500/20 scale-125'
+              ? 'bg-[#FF3366]/16 dark:bg-[#FF3366]/20 scale-120'
               : voiceState === 'speaking'
-              ? 'bg-emerald-500/20 scale-110'
+              ? 'bg-[#FF6699]/16 dark:bg-[#FF6699]/20 scale-110'
               : voiceState === 'thinking'
-              ? 'bg-orange-500/20 scale-105'
-              : 'bg-orange-600/10 scale-90'
+              ? 'bg-[#CC0066]/16 dark:bg-[#CC0066]/20 scale-105'
+              : 'bg-[#990033]/12 dark:bg-[#990033]/16 scale-95'
           }`}
         />
 
@@ -826,23 +826,23 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
         <div className="relative flex items-center justify-center">
           {voiceState === 'listening' && (
             <>
-              <div className="absolute w-52 h-52 sm:w-64 sm:h-64 rounded-full border border-red-500/30 animate-voice-pulse-ring pointer-events-none" />
-              <div className="absolute w-44 h-44 sm:w-56 sm:h-56 rounded-full bg-red-500/10 animate-ping pointer-events-none" />
+              <div className="absolute w-52 h-52 sm:w-64 sm:h-64 rounded-full border border-[#FF3366]/30 animate-voice-pulse-ring pointer-events-none" />
+              <div className="absolute w-44 h-44 sm:w-56 sm:h-56 rounded-full bg-[#FF3366]/8 animate-pulse pointer-events-none" />
             </>
           )}
 
           {voiceState === 'speaking' && (
             <>
-              <div className="absolute w-52 h-52 sm:w-64 sm:h-64 rounded-full border border-emerald-500/30 animate-voice-pulse-ring pointer-events-none" />
-              <div className="absolute w-44 h-44 sm:w-56 sm:h-56 rounded-full bg-emerald-500/10 animate-pulse pointer-events-none" />
+              <div className="absolute w-52 h-52 sm:w-64 sm:h-64 rounded-full border border-[#FF6699]/30 animate-voice-pulse-ring pointer-events-none" />
+              <div className="absolute w-44 h-44 sm:w-56 sm:h-56 rounded-full bg-[#FF6699]/8 animate-pulse pointer-events-none" />
             </>
           )}
 
           {voiceState === 'thinking' && (
-            <div className="absolute w-44 h-44 sm:w-52 sm:h-52 rounded-full border-2 border-dashed border-orange-400/60 animate-spin pointer-events-none" />
+            <div className="absolute w-44 h-44 sm:w-52 sm:h-52 rounded-full border-2 border-dashed border-[#FF3366]/50 animate-spin pointer-events-none" />
           )}
 
-          {/* MAIN VOICE ORB */}
+          {/* MAIN VOICE ORB - Dimensional Red-Coral-Pink Atmosphere */}
           <button
             id="voice-orb-main"
             type="button"
@@ -850,12 +850,12 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
             disabled={voiceState === 'thinking'}
             className={`relative z-10 w-36 h-36 sm:w-48 sm:h-48 rounded-full flex flex-col items-center justify-center transition-all duration-500 transform active:scale-95 shadow-2xl cursor-pointer ${
               voiceState === 'listening'
-                ? 'bg-gradient-to-tr from-[#EF233C] via-[#B91C1C] to-[#8F1537] text-white ring-8 ring-red-500/30 animate-voice-orb-glow'
+                ? 'bg-[radial-gradient(circle_at_35%_30%,#FFA3B8_0%,#FF3366_38%,#CC0000_70%,#66001A_100%)] text-white ring-4 ring-[#FF3366]/35 animate-voice-orb-listen'
                 : voiceState === 'speaking'
-                ? 'bg-gradient-to-tr from-emerald-600 via-teal-500 to-orange-500 text-white ring-8 ring-emerald-400/30'
+                ? 'bg-[radial-gradient(circle_at_35%_30%,#FFB3C6_0%,#FF6699_35%,#CC0066_68%,#4D0026_100%)] text-white ring-4 ring-[#FF6699]/35 animate-voice-orb-breathe'
                 : voiceState === 'thinking'
-                ? 'bg-gradient-to-tr from-[#EF233C] via-orange-600 to-[#C84A0A] text-white ring-8 ring-orange-400/30 animate-pulse'
-                : 'bg-gradient-to-tr from-[#EF233C] via-orange-600 to-[#C84A0A] hover:from-red-700 hover:via-orange-700 hover:to-orange-800 text-white ring-8 ring-orange-500/25 shadow-xl shadow-red-950/20'
+                ? 'bg-[radial-gradient(circle_at_35%_30%,#FFCCE0_0%,#FF3366_35%,#990066_70%,#330022_100%)] text-white ring-4 ring-[#FF3366]/35 animate-pulse'
+                : 'bg-[radial-gradient(circle_at_35%_30%,#FFCCD8_0%,#FF3366_35%,#990033_70%,#330011_100%)] text-white ring-4 ring-[#FF3366]/20 hover:ring-[#FF3366]/35 animate-voice-orb-breathe'
             }`}
             title={
               voiceState === 'speaking'
@@ -871,7 +871,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
                 <div className="p-3 rounded-full bg-white/20 backdrop-blur-xs">
                   <Mic className="w-8 h-8 sm:w-11 sm:h-11 text-white" />
                 </div>
-                <span className="text-xs sm:text-sm font-black tracking-wide drop-shadow-xs">
+                <span className="text-xs sm:text-sm font-bold tracking-wide drop-shadow-xs">
                   Яриагаа эхлүүлэх
                 </span>
               </div>
@@ -886,7 +886,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
                   <div className="w-1.5 bg-white rounded-full animate-voice-wave-2" />
                   <div className="w-1.5 bg-white rounded-full animate-voice-wave-1" />
                 </div>
-                <span className="text-xs sm:text-sm font-black tracking-wide drop-shadow-xs">
+                <span className="text-xs sm:text-sm font-bold tracking-wide drop-shadow-xs">
                   Сонсож байна...
                 </span>
               </div>
@@ -895,7 +895,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
             {voiceState === 'thinking' && (
               <div className="flex flex-col items-center space-y-2">
                 <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-white animate-spin" />
-                <span className="text-xs sm:text-sm font-black tracking-wide drop-shadow-xs">
+                <span className="text-xs sm:text-sm font-bold tracking-wide drop-shadow-xs">
                   Бодож байна...
                 </span>
               </div>
@@ -910,7 +910,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
                   <div className="w-1.5 bg-white rounded-full animate-voice-wave-1" />
                   <div className="w-1.5 bg-white rounded-full animate-voice-wave-3" />
                 </div>
-                <span className="text-xs sm:text-sm font-black tracking-wide drop-shadow-xs">
+                <span className="text-xs sm:text-sm font-bold tracking-wide drop-shadow-xs">
                   Хариулж байна...
                 </span>
                 <span className="text-[10px] opacity-85 font-medium">
@@ -924,25 +924,25 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
         {/* State Label & Subtext */}
         <div className="mt-5 text-center max-w-md px-4">
           {voiceState === 'idle' && (
-            <p className="text-xs sm:text-sm font-bold text-stone-600 dark:text-stone-300">
+            <p className="text-xs sm:text-sm font-medium text-stone-600 dark:text-stone-300">
               Бөмбөлөг дээр товшиж япон хэлээр чөлөөтэй ярьж эхлээрэй
             </p>
           )}
 
           {voiceState === 'listening' && (
-            <p className="text-xs sm:text-sm font-bold text-red-600 dark:text-red-400 animate-pulse">
+            <p className="text-xs sm:text-sm font-semibold text-[#FF0000] dark:text-[#FF6699] animate-pulse">
               Японоор ярина уу... Ярьж дуусахад AI автоматаар хариулна
             </p>
           )}
 
           {voiceState === 'thinking' && (
-            <p className="text-xs sm:text-sm font-bold text-orange-600 dark:text-orange-400">
+            <p className="text-xs sm:text-sm font-semibold text-[#FF3366] dark:text-[#FF6699]">
               Sunny AI таны яриаг ойлгож хариулт бэлтгэж байна...
             </p>
           )}
 
           {voiceState === 'speaking' && (
-            <p className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400">
+            <p className="text-xs sm:text-sm font-semibold text-[#CC0000] dark:text-[#FF3366]">
               AI хариулж байна (дуусмагц таны яриаг автоматаар үргэлжлүүлэн сонсоно)
             </p>
           )}
@@ -953,11 +953,11 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
           
           {/* Live speech interim while user speaks */}
           {voiceState === 'listening' && speechInterimText && (
-            <div className="p-3.5 sm:p-4 rounded-3xl bg-red-50/90 dark:bg-red-950/40 border border-red-200/80 dark:border-red-800/60 shadow-sm text-center animate-fade-in">
-              <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider block mb-1">
+            <div className="p-3.5 sm:p-4 rounded-3xl bg-white/90 dark:bg-[#16131C]/90 backdrop-blur-md border border-[#D48B97]/30 dark:border-[#6B2D5C]/40 shadow-sm text-center animate-fade-in">
+              <span className="text-[10px] font-bold text-[#C85A54] dark:text-[#D48B97] uppercase tracking-wider block mb-1">
                 Таны яриа:
               </span>
-              <p className="font-jp text-sm sm:text-base font-bold text-red-900 dark:text-red-100">
+              <p className="font-jp text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100">
                 「{speechInterimText}」
               </p>
             </div>
@@ -982,7 +982,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
               {/* What AI said */}
               {latestAiMsg && (
                 <div className="flex items-start gap-2.5 text-xs sm:text-sm pt-2 border-t border-stone-100 dark:border-stone-800/80">
-                  <span className="px-2 py-0.5 rounded-lg bg-orange-500/15 text-orange-800 dark:text-orange-300 text-[11px] font-bold shrink-0 mt-0.5">
+                  <span className="px-2 py-0.5 rounded-lg bg-[#6B2D5C]/15 text-[#6B2D5C] dark:text-[#DEC9EF] text-[11px] font-bold shrink-0 mt-0.5">
                     Sunny
                   </span>
                   <div className="flex-1 space-y-1">
@@ -998,7 +998,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
                     <button
                       type="button"
                       onClick={() => playAiVoice(latestAiMsg.content, latestAiMsg.audioUrl)}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-700 dark:text-orange-400 hover:underline pt-1 cursor-pointer"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#C85A54] dark:text-[#D48B97] hover:underline pt-1 cursor-pointer"
                     >
                       <Volume2 className="w-3 h-3" />
                       <span>Дахин сонсох</span>
@@ -1009,8 +1009,8 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
 
               {/* Gentle phrasing tip if user had an unnatural phrase */}
               {latestUserMsg?.correction && (
-                <div className="p-2.5 rounded-2xl bg-orange-50/70 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 text-[11px] space-y-1">
-                  <span className="font-bold text-orange-800 dark:text-orange-300">
+                <div className="p-2.5 rounded-2xl bg-stone-50/90 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700/60 text-[11px] space-y-1">
+                  <span className="font-bold text-[#C85A54] dark:text-[#D48B97]">
                     💡 Илүү байгалийн хэллэг:
                   </span>
                   <p className="font-jp font-bold text-emerald-700 dark:text-emerald-400">
@@ -1035,7 +1035,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
       <section className="space-y-2">
         <div className="flex items-center justify-between px-1 text-xs">
           <div className="flex items-center gap-1.5 font-bold text-stone-600 dark:text-stone-400">
-            <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+            <Sparkles className="w-3.5 h-3.5 text-[#C85A54] dark:text-[#D48B97]" />
             <span>Сэдэв сонгож яриагаа чиглүүлэх:</span>
           </div>
           {messages.length > 1 && (
@@ -1058,8 +1058,8 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
                 }}
                 className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer ${
                   isSelected && isSessionActive
-                    ? 'bg-orange-50 dark:bg-orange-950/50 border-orange-400 dark:border-orange-600 text-orange-900 dark:text-orange-200 shadow-2xs'
-                    : 'bg-white/80 dark:bg-stone-900/80 border-stone-200 dark:border-stone-800 hover:border-orange-300 dark:hover:border-orange-700 text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850'
+                    ? 'bg-[#6B2D5C]/15 dark:bg-[#6B2D5C]/25 border-[#6B2D5C]/40 dark:border-[#9D8EC2]/40 text-[#6B2D5C] dark:text-[#DEC9EF] shadow-2xs'
+                    : 'bg-white/80 dark:bg-stone-900/80 border-stone-200 dark:border-stone-800 hover:border-[#D48B97]/40 text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850'
                 }`}
               >
                 <span className="font-jp block text-xs font-bold truncate">
@@ -1163,12 +1163,12 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
               onChange={e => setKeyboardInput(e.target.value)}
               disabled={voiceState === 'thinking'}
               placeholder="Японоор бичнэ үү (жишээ: 今日は学校に行きました)..."
-              className="flex-1 px-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white font-jp text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-red-500"
+              className="flex-1 px-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white font-jp text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-[#FF3366]/30 focus:border-[#FF3366]"
             />
             <button
               type="submit"
               disabled={!keyboardInput.trim() || voiceState === 'thinking'}
-              className="px-4 py-2.5 rounded-2xl bg-[#EF233C] hover:bg-[#D90429] text-white font-bold text-xs shadow-2xs disabled:opacity-40 cursor-pointer shrink-0"
+              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-bold text-xs shadow-xs disabled:opacity-40 cursor-pointer shrink-0"
             >
               <Send className="w-4 h-4" />
             </button>

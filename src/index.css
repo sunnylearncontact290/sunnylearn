@@ -2,85 +2,215 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Centralized Semantic Brand Color Tokens (Red + Burnt Orange + Dark Magenta) */
+/* ==========================================================================
+   SunnyLearn Design System: Atmospheric Ambient Gradient + Subtle Glassmorphism
+   Base: Deep Charcoal / Near-Black (Dark) & Warm Off-White (Light)
+   Accent Palette: #990000, #CC0000, #FF0366, #FF3999, #FF6666
+   ========================================================================== */
+
 :root {
-  --brand-primary: #e62929;
-  --brand-primary-hover: #b91c2b;
-  --brand-deep: #b91c2b;
-  --brand-crimson: #b91c2b;
-  --brand-burgundy: #6e1028;
-  --brand-magenta: #8f1537;
+  /* ==========================================================================
+     SunnyLearn Reusable Core Tokens (Prompt Section 20)
+     Palette: #990000, #CC0000, #FF0000, #FF3366, #FF6699, #FFF7F8, #FCEEEF
+     ========================================================================== */
+  --sl-red-deep: #990000;
+  --sl-red-crimson: #CC0000;
+  --sl-red: #FF0000;
+  --sl-pink: #FF3366;
+  --sl-pink-soft: #FF6699;
+  --sl-pink-pale: #FFF7F8;
+  --sl-pink-tint: #FCEEEF;
 
-  --accent-burnt-orange: #c84a0a;
-  --accent-orange: #ea6a0a;
-  --accent-orange-hover: #c84a0a;
-  --accent-warm-orange: #ea6a0a;
-  --accent-amber: #ea6a0a;
+  --sl-bg: #FFF9FA;
+  --sl-surface: rgba(255, 255, 255, 0.96);
+  --sl-surface-secondary: #FFF7F8;
+  --sl-surface-elevated: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 247, 248, 0.95), rgba(255, 102, 153, 0.08));
+  --sl-border: rgba(255, 51, 102, 0.12);
+  --sl-border-subtle: rgba(255, 51, 102, 0.08);
+  --sl-border-focus: #FF3366;
+  --sl-text: #17161A;
+  --sl-text-muted: #6B6875;
 
-  --audio-bg: rgba(255, 245, 245, 0.9);
-  --audio-border: rgba(200, 74, 10, 0.3);
-  --audio-text: #c84a0a;
-  --audio-active-bg: rgba(234, 106, 10, 0.15);
-  --audio-active-ring: rgba(230, 41, 41, 0.45);
+  --sl-gradient-primary: linear-gradient(135deg, #FF0000 0%, #FF3366 100%);
+  --sl-gradient-deep: linear-gradient(135deg, #990000 0%, #CC0000 50%, #FF0000 100%);
+  --sl-gradient-soft: linear-gradient(135deg, #FF3366 0%, #FF6699 100%);
+  --sl-gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 248, 0.94), rgba(255, 102, 153, 0.08));
+  --sl-shadow-card: 0 8px 24px rgba(153, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
+  --sl-shadow-featured: 0 12px 32px rgba(153, 0, 0, 0.08), 0 4px 12px rgba(255, 51, 102, 0.06);
 
+  /* Legacy aliases maintained for backward compatibility */
+  --page-bg: var(--sl-bg);
+  --surface-1: var(--sl-surface);
+  --surface-2: rgba(255, 246, 249, 0.85);
+  --surface-hover: rgba(255, 240, 244, 0.95);
+  --border-soft: var(--sl-border-subtle);
+  --brand-red: var(--sl-red);
+  --brand-coral: #FF6666;
+  --brand-pink: var(--sl-pink);
+  --brand-soft-pink: var(--sl-pink-soft);
+  --brand-deep-red: var(--sl-red-crimson);
+  --brand-dark-red: var(--sl-red-deep);
+  --text-primary: var(--sl-text);
+  --text-secondary: var(--sl-text-muted);
+  --brand-gradient: var(--sl-gradient-primary);
+
+  /* Global Surfaces (Light Mode) */
+  --bg-base: var(--sl-bg);
   --surface: #ffffff;
-  --surface-secondary: #fdfcfb;
-  --border: #f0eae6;
+  --surface-secondary: var(--sl-pink-pale);
+  --border: var(--sl-border);
+
+  /* Audio Button Tokens (Light Mode) */
+  --audio-bg: rgba(255, 255, 255, 0.95);
+  --audio-border: rgba(255, 51, 102, 0.16);
+  --audio-text: #CC0000;
+  --audio-active-bg: rgba(255, 0, 0, 0.08);
+  --audio-active-ring: rgba(255, 51, 102, 0.28);
+
+  /* Glass Card Colors (Light Mode) */
+  --glass-bg: var(--sl-gradient-card);
+  --glass-border: var(--sl-border);
+  --glass-shadow: var(--sl-shadow-card);
+  --glass-ambient-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 244, 247, 0.92), rgba(255, 102, 153, 0.10));
+  --glass-ambient-border: rgba(255, 51, 102, 0.16);
+  --glass-featured-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 242, 245, 0.95), rgba(255, 102, 153, 0.12));
+  --glass-featured-border: rgba(255, 51, 102, 0.20);
 }
 
 .dark {
-  --brand-primary: #e62929;
-  --brand-primary-hover: #ff3b53;
-  --brand-deep: #991b1b;
-  --brand-crimson: #b91c2b;
-  --brand-burgundy: #6e1028;
-  --brand-magenta: #8f1537;
+  /* ==========================================================================
+     SunnyLearn Reusable Core Tokens (Dark Mode)
+     Base: Almost-black charcoal with subtle deep-red undertones (#0D090A)
+     ========================================================================== */
+  --sl-red-deep: #990000;
+  --sl-red-crimson: #CC0000;
+  --sl-red: #FF0000;
+  --sl-pink: #FF3366;
+  --sl-pink-soft: #FF6699;
+  --sl-pink-pale: #1F1216;
+  --sl-pink-tint: #2A141C;
 
-  --accent-burnt-orange: #c84a0a;
-  --accent-orange: #ea6a0a;
-  --accent-orange-hover: #ea6a0a;
-  --accent-warm-orange: #ea6a0a;
-  --accent-amber: #ea6a0a;
+  --sl-bg: #0D090A;
+  --sl-surface: rgba(25, 18, 20, 0.96);
+  --sl-surface-secondary: #170D10;
+  --sl-surface-elevated: linear-gradient(135deg, rgba(28, 20, 23, 0.98), rgba(42, 20, 26, 0.95), rgba(153, 0, 0, 0.14));
+  --sl-border: rgba(255, 51, 102, 0.18);
+  --sl-border-subtle: rgba(255, 51, 102, 0.12);
+  --sl-border-focus: #FF3366;
+  --sl-text: #F3F2F5;
+  --sl-text-muted: #A9A5B2;
 
-  --audio-bg: rgba(45, 16, 20, 0.45);
-  --audio-border: rgba(200, 74, 10, 0.45);
-  --audio-text: #ea6a0a;
-  --audio-active-bg: rgba(143, 21, 55, 0.4);
-  --audio-active-ring: rgba(230, 41, 41, 0.55);
+  --sl-gradient-primary: linear-gradient(135deg, #FF0000 0%, #FF3366 100%);
+  --sl-gradient-deep: linear-gradient(135deg, #990000 0%, #CC0000 50%, #FF0000 100%);
+  --sl-gradient-soft: linear-gradient(135deg, #FF3366 0%, #FF6699 100%);
+  --sl-gradient-card: linear-gradient(135deg, rgba(25, 18, 20, 0.96), rgba(40, 18, 24, 0.94), rgba(153, 0, 0, 0.12));
+  --sl-shadow-card: 0 8px 28px rgba(0, 0, 0, 0.35), 0 2px 10px rgba(153, 0, 0, 0.08);
+  --sl-shadow-featured: 0 12px 36px rgba(0, 0, 0, 0.45), 0 4px 16px rgba(255, 51, 102, 0.10);
 
-  --surface: #0d0a0a;
-  --surface-secondary: #171111;
-  --border: #261c1c;
+  /* Legacy aliases maintained for backward compatibility */
+  --page-bg: var(--sl-bg);
+  --surface-1: var(--sl-surface);
+  --surface-2: rgba(36, 24, 28, 0.88);
+  --surface-hover: rgba(48, 30, 36, 0.95);
+  --border-soft: var(--sl-border-subtle);
+  --brand-red: var(--sl-red);
+  --brand-coral: #FF6666;
+  --brand-pink: var(--sl-pink);
+  --brand-soft-pink: var(--sl-pink-soft);
+  --brand-deep-red: var(--sl-red-crimson);
+  --brand-dark-red: var(--sl-red-deep);
+  --text-primary: var(--sl-text);
+  --text-secondary: var(--sl-text-muted);
+  --brand-gradient: var(--sl-gradient-primary);
+
+  /* Global Surfaces (Dark Mode) */
+  --bg-base: var(--sl-bg);
+  --surface: #170D10;
+  --surface-secondary: #211216;
+  --border: var(--sl-border);
+
+  /* Audio Button Tokens (Dark Mode) */
+  --audio-bg: rgba(35, 23, 28, 0.90);
+  --audio-border: rgba(255, 102, 153, 0.22);
+  --audio-text: #FF6699;
+  --audio-active-bg: rgba(255, 0, 0, 0.20);
+  --audio-active-ring: rgba(255, 51, 102, 0.35);
+
+  /* Glass Card Colors (Dark Mode) */
+  --glass-bg: var(--sl-gradient-card);
+  --glass-border: var(--sl-border);
+  --glass-shadow: var(--sl-shadow-card);
+  --glass-ambient-bg: linear-gradient(135deg, rgba(28, 20, 23, 0.98), rgba(44, 22, 28, 0.94), rgba(153, 0, 0, 0.14));
+  --glass-ambient-border: rgba(255, 51, 102, 0.20);
+  --glass-featured-bg: linear-gradient(135deg, rgba(32, 20, 24, 0.96), rgba(48, 20, 28, 0.94), rgba(204, 0, 0, 0.18));
+  --glass-featured-border: rgba(255, 51, 102, 0.25);
 }
 
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
-html, body {
+/* ==========================================================================
+   Continuous Unified Global Backgrounds (5–10% subtle atmospheric color)
+   ========================================================================== */
+
+html {
+  min-height: 100%;
+}
+
+body {
   width: 100%;
   max-width: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
   position: relative;
   -webkit-text-size-adjust: 100%;
   margin: 0;
   padding: 0;
+
+  /* LIGHT MODE GLOBAL BACKGROUND (Prompt Section 3):
+     Almost-white warm pink background (#FFF9FA, #FFF7F8, #FCEEEF)
+     with extremely soft blurred pink/red ambient gradients (5–10% visible) */
+  background-color: #FFF9FA;
+  background-image:
+    radial-gradient(circle at 85% 5%, rgba(255, 102, 153, 0.08), transparent 35%),
+    radial-gradient(circle at 10% 70%, rgba(255, 51, 102, 0.04), transparent 40%),
+    linear-gradient(135deg, #FFF9FA, #FFF5F7);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #17161A;
+}
+
+body.dark,
+.dark body {
+  /* DARK MODE GLOBAL BACKGROUND (Prompt Section 3):
+     Almost-black charcoal background with very subtle deep-red undertone
+     (#0D090A, #120B0D, #170D10) + extremely subtle blurred deep-red ambience (5–10%) */
+  background-color: #0D090A;
+  background-image:
+    radial-gradient(circle at 85% 5%, rgba(255, 51, 102, 0.08), transparent 35%),
+    radial-gradient(circle at 10% 70%, rgba(153, 0, 0, 0.06), transparent 40%),
+    linear-gradient(135deg, #0D090A, #170D10);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #F3F2F5;
 }
 
 #root {
   width: 100%;
   max-width: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
   position: relative;
-}
-
-img, svg, video, canvas, audio, iframe, embed, object {
-  max-width: 100%;
 }
 
 /* Ensure headings and paragraphs never force layout wider than container */
 h1, h2, h3, h4, h5, h6, p, blockquote, li {
   overflow-wrap: break-word;
+}
+
+img, svg, video, canvas, audio, iframe, embed, object {
+  max-width: 100%;
 }
 
 /* Japanese Typography & Native Ruby / Furigana Layout */
@@ -112,36 +242,291 @@ rt, .ruby-reading {
   padding: 0;
 }
 
-/* Voice Orb & Acoustic Waveform Animations */
+/* ==========================================================================
+   CARD SURFACES & GLASSMORPHISM SYSTEM
+   Cards visually elevated from the background like soft floating surfaces
+   ========================================================================== */
+
+/* ==========================================================================
+   CARD SURFACES & ELEVATION SYSTEM (Prompt Sections 4, 5, 7, 20)
+   Cards visually elevated from the background like clean, floating surfaces
+   ========================================================================== */
+
+/* Universal Subtle Neutral Cards */
+.sl-card,
+.glass-card {
+  position: relative;
+  background: var(--sl-gradient-card);
+  border: 1px solid var(--sl-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--sl-shadow-card);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sl-card:hover,
+.glass-card:hover {
+  border-color: rgba(255, 51, 102, 0.25);
+  box-shadow: 0 10px 30px rgba(153, 0, 0, 0.08);
+}
+
+.dark .sl-card:hover,
+.dark .glass-card:hover {
+  border-color: rgba(255, 102, 153, 0.28);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.40);
+}
+
+/* Ambient Highlight Cards (Daily Featured Lessons, active highlights) */
+.sl-card-ambient,
+.glass-card-ambient {
+  position: relative;
+  background: var(--glass-ambient-bg);
+  border: 1px solid var(--glass-ambient-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--sl-shadow-card);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sl-card-ambient:hover,
+.glass-card-ambient:hover {
+  border-color: rgba(255, 51, 102, 0.32);
+}
+
+.dark .sl-card-ambient:hover,
+.dark .glass-card-ambient:hover {
+  border-color: rgba(255, 102, 153, 0.35);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.40);
+}
+
+/* Featured Cards (Hero, XP, Today's Challenge, Premium, AI) */
+.sl-card-featured,
+.glass-card-featured {
+  position: relative;
+  background: var(--glass-featured-bg);
+  border: 1px solid var(--glass-featured-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--sl-shadow-featured);
+}
+
+/* Active / Selected Card State */
+.sl-card-selected,
+.glass-card-selected {
+  position: relative;
+  border-color: #FF0000 !important;
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.25), 0 8px 24px -2px rgba(255, 51, 102, 0.15) !important;
+}
+
+.dark .sl-card-selected,
+.dark .glass-card-selected {
+  border-color: #FF3366 !important;
+  box-shadow: 0 0 0 2px rgba(255, 51, 102, 0.35), 0 8px 28px rgba(0, 0, 0, 0.40), inset 0 1px 0 rgba(255, 102, 153, 0.15) !important;
+}
+
+/* Header & Sticky Surfaces (Seamlessly merges with continuous page background) */
+.glass-header {
+  background: rgba(255, 249, 250, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 51, 102, 0.08);
+}
+
+.dark .glass-header {
+  background: rgba(13, 9, 10, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 51, 102, 0.14);
+}
+
+/* Footer Surface (Seamless continuation of page background) */
+.glass-footer {
+  background: transparent;
+  border-top: 1px solid rgba(255, 51, 102, 0.08);
+}
+
+.dark .glass-footer {
+  background: transparent;
+  border-top: 1px solid rgba(255, 51, 102, 0.14);
+}
+
+/* ==========================================================================
+   Universal Card Surface Across All Pages (Section 7, 20)
+   Transforms standard card elements across JLPT N5–N1, Vocab, Kanji,
+   Grammar, Quizzes, Practice, Progress, XP, Dictionary, and AI Hub
+   ========================================================================== */
+
+main .bg-white {
+  background: var(--sl-gradient-card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-color: var(--sl-border);
+  box-shadow: var(--sl-shadow-card);
+}
+
+main .border-stone-200 {
+  border-color: var(--sl-border);
+}
+
+.dark main .bg-white,
+.dark .bg-stone-900 {
+  background: var(--sl-gradient-card) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-color: var(--sl-border) !important;
+  box-shadow: var(--sl-shadow-card);
+}
+
+.dark .border-stone-800 {
+  border-color: var(--sl-border) !important;
+}
+
+.dark .bg-stone-850,
+.dark .bg-stone-800\/50,
+.dark .bg-stone-800\/60,
+.dark .bg-stone-800\/40 {
+  background-color: rgba(35, 20, 25, 0.70) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Form inputs & focus states (Section 12) */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea,
+select {
+  transition: border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #FF3366 !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 51, 102, 0.18) !important;
+}
+
+/* ==========================================================================
+   BUTTONS (Primary: #FF0000 -> #FF3366, AI / Multi: #CC0000 -> #FF3366 -> #FF6699)
+   ========================================================================== */
+
+.sl-btn-primary,
+.btn-primary {
+  background: linear-gradient(135deg, #FF0000 0%, #FF3366 100%);
+  color: #ffffff;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px 0 rgba(255, 0, 0, 0.28);
+}
+
+.sl-btn-primary:hover,
+.btn-primary:hover {
+  background: linear-gradient(135deg, #E60000 0%, #E62E5C 100%);
+  box-shadow: 0 6px 18px 0 rgba(255, 51, 102, 0.36);
+  transform: translateY(-1px);
+}
+
+.sl-btn-primary:active,
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.sl-btn-secondary,
+.btn-secondary {
+  background-color: rgba(255, 51, 102, 0.08);
+  color: #CC0033;
+  border: 1px solid rgba(255, 51, 102, 0.20);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .sl-btn-secondary,
+.dark .btn-secondary {
+  background-color: rgba(255, 102, 153, 0.12);
+  color: #FF6699;
+  border: 1px solid rgba(255, 102, 153, 0.24);
+}
+
+.sl-btn-secondary:hover,
+.btn-secondary:hover {
+  background-color: rgba(255, 51, 102, 0.14);
+  transform: translateY(-1px);
+}
+
+.sl-btn-secondary:active,
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.btn-ai-action {
+  background: linear-gradient(135deg, #CC0000 0%, #FF3366 50%, #FF6699 100%);
+  color: #ffffff;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px 0 rgba(255, 51, 102, 0.25);
+}
+
+.btn-ai-action:hover {
+  box-shadow: 0 6px 18px 0 rgba(255, 51, 102, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-ai-action:active {
+  transform: scale(0.98);
+}
+
+/* ==========================================================================
+   Voice Orb & Acoustic Waveform Animations (Ambient AI Presence - Section 15)
+   Brand Palette: #FF0000 -> #FF3366 -> #FF6699 -> deep #990000
+   ========================================================================== */
+
 @keyframes voice-wave-1 {
-  0%, 100% { height: 12px; }
-  50% { height: 38px; }
+  0%, 100% { height: 10px; }
+  50% { height: 32px; }
 }
 
 @keyframes voice-wave-2 {
-  0%, 100% { height: 20px; }
-  50% { height: 48px; }
+  0%, 100% { height: 16px; }
+  50% { height: 42px; }
 }
 
 @keyframes voice-wave-3 {
   0%, 100% { height: 8px; }
-  50% { height: 32px; }
+  50% { height: 26px; }
 }
 
 @keyframes voice-pulse-ring {
-  0% { transform: scale(0.9); opacity: 0.8; }
-  50% { transform: scale(1.22); opacity: 0.2; }
-  100% { transform: scale(0.9); opacity: 0.8; }
+  0% { transform: scale(0.92); opacity: 0.6; }
+  50% { transform: scale(1.18); opacity: 0.10; }
+  100% { transform: scale(0.92); opacity: 0.6; }
 }
 
-@keyframes voice-orb-glow {
+@keyframes voice-orb-breathe {
   0%, 100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 25px rgba(249, 115, 22, 0.45)) drop-shadow(0 0 45px rgba(239, 35, 60, 0.3));
+    box-shadow: 0 0 35px rgba(255, 51, 102, 0.25), 0 0 65px rgba(204, 0, 0, 0.18);
   }
   50% {
-    transform: scale(1.03);
-    filter: drop-shadow(0 0 45px rgba(245, 158, 11, 0.65)) drop-shadow(0 0 70px rgba(194, 65, 12, 0.5));
+    transform: scale(1.025);
+    box-shadow: 0 0 48px rgba(255, 51, 102, 0.35), 0 0 80px rgba(255, 102, 153, 0.22);
+  }
+}
+
+@keyframes voice-orb-listen {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 40px rgba(255, 0, 0, 0.35), 0 0 75px rgba(255, 51, 102, 0.25);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 0 60px rgba(255, 0, 0, 0.45), 0 0 95px rgba(255, 102, 153, 0.30);
   }
 }
 
@@ -157,7 +542,20 @@ rt, .ruby-reading {
 .animate-voice-pulse-ring {
   animation: voice-pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-.animate-voice-orb-glow {
-  animation: voice-orb-glow 3s ease-in-out infinite;
+.animate-voice-orb-breathe {
+  animation: voice-orb-breathe 4s ease-in-out infinite;
+}
+.animate-voice-orb-listen {
+  animation: voice-orb-listen 2s ease-in-out infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-voice-wave-1,
+  .animate-voice-wave-2,
+  .animate-voice-wave-3,
+  .animate-voice-pulse-ring,
+  .animate-voice-orb-breathe,
+  .animate-voice-orb-listen {
+    animation: none !important;
+  }
+}

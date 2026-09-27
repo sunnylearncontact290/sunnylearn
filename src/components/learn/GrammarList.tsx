@@ -52,15 +52,15 @@ export const GrammarList: React.FC = () => {
     <div className="space-y-6">
       {/* Premium Preview Info Banner */}
       {isLevelPremium && !isUnlocked && (
-        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-red-500/10 via-orange-500/5 to-transparent border border-red-200/80 dark:border-red-900/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#FF0000]/10 via-[#FF3366]/5 to-transparent border border-[rgba(255,51,102,0.18)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EF233C] to-orange-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-red-500/20">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF0000] to-[#FF3366] text-white flex items-center justify-center shrink-0 shadow-sm shadow-red-500/20">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <h4 className="text-sm font-extrabold text-stone-900 dark:text-stone-100 flex items-center gap-2">
                 <span>JLPT {effectiveLevel} Дүрэм — Танилцуулга хувилбар</span>
-                <span className="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300 text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/60 text-[#CC0000] dark:text-red-300 text-[10px] font-bold">
                   {filteredGrammar.length} дүрэм нээлттэй
                 </span>
               </h4>
@@ -78,7 +78,7 @@ export const GrammarList: React.FC = () => {
                 setActiveTab('premium');
               }
             }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#EF233C] via-[#B91C1C] to-orange-600 hover:opacity-95 text-white font-extrabold text-xs shadow-md shadow-red-500/20 transition-all shrink-0 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white font-extrabold text-xs shadow-md shadow-red-500/20 transition-all shrink-0 cursor-pointer"
           >
             <Lock className="w-3.5 h-3.5" />
             <span>Premium нээх (¥880 / 30 хоног)</span>
@@ -281,8 +281,8 @@ export const GrammarList: React.FC = () => {
 
           {/* Locked Card Teaser */}
           {isLevelPremium && !isUnlocked && (
-            <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-stone-50 to-orange-50/30 dark:from-stone-900 dark:to-orange-950/20 border-2 border-dashed border-orange-300 dark:border-orange-800/60 flex flex-col items-center justify-center text-center space-y-3 shadow-sm">
-              <div className="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+            <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-stone-50 to-red-50/20 dark:from-stone-900 dark:to-red-950/20 border-2 border-dashed border-red-300 dark:border-red-800/60 flex flex-col items-center justify-center text-center space-y-3 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-900/40 text-[#FF0000] dark:text-[#FF6699] flex items-center justify-center">
                 <Lock className="w-6 h-6" />
               </div>
               <div>
@@ -301,7 +301,7 @@ export const GrammarList: React.FC = () => {
                     setActiveTab('premium');
                   }
                 }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#EF233C] via-[#B91C1C] to-orange-600 hover:opacity-95 text-white font-extrabold text-xs shadow-md shadow-red-500/20 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white font-extrabold text-xs shadow-md shadow-red-500/20 transition-all cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>Premium идэвхжүүлэх (¥880 / 30 хоног)</span>
