@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Star, CheckCircle2, BookOpen, Sparkles, Lock } from 'lucide-react';
+import { Search, Star, CheckCircle2, BookOpen, Sparkles, Lock, PenTool } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LevelBadge } from '../common/LevelBadge';
 import { AudioButton } from '../common/AudioButton';
 import { extractKanjiPronunciation } from '../../services/speech';
 import { KanjiItem } from '../../types';
+import { KanjiStrokeModal } from '../kanji/KanjiStrokeModal';
 
 export const KanjiList: React.FC = () => {
   const {
@@ -22,6 +23,7 @@ export const KanjiList: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [filterLearned, setFilterLearned] = useState<'all' | 'unlearned' | 'learned'>('all');
+  const [selectedStrokeKanji, setSelectedStrokeKanji] = useState<KanjiItem | null>(null);
 
   const effectiveLevel = selectedLevel || 'N5';
   const isLevelPremium = effectiveLevel !== 'N5';
@@ -138,7 +140,16 @@ export const KanjiList: React.FC = () => {
                   {/* Top Bar */}
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <LevelBadge level={item.jlptLevel} size="sm" />
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStrokeKanji(item)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-red-50 dark:hover:bg-red-950/40 text-stone-700 dark:text-stone-300 hover:text-[#CC0000] dark:hover:text-[#FF6699] border border-stone-200/80 dark:border-stone-700/80 hover:border-red-200 dark:hover:border-red-800/60 text-xs font-bold transition-all cursor-pointer"
+                        title={`"${item.kanji}" зурлагын дараалал (書き順) харах`}
+                      >
+                        <PenTool className="w-3.5 h-3.5 text-[#FF3366]" />
+                        <span>書き順</span>
+                      </button>
                       <button
                         onClick={() => toggleFavorite('kanji', item.id)}
                         className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors"
@@ -152,9 +163,14 @@ export const KanjiList: React.FC = () => {
                   {/* Large Kanji Character & Core Info */}
                   <div className="flex items-start gap-3 sm:gap-4">
                     <div className="relative group">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 flex items-center justify-center text-3xl sm:text-4xl font-extrabold font-jp border border-stone-200 dark:border-stone-700 shadow-sm shrink-0">
-                        {item.kanji}
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStrokeKanji(item)}
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-red-50 dark:hover:bg-red-950/30 text-stone-900 dark:text-stone-100 hover:text-[#CC0000] dark:hover:text-[#FF6699] flex items-center justify-center text-3xl sm:text-4xl font-extrabold font-jp border border-stone-200 dark:border-stone-700 hover:border-red-300 dark:hover:border-red-800/80 shadow-sm shrink-0 transition-all cursor-pointer text-center"
+                        title={`"${item.kanji}" зурлагын дараалал харах`}
+                      >
+                        <span>{item.kanji}</span>
+                      </button>
                       <div className="absolute -bottom-2 -right-2">
                         {(() => {
                           const kp = extractKanjiPronunciation(item);
@@ -258,21 +274,33 @@ export const KanjiList: React.FC = () => {
                 </div>
 
                 {/* Card Action footer */}
-                <div className="pt-4 mt-4 border-t border-stone-100 dark:border-stone-800/80 flex items-center justify-between">
-                  <span className="text-xs text-stone-400">
-                    {isLearned ? '✓ Сурсан' : 'Сураагүй'}
-                  </span>
+                <div className="pt-4 mt-4 border-t border-stone-100 dark:border-stone-800/80 flex items-center justify-between gap-2">
                   <button
-                    onClick={() => toggleKanjiLearned(item.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      isLearned
-                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200'
-                        : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
-                    }`}
+                    type="button"
+                    onClick={() => setSelectedStrokeKanji(item)}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-600 dark:text-stone-400 hover:text-[#CC0000] dark:hover:text-[#FF6699] transition-colors cursor-pointer"
+                    title={`"${item.kanji}" зурлагын дараалал харах`}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>{isLearned ? 'Сурсан' : 'Сурсанд тооцох'}</span>
+                    <PenTool className="w-3.5 h-3.5 text-[#FF3366]" />
+                    <span>書き順</span>
                   </button>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-stone-400 hidden sm:inline">
+                      {isLearned ? '✓ Сурсан' : 'Сураагүй'}
+                    </span>
+                    <button
+                      onClick={() => toggleKanjiLearned(item.id)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        isLearned
+                          ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200'
+                          : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+                      }`}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>{isLearned ? 'Сурсан' : 'Сурсанд тооцох'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -309,6 +337,13 @@ export const KanjiList: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Kanji Stroke Order Modal */}
+      <KanjiStrokeModal
+        isOpen={!!selectedStrokeKanji}
+        onClose={() => setSelectedStrokeKanji(null)}
+        kanjiItem={selectedStrokeKanji}
+      />
     </div>
   );
 };
