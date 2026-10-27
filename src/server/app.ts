@@ -9,7 +9,15 @@ import { GoogleGenAI } from '@google/genai';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import { initialSeedData } from '../data/seedData';
 import { DatabaseSchema, PaymentRequestItem, JLPTLevel, LevelCountDetails, RoleplaySessionRecord, RoleplayScenario, SunnyAIRoleplayFeedbackContext, RoleplayFeedbackReport, FreeChatFeedbackReport } from '../types';
-import { buildFreeTierData, ensureAccessTiers, computeLevelCounts } from '../data/accessControl';
+import {
+  buildFreeTierData,
+  ensureAccessTiers,
+  computeLevelCounts,
+  COMPLIMENTARY_PREMIUM_EMAIL,
+  isComplimentaryPremiumAccount,
+  isAdminAccount,
+  hasPremiumAccess
+} from '../data/accessControl';
 import { INITIAL_ROLEPLAY_SCENARIOS, getScenarioById } from '../data/roleplayScenarios';
 
 const app = express();
@@ -546,8 +554,9 @@ function generateUserToken(
 ): string {
   const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
   const isSpecialAdmin = email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
-  const prem = isSpecialAdmin ? true : isPremium;
-  const premExp = isSpecialAdmin ? '2099-12-31T23:59:59.000Z' : premiumExpiresAt;
+  const isSpecialComp = isComplimentaryPremiumAccount(email);
+  const prem = (isSpecialAdmin || isSpecialComp) ? true : isPremium;
+  const premExp = (isSpecialAdmin || isSpecialComp) ? '2099-12-31T23:59:59.000Z' : premiumExpiresAt;
   const payloadStr = JSON.stringify({ userId, email, isPremium: prem, premiumExpiresAt: premExp, name, expiresAt });
   const b64Payload = Buffer.from(payloadStr).toString('base64url');
   const signature = crypto.createHmac('sha256', JWT_SECRET).update(b64Payload).digest('base64url');
@@ -730,10 +739,18 @@ function getRequesterAccess(req: Request): { isPremium: boolean; isAdmin: boolea
       return { isPremium: true, isAdmin: true, userId: userSession.userId, userEmail: userSession.email };
     }
 
+    const isSpecialComp = userSession.email && isComplimentaryPremiumAccount(userSession.email);
+    if (isSpecialComp) {
+      return { isPremium: true, isAdmin: false, userId: userSession.userId, userEmail: userSession.email };
+    }
+
     const user = (db.users || []).find(u => u.id === userSession.userId || u.email.toLowerCase() === userSession.email.toLowerCase());
     if (user) {
       if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
         return { isPremium: true, isAdmin: true, userId: user.id, userEmail: user.email };
+      }
+      if (isComplimentaryPremiumAccount(user.email)) {
+        return { isPremium: true, isAdmin: false, userId: user.id, userEmail: user.email };
       }
       const isPremium = !!(user.isPremium && user.premiumExpiresAt && new Date(user.premiumExpiresAt).getTime() > Date.now());
       return { isPremium, isAdmin: false, userId: user.id, userEmail: user.email };
@@ -1288,6 +1305,10 @@ function sanitizeUser(user: any) {
   if (safe.email && safe.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim()) {
     safe.isPremium = true;
     safe.premiumExpiresAt = '2099-12-31T23:59:59.000Z';
+  } else if (safe.email && isComplimentaryPremiumAccount(safe.email)) {
+    safe.isPremium = true;
+    safe.premiumExpiresAt = '2099-12-31T23:59:59.000Z';
+    safe.entitlement = 'complimentary_premium';
   }
   return safe;
 }
@@ -1324,10 +1345,15 @@ app.post('/api/auth/register', async (req, res) => {
       // User registered via Google previously; attach password
       existingUser.passwordHash = hashPassword(cleanPass);
       existingUser.authProvider = 'email';
+      if (isComplimentaryPremiumAccount(existingUser.email)) {
+        existingUser.isPremium = true;
+        existingUser.premiumExpiresAt = '2099-12-31T23:59:59.000Z';
+        existingUser.entitlement = 'complimentary_premium';
+      }
       existingUser.updatedAt = new Date().toISOString();
       saveDatabase(db);
 
-      const token = generateUserToken(existingUser.id, existingUser.email);
+      const token = generateUserToken(existingUser.id, existingUser.email, existingUser.isPremium, existingUser.premiumExpiresAt, existingUser.name);
       return res.json({
         success: true,
         isNew: false,
@@ -1338,6 +1364,9 @@ app.post('/api/auth/register', async (req, res) => {
 
     const userTimezone = timezone || 'Asia/Ulaanbaatar';
     const nowStr = new Date().toLocaleString('mn-MN', { timeZone: userTimezone });
+
+    const isSpecialAdmin = cleanEmail === ADMIN_EMAIL.toLowerCase();
+    const isSpecialComp = isComplimentaryPremiumAccount(cleanEmail);
 
     const newUser: any = {
       id: 'usr-' + Date.now() + '-' + crypto.randomBytes(4).toString('hex'),
@@ -1372,8 +1401,9 @@ app.post('/api/auth/register', async (req, res) => {
       updatedAt: new Date().toISOString(),
       timezone: userTimezone,
       notifiedAdmin: false,
-      isPremium: cleanEmail === ADMIN_EMAIL.toLowerCase(),
-      premiumExpiresAt: cleanEmail === ADMIN_EMAIL.toLowerCase() ? '2099-12-31T23:59:59.000Z' : null
+      isPremium: isSpecialAdmin || isSpecialComp,
+      premiumExpiresAt: (isSpecialAdmin || isSpecialComp) ? '2099-12-31T23:59:59.000Z' : null,
+      entitlement: isSpecialComp ? 'complimentary_premium' : undefined
     };
 
     db.users.push(newUser);
@@ -1451,6 +1481,10 @@ app.post('/api/auth/login', async (req, res) => {
     if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
       user.isPremium = true;
       user.premiumExpiresAt = '2099-12-31T23:59:59.000Z';
+    } else if (isComplimentaryPremiumAccount(user.email)) {
+      user.isPremium = true;
+      user.premiumExpiresAt = '2099-12-31T23:59:59.000Z';
+      user.entitlement = 'complimentary_premium';
     }
 
     user.updatedAt = new Date().toISOString();
@@ -1647,9 +1681,14 @@ app.post('/api/auth/google', async (req, res) => {
     }
 
     const isSpecialAdmin = user.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+    const isSpecialComp = isComplimentaryPremiumAccount(user.email);
     if (isSpecialAdmin) {
       user.isPremium = true;
       user.premiumExpiresAt = '2099-12-31T23:59:59.000Z';
+    } else if (isSpecialComp) {
+      user.isPremium = true;
+      user.premiumExpiresAt = '2099-12-31T23:59:59.000Z';
+      user.entitlement = 'complimentary_premium';
     }
 
     const token = generateUserToken(user.id, user.email, user.isPremium, user.premiumExpiresAt, user.name);
@@ -1793,6 +1832,7 @@ app.get('/api/user/me', verifyUserToken, (req, res) => {
     const session = parseUserToken(req.headers.authorization?.split(' ')[1] || '');
     if (session) {
       const isSpecial = session.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+      const isComp = isComplimentaryPremiumAccount(session.email);
       user = {
         id: session.userId,
         email: session.email,
@@ -1820,8 +1860,9 @@ app.get('/api/user/me', verifyUserToken, (req, res) => {
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        isPremium: isSpecial || !!session.isPremium,
-        premiumExpiresAt: isSpecial ? '2099-12-31T23:59:59.000Z' : (session.premiumExpiresAt || null)
+        isPremium: isSpecial || isComp || !!session.isPremium,
+        premiumExpiresAt: (isSpecial || isComp) ? '2099-12-31T23:59:59.000Z' : (session.premiumExpiresAt || null),
+        entitlement: isComp ? 'complimentary_premium' : undefined
       };
       if (!Array.isArray(db.users)) db.users = [];
       db.users.push(user);
@@ -1832,14 +1873,21 @@ app.get('/api/user/me', verifyUserToken, (req, res) => {
   }
 
   const isSpecialAdmin = user.email && user.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+  const isSpecialComp = user.email && isComplimentaryPremiumAccount(user.email);
   if (isSpecialAdmin) {
     user.isPremium = true;
     user.premiumExpiresAt = '2099-12-31T23:59:59.000Z';
+  } else if (isSpecialComp) {
+    user.isPremium = true;
+    user.premiumExpiresAt = '2099-12-31T23:59:59.000Z';
+    user.entitlement = 'complimentary_premium';
   }
 
   // Check if premium has expired
   let isPremium = false;
-  if (user.premiumExpiresAt) {
+  if (isSpecialAdmin || isSpecialComp) {
+    isPremium = true;
+  } else if (user.premiumExpiresAt) {
     const expiresMs = new Date(user.premiumExpiresAt).getTime();
     if (expiresMs > Date.now()) {
       isPremium = true;
@@ -1859,6 +1907,7 @@ app.get('/api/user/me', verifyUserToken, (req, res) => {
       progress: user.progress,
       isPremium,
       premiumExpiresAt: user.premiumExpiresAt || null,
+      entitlement: isSpecialComp ? 'complimentary_premium' : (user.entitlement || (isPremium ? 'paid_premium' : 'standard')),
       inAppNotification: user.inAppNotification || null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
@@ -2404,12 +2453,13 @@ function resolveClientAIContext(req: Request): {
       identifier = `user:${session.userId}`;
 
       const isAdminEmail = session.email && session.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
-      if (isAdminEmail) {
+      const isComplimentary = session.email && isComplimentaryPremiumAccount(session.email);
+      if (isAdminEmail || isComplimentary) {
         isPremium = true;
       } else {
         const user = (db.users || []).find(u => u.id === session.userId || (u.email && u.email.toLowerCase() === session.email.toLowerCase()));
         if (user) {
-          if (user.email && user.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim()) {
+          if (user.email && (user.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim() || isComplimentaryPremiumAccount(user.email))) {
             isPremium = true;
           } else if (user.isPremium && user.premiumExpiresAt) {
             const exp = new Date(user.premiumExpiresAt).getTime();

@@ -228,6 +228,7 @@ export interface UserProfile {
   isPremium?: boolean;
   premiumStartedAt?: string | null;
   premiumExpiresAt?: string | null;
+  entitlement?: 'complimentary_premium' | 'paid_premium' | 'standard';
   inAppNotification?: {
     id: string;
     type: 'premium_activated' | 'info';

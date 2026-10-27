@@ -1,6 +1,61 @@
 import { DatabaseSchema, JLPTLevel, LevelCountDetails } from '../types';
 import { initialSeedData } from './seedData';
 
+export const COMPLIMENTARY_PREMIUM_EMAIL = 'uugii.su@gmail.com';
+export const ADMIN_EMAIL = 'sanaa0419z@gmail.com';
+
+/**
+ * Checks if the given email corresponds to the verified complimentary Premium account.
+ * uugii.su@gmail.com receives full, permanent, free access to all Premium features
+ * without administrative privileges. Also handles uugii.su@gmai.com typo gracefully.
+ */
+export function isComplimentaryPremiumAccount(email?: string | null): boolean {
+  if (!email) return false;
+  const clean = email.toLowerCase().trim();
+  return clean === COMPLIMENTARY_PREMIUM_EMAIL.toLowerCase().trim() || clean === 'uugii.su@gmai.com';
+}
+
+/**
+ * Strictly checks if the given email is the system administrator account.
+ * Only sanaa0419z@gmail.com is authorized as admin.
+ */
+export function isAdminAccount(email?: string | null): boolean {
+  if (!email) return false;
+  return email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+}
+
+/**
+ * Centralized entitlement check: determines whether a user has active Premium access.
+ * Returns true for:
+ * 1. The complimentary premium account (uugii.su@gmail.com) - permanent & free
+ * 2. The admin account (sanaa0419z@gmail.com) - permanent
+ * 3. Any active paid subscription (isPremium === true && premiumExpiresAt > now)
+ */
+export function hasPremiumAccess(
+  user: { email?: string | null; isPremium?: boolean; premiumExpiresAt?: string | null } | null | undefined
+): boolean {
+  if (!user || !user.email) return false;
+  const clean = user.email.toLowerCase().trim();
+
+  // 1. Permanent complimentary premium account (No admin privileges)
+  if (isComplimentaryPremiumAccount(clean)) {
+    return true;
+  }
+
+  // 2. Administrator account
+  if (isAdminAccount(clean)) {
+    return true;
+  }
+
+  // 3. Paid subscription verification
+  if (user.isPremium) {
+    if (!user.premiumExpiresAt) return true;
+    return new Date(user.premiumExpiresAt).getTime() > Date.now();
+  }
+
+  return false;
+}
+
 export const FREE_LIMITS = {
   VOCABULARY: 50,
   KANJI: 35,

@@ -134594,6 +134594,51 @@
         "createdAt": "2026-09-15T09:55:14.031Z",
         "read": false
       }
+    },
+    {
+      "id": "usr-1793102095780-c279dd1b",
+      "email": "uugii.su@gmail.com",
+      "name": "Uugii",
+      "picture": "",
+      "selectedLevel": null,
+      "progress": {
+        "selectedLevel": null,
+        "learnedVocabIds": [],
+        "learnedKanjiIds": [],
+        "learnedGrammarIds": [],
+        "completedLessonIds": [],
+        "completedReadingIds": [],
+        "completedListeningIds": [],
+        "quizResults": [],
+        "favorites": {
+          "vocabIds": [],
+          "kanjiIds": [],
+          "grammarIds": [],
+          "sentenceIds": []
+        },
+        "streak": {
+          "current": 0,
+          "longest": 0,
+          "lastActiveDate": ""
+        },
+        "updatedAt": "2026-10-27T11:54:55.780Z",
+        "settings": {
+          "targetLevel": "N5",
+          "dailyGoalCount": 10,
+          "speechRate": 0.9,
+          "autoPlayAudio": false,
+          "showFurigana": true
+        }
+      },
+      "createdAt": "2026.10.27 19:54:55",
+      "updatedAt": "2026-10-27T11:56:07.957Z",
+      "timezone": "Asia/Ulaanbaatar",
+      "notifiedAdmin": false,
+      "isPremium": true,
+      "premiumExpiresAt": "2099-12-31T23:59:59.000Z",
+      "entitlement": "complimentary_premium",
+      "passwordHash": "cc746f7b8075d4a79bdb1b1556102af3:34761b3757f00b4078c7c6fd09a29697d29514d83e12afe9ffe9ce0a5a4db2b9afc43e9756fa90d78f4d5d63e30daeed53a5fd5dc8139860a9fc796552fd579b",
+      "authProvider": "email"
     }
   ],
   "payments": [
@@ -134629,7 +134674,8 @@
       1790074327175,
       1790074445788,
       1790074659544
-    ]
+    ],
+    "anon:anon_h77cyt77u_mvqm5910": []
   },
   "roleplaySessions": []
 }

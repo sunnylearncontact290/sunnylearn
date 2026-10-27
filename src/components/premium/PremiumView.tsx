@@ -25,6 +25,7 @@ export const PremiumView: React.FC = () => {
   const {
     currentUser,
     isPremium,
+    isComplimentaryPremium,
     premiumExpiresAt,
     latestPendingPayment,
     userPayments,
@@ -145,10 +146,16 @@ export const PremiumView: React.FC = () => {
           <div className="shrink-0 flex flex-col items-start md:items-end gap-2 bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20">
             <span className="text-xs text-rose-200 font-semibold">Багцын үнэ</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-3xl sm:text-4xl font-black text-white">¥880</span>
-              <span className="text-xs text-rose-100 font-medium">/ 30 хоног</span>
+              <span className="text-3xl sm:text-4xl font-black text-white">
+                {isComplimentaryPremium ? 'Үнэгүй' : '¥880'}
+              </span>
+              <span className="text-xs text-rose-100 font-medium">
+                {isComplimentaryPremium ? '/ Байнгын эрх' : '/ 30 хоног'}
+              </span>
             </div>
-            <span className="text-[11px] text-rose-200/80">Гар шилжүүлэг (Банк)</span>
+            <span className="text-[11px] text-rose-200/80">
+              {isComplimentaryPremium ? 'Бүрэн эрх идэвхтэй' : 'Гар шилжүүлэг (Банк)'}
+            </span>
           </div>
         </div>
       </div>
@@ -163,14 +170,20 @@ export const PremiumView: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-100">
-                  Таны SunnyLearn Premium эрх идэвхтэй байна!
+                  {isComplimentaryPremium
+                    ? 'Таны SunnyLearn Бүрэн Эрх (Complimentary) идэвхтэй байна!'
+                    : 'Таны SunnyLearn Premium эрх идэвхтэй байна!'}
                 </h3>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 text-[10px] font-black uppercase">
-                  Active
+                  {isComplimentaryPremium ? 'Байнгын эрх' : 'Active'}
                 </span>
               </div>
               <p className="text-xs text-emerald-700 dark:text-emerald-300">
-                Хүчинтэй хугацаа: <span className="font-bold">{premiumExpiresAt ? new Date(premiumExpiresAt).toLocaleDateString('mn-MN') : 'Тодорхойгүй'}</span> (Үлдсэн: <span className="font-bold">{remainingDays} хоног</span>)
+                {isComplimentaryPremium ? (
+                  <>Хүчинтэй хугацаа: <span className="font-bold">Байнгын эрх (Хугацаагүй бүрэн хандалт)</span></>
+                ) : (
+                  <>Хүчинтэй хугацаа: <span className="font-bold">{premiumExpiresAt ? new Date(premiumExpiresAt).toLocaleDateString('mn-MN') : 'Тодорхойгүй'}</span> (Үлдсэн: <span className="font-bold">{remainingDays} хоног</span>)</>
+                )}
               </p>
             </div>
           </div>
@@ -253,8 +266,39 @@ export const PremiumView: React.FC = () => {
         </div>
       ) : null}
 
-      {/* Section 30: Informative Notice Before Paying */}
-      <div className="bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200/80 dark:border-orange-900/50 p-5 sm:p-6 rounded-3xl space-y-3">
+      {isComplimentaryPremium ? (
+        <div className="bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-emerald-500/5 dark:from-emerald-950/40 dark:to-teal-950/20 border-2 border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-stone-900 dark:text-stone-100">
+                Байнгын Бүрэн Эрх (Complimentary Premium)
+              </h2>
+              <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
+                Таны бүртгэлд SunnyLearn-ийн бүх боломж хязгааргүй, үнэгүй нээлттэй байна.
+              </p>
+            </div>
+          </div>
+          <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
+            JLPT N5–N1 бүх түвшний үг, ханз, дүрэм, сорил дасгалууд, Sunny AI багш болон AI Roleplay харилцан яриаг хязгааргүйгээр бүрэн ашиглах боломжтой. Төлбөр төлөх шаардлагагүй.
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('learn')}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <span>Сургалтаа эхлүүлэх</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Section 30: Informative Notice Before Paying */}
+          <div className="bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200/80 dark:border-orange-900/50 p-5 sm:p-6 rounded-3xl space-y-3">
         <div className="flex items-center gap-2 text-stone-900 dark:text-stone-100 font-extrabold text-base">
           <Info className="w-5 h-5 text-orange-600 shrink-0" />
           <span>「Төлбөр баталгаажуулах тухай」</span>
@@ -646,6 +690,8 @@ export const PremiumView: React.FC = () => {
           </div>
         </div>
       )}
+    </>
+  )}
 
       {/* Past Payment History (if any) */}
       {userPayments.length > 0 && (

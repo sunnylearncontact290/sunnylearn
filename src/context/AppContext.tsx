@@ -29,7 +29,13 @@ import { apiService } from '../services/api';
 import { storageService } from '../services/storage';
 import { speechService } from '../services/speech';
 import { learningEngine } from '../services/learningEngine';
-import { freeTierSeedData } from '../data/accessControl';
+import {
+  freeTierSeedData,
+  isComplimentaryPremiumAccount,
+  isAdminAccount,
+  hasPremiumAccess,
+  ADMIN_EMAIL
+} from '../data/accessControl';
 import {
   awardItemLearned,
   awardQuizCompleted,
@@ -163,6 +169,7 @@ interface AppContextType {
 
   // Premium & User Payments
   isPremium: boolean;
+  isComplimentaryPremium: boolean;
   premiumExpiresAt: string | null;
   inAppNotification: any | null;
   dismissInAppNotification: () => Promise<void>;
@@ -219,8 +226,6 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null);
 
-const ADMIN_EMAIL = 'sanaa0419z@gmail.com';
-
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [data, setData] = useState<DatabaseSchema>(freeTierSeedData);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -246,8 +251,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Admin status: strictly derived from authenticated user's account/session (sanaa0419z@gmail.com)
   const isAdmin = useMemo(() => {
-    if (!currentUser || !currentUser.email) return false;
-    return currentUser.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+    return isAdminAccount(currentUser?.email);
+  }, [currentUser]);
+
+  // Complimentary Premium status: special user uugii.su@gmail.com
+  const isComplimentaryPremium = useMemo(() => {
+    return isComplimentaryPremiumAccount(currentUser?.email);
   }, [currentUser]);
 
   const setIsAdmin = useCallback((_val: boolean) => {
@@ -378,16 +387,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, []);
 
   const isPremium = useMemo(() => {
-    if (!currentUser) return false;
-    // Authorized admin email always retains full access
-    if (currentUser.email && currentUser.email.toLowerCase().trim() === 'sanaa0419z@gmail.com') {
-      return true;
-    }
-    if (!currentUser.isPremium) return false;
-    if (currentUser.premiumExpiresAt) {
-      return new Date(currentUser.premiumExpiresAt).getTime() > Date.now();
-    }
-    return true;
+    return hasPremiumAccess(currentUser);
   }, [currentUser]);
 
   const premiumExpiresAt = currentUser?.premiumExpiresAt || null;
@@ -1419,6 +1419,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         deleteFeedback,
         updateFeedbackStatus,
         isPremium,
+        isComplimentaryPremium,
         premiumExpiresAt,
         inAppNotification,
         dismissInAppNotification,

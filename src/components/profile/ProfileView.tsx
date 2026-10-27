@@ -32,6 +32,7 @@ export const ProfileView: React.FC = () => {
     setIsAuthModalOpen,
     syncStatus,
     isPremium,
+    isComplimentaryPremium,
     latestPendingPayment,
     premiumExpiresAt
   } = useApp();
@@ -168,7 +169,7 @@ export const ProfileView: React.FC = () => {
           <span>Premium гишүүнчлэл & Төлбөр</span>
           {isPremium ? (
             <span className="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-black">
-              Идэвхтэй
+              {isComplimentaryPremium ? 'Байнгын эрх' : 'Идэвхтэй'}
             </span>
           ) : latestPendingPayment ? (
             <span className="px-2 py-0.5 rounded-full bg-orange-400/30 text-[10px] font-black animate-pulse">
