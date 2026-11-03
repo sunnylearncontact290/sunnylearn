@@ -6,6 +6,7 @@ import { AudioButton } from '../common/AudioButton';
 import { extractKanjiPronunciation } from '../../services/speech';
 import { KanjiItem } from '../../types';
 import { KanjiStrokeModal } from '../kanji/KanjiStrokeModal';
+import { InteractiveJapaneseSentence } from './InteractiveJapaneseSentence';
 
 export const KanjiList: React.FC = () => {
   const {
@@ -258,9 +259,12 @@ export const KanjiList: React.FC = () => {
                           title="Жишээ өгүүлбэр сонсох"
                         />
                       </div>
-                      <p className="font-bold text-stone-900 dark:text-stone-100 font-jp">
-                        {item.exampleSentence}
-                      </p>
+                      <InteractiveJapaneseSentence
+                        sentence={item.exampleSentence}
+                        reading={item.exampleReading}
+                        mongolian={item.exampleMongolian}
+                        className="font-bold text-stone-900 dark:text-stone-100"
+                      />
                       {item.exampleReading && (
                         <p className="text-[11px] text-stone-500 font-jp">
                           {item.exampleReading}

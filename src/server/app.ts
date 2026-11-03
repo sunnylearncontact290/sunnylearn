@@ -1100,9 +1100,57 @@ const femaleEdgeManager = new EdgeTTSConnectionManager('ja-JP-NanamiNeural');
 const maleEdgeManager = new EdgeTTSConnectionManager('ja-JP-KeitaNeural');
 
 /**
+ * Direct Japanese speech synthesis stream via Google Translate TTS (MP3 24kHz).
+ * Highly reliable, zero API key requirement, authentic native Japanese pronunciation.
+ */
+async function fetchGoogleJapaneseTTS(cleanText: string): Promise<string | null> {
+  try {
+    const chunks: string[] = [];
+    if (cleanText.length <= 160) {
+      chunks.push(cleanText);
+    } else {
+      const parts = cleanText.split(/([。！？!?\n]+)/);
+      let current = '';
+      for (const p of parts) {
+        if ((current + p).length > 160) {
+          if (current.trim()) chunks.push(current.trim());
+          current = p;
+        } else {
+          current += p;
+        }
+      }
+      if (current.trim()) chunks.push(current.trim());
+    }
+
+    const buffers: Buffer[] = [];
+    for (const chunk of chunks) {
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=ja&client=tw-ob`;
+      const resp = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Referer': 'https://translate.google.com/'
+        }
+      });
+      if (!resp.ok) {
+        return null;
+      }
+      const arrayBuffer = await resp.arrayBuffer();
+      buffers.push(Buffer.from(arrayBuffer));
+    }
+
+    if (buffers.length === 0) return null;
+    const combined = Buffer.concat(buffers);
+    return `data:audio/mp3;base64,${combined.toString('base64')}`;
+  } catch (err) {
+    console.warn('[Google Japanese TTS Warning]', err);
+    return null;
+  }
+}
+
+/**
  * Main neural Japanese audio synthesizer.
  * Checks memory and disk cache first for instant 0ms playback,
- * synthesizes with Microsoft Neural TTS (~140ms),
+ * synthesizes with Microsoft Neural TTS or Google Translate TTS stream,
  * and seamlessly falls back to Gemini 3.1 Flash TTS if needed.
  */
 async function generateNeuralJapaneseAudio(text: string, voiceName: string = 'Aoede'): Promise<string | null> {
@@ -1160,6 +1208,21 @@ async function generateNeuralJapaneseAudio(text: string, voiceName: string = 'Ao
     }
   } catch (edgeErr) {
     console.warn('[Primary Neural TTS Warning]', edgeErr);
+  }
+
+  // 3.5. Highly Reliable Japanese Neural Engine: Google Translate TTS stream (MP3, 24kHz)
+  try {
+    const googleAudio = await fetchGoogleJapaneseTTS(clean);
+    if (googleAudio) {
+      audioMemoryCache.set(cacheKey, googleAudio);
+      try {
+        const base64Data = googleAudio.replace(/^data:audio\/mp3;base64,/, '');
+        fs.writeFileSync(diskPathMp3, Buffer.from(base64Data, 'base64'));
+      } catch {}
+      return googleAudio;
+    }
+  } catch (googleErr) {
+    console.warn('[Google Neural TTS Warning]', googleErr);
   }
 
   // 4. Secondary Fallback: Gemini 3.1 Flash TTS Preview (if quota available)

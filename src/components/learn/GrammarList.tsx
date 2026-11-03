@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { LevelBadge } from '../common/LevelBadge';
 import { AudioButton } from '../common/AudioButton';
 import { GrammarItem } from '../../types';
+import { InteractiveJapaneseSentence } from './InteractiveJapaneseSentence';
 
 export const GrammarList: React.FC = () => {
   const {
@@ -212,9 +213,12 @@ export const GrammarList: React.FC = () => {
                             className="p-3.5 rounded-xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200/50 dark:border-stone-700/50 space-y-1 text-xs"
                           >
                             <div className="flex items-start justify-between gap-2">
-                              <span className="font-bold text-stone-900 dark:text-stone-100 font-jp text-sm block">
-                                {ex.japanese}
-                              </span>
+                              <InteractiveJapaneseSentence
+                                sentence={ex.japanese}
+                                reading={ex.reading}
+                                mongolian={ex.mongolian}
+                                className="font-bold text-stone-900 dark:text-stone-100 font-jp text-sm block"
+                              />
                               <AudioButton
                                 text={ex.japanese}
                                 id={`grammar_ex_${item.id}_${idx}`}

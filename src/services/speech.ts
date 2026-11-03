@@ -448,25 +448,91 @@ class CentralizedSpeechService {
         return;
       }
 
-      // If neural audio generation failed (network drop or server error):
-      // NEVER degrade to robotic browser voice. Set clear error state for user retry.
-      const errorMsg = 'Дуу тоглуулахад алдаа гарлаа. Дахин дарж оролдоно уу.';
-      this.setState({
-        loadingId: null,
-        currentId: null,
-        isPlaying: false,
-        error: errorMsg,
-        errorId: id
-      });
-      onError?.(new Error(errorMsg));
+      // If network/server TTS failed, fallback to native ja-JP browser speech
+      this.playBrowserSpeech(clean, id, rate, onStart, onEnd, onError);
     } catch (err: any) {
-      console.warn('[SpeechService] Play error:', err);
-      const errorMsg = err?.message || 'Дуу тоглуулахад алдаа гарлаа.';
+      console.warn('[SpeechService] Play error, attempting browser speech:', err);
+      try {
+        this.playBrowserSpeech(clean, id, rate, onStart, onEnd, onError);
+      } catch (browserErr) {
+        const errorMsg = err?.message || 'Дуу тоглуулахад алдаа гарлаа.';
+        this.setState({
+          loadingId: null,
+          currentId: null,
+          isPlaying: false,
+          error: errorMsg,
+          errorId: id
+        });
+        onError?.(err);
+      }
+    }
+  }
+
+  private playBrowserSpeech(
+    text: string,
+    id: string,
+    rate: number = 1.0,
+    onStart?: () => void,
+    onEnd?: () => void,
+    onError?: (err: any) => void
+  ): void {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      const errorMsg = 'Дуу тоглуулах боломжгүй байна.';
+      this.setState({ loadingId: null, currentId: null, isPlaying: false, error: errorMsg, errorId: id });
+      onError?.(new Error(errorMsg));
+      return;
+    }
+
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ja-JP';
+      utterance.rate = Math.max(0.6, Math.min(1.5, rate));
+
+      const voices = window.speechSynthesis.getVoices();
+      const jaVoice = voices.find(v => v.lang === 'ja-JP' || v.lang.startsWith('ja')) || null;
+      if (jaVoice) {
+        utterance.voice = jaVoice;
+      }
+
+      utterance.onstart = () => {
+        this.setState({
+          currentId: id,
+          loadingId: null,
+          isPlaying: true,
+          error: null,
+          errorId: null
+        });
+        onStart?.();
+      };
+
+      utterance.onend = () => {
+        this.setState({
+          currentId: null,
+          isPlaying: false,
+          loadingId: null
+        });
+        onEnd?.();
+      };
+
+      utterance.onerror = (e) => {
+        this.setState({
+          currentId: null,
+          isPlaying: false,
+          loadingId: null,
+          error: 'Дуу тоглуулахад алдаа гарлаа.',
+          errorId: id
+        });
+        onError?.(e);
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
       this.setState({
-        loadingId: null,
         currentId: null,
         isPlaying: false,
-        error: errorMsg,
+        loadingId: null,
+        error: 'Дуу тоглуулахад алдаа гарлаа.',
         errorId: id
       });
       onError?.(err);

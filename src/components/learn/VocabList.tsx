@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Star, CheckCircle2, BookOpen, Sparkles, Lock, ArrowRight } from 'lucide-react';
+import { Search, Filter, Star, CheckCircle2, BookOpen, Sparkles, Lock, ArrowRight, PenTool } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LevelBadge } from '../common/LevelBadge';
 import { AudioButton } from '../common/AudioButton';
-import { VocabularyItem } from '../../types';
+import { VocabularyItem, KanjiItem } from '../../types';
 import { getCleanVocabExplanation } from '../../utils/vocabUtils';
+import { InteractiveJapaneseSentence } from './InteractiveJapaneseSentence';
+import { KanjiStrokeModal } from '../kanji/KanjiStrokeModal';
 
 export const VocabList: React.FC = () => {
   const {
@@ -23,6 +25,7 @@ export const VocabList: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('all');
   const [filterLearned, setFilterLearned] = useState<'all' | 'unlearned' | 'learned'>('all');
+  const [selectedStrokeKanji, setSelectedStrokeKanji] = useState<KanjiItem | null>(null);
 
   const effectiveLevel = selectedLevel || 'N5';
   const isLevelPremium = effectiveLevel !== 'N5';
@@ -204,6 +207,41 @@ export const VocabList: React.FC = () => {
                         size="xs"
                         title={`"${item.japanese}" дуудлага сонсох`}
                       />
+
+                      {/* If the vocabulary word contains Kanji, offer a quick 書き順 button */}
+                      {(() => {
+                        const kanjiChars = item.japanese.match(/[\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]/g);
+                        if (kanjiChars && kanjiChars.length > 0) {
+                          return (
+                            <button
+                              onClick={() => {
+                                const firstChar = kanjiChars[0];
+                                const found = (data.kanji || []).find(k => k.kanji === firstChar);
+                                if (found) {
+                                  setSelectedStrokeKanji(found);
+                                } else {
+                                  setSelectedStrokeKanji({
+                                    id: `kanji_vocab_${firstChar}`,
+                                    kanji: firstChar,
+                                    onyomi: '—',
+                                    kunyomi: '—',
+                                    mongolian: item.mongolian,
+                                    jlptLevel: item.jlptLevel,
+                                    exampleWords: [{ word: item.japanese, reading: item.reading, mongolian: item.mongolian }],
+                                    createdAt: new Date().toISOString()
+                                  });
+                                }
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/50 dark:hover:bg-red-900/60 text-[#CC0000] dark:text-[#FF6699] text-[10px] font-bold border border-red-200/60 dark:border-red-900/40 transition-colors ml-auto cursor-pointer"
+                              title={`"${item.japanese}" үгийн ханзны зурлагын дараалал харах`}
+                            >
+                              <PenTool className="w-3 h-3" />
+                              <span>書き順</span>
+                            </button>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
 
                     {/* Mongolian Meaning */}
@@ -224,10 +262,10 @@ export const VocabList: React.FC = () => {
 
                   {/* Example Sentence Section */}
                   {item.exampleSentence && (
-                    <div className="mt-4 p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/50 space-y-1.5">
+                    <div className="mt-4 p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/50 space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">
-                          Жишээ өгүүлбэр:
+                          Жишээ өгүүлбэр (үг дээр дарж толь харах):
                         </span>
                         <AudioButton
                           text={item.exampleSentence}
@@ -236,9 +274,15 @@ export const VocabList: React.FC = () => {
                           title="Жишээ өгүүлбэр сонсох"
                         />
                       </div>
-                      <p className="text-xs font-bold text-stone-900 dark:text-stone-100 font-jp">
-                        {item.exampleSentence}
-                      </p>
+
+                      {/* Interactive Sentence with Word Dictionary and Kanji Stroke Order */}
+                      <InteractiveJapaneseSentence
+                        sentence={item.exampleSentence}
+                        reading={item.exampleReading}
+                        mongolian={item.exampleMongolian}
+                        className="text-xs font-bold text-stone-900 dark:text-stone-100"
+                      />
+
                       {item.exampleReading && (
                         <p className="text-[11px] text-stone-500 font-jp">
                           {item.exampleReading}
@@ -303,6 +347,13 @@ export const VocabList: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Kanji Stroke Order Modal for Vocabulary Kanji */}
+      <KanjiStrokeModal
+        isOpen={!!selectedStrokeKanji}
+        onClose={() => setSelectedStrokeKanji(null)}
+        kanjiItem={selectedStrokeKanji}
+      />
     </div>
   );
 };
