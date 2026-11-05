@@ -21,8 +21,8 @@ export const InteractiveJapaneseSentence: React.FC<InteractiveJapaneseSentencePr
   const [selectedWord, setSelectedWord] = useState<DetailedWordInfo | null>(null);
 
   const tokens = useMemo(() => {
-    return tokenizeJapaneseSentence(sentence, data.vocabulary || [], data.kanji || []);
-  }, [sentence, data.vocabulary, data.kanji]);
+    return tokenizeJapaneseSentence(sentence, data.vocabulary || [], data.kanji || [], reading);
+  }, [sentence, data.vocabulary, data.kanji, reading]);
 
   if (!sentence) return null;
 

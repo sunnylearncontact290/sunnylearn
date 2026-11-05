@@ -13,7 +13,6 @@ import { FreeConversationFeedbackModal } from './FreeConversationFeedbackModal';
 import { speechService } from '../../services/speech';
 import {
   Mic,
-  MicOff,
   Volume2,
   VolumeX,
   RotateCcw,
@@ -26,7 +25,7 @@ import {
   X,
   Send,
   Loader2,
-  HelpCircle
+  Check
 } from 'lucide-react';
 
 interface FreeConversationViewProps {
@@ -110,7 +109,6 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
   // Voice Interaction Core State
   const [voiceState, setVoiceState] = useState<VoiceState>('idle');
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
 
   // Live Speech Recognition State
   const [speechInterimText, setSpeechInterimText] = useState<string>('');
@@ -129,18 +127,14 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
   const recognitionRef = useRef<any>(null);
   const currentTranscriptRef = useRef<string>('');
   const isSessionActiveRef = useRef<boolean>(false);
-  const isMutedRef = useRef<boolean>(false);
   const voiceStateRef = useRef<VoiceState>('idle');
   const resumeListeningTimeoutRef = useRef<any>(null);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   // Sync refs with state to prevent race conditions in speech callbacks
   useEffect(() => {
     isSessionActiveRef.current = isSessionActive;
   }, [isSessionActive]);
-
-  useEffect(() => {
-    isMutedRef.current = isMuted;
-  }, [isMuted]);
 
   useEffect(() => {
     voiceStateRef.current = voiceState;
@@ -154,7 +148,6 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
   // Discreet keyboard input drawer (for quiet environments)
   const [isTextDrawerOpen, setIsTextDrawerOpen] = useState(false);
   const [keyboardInput, setKeyboardInput] = useState('');
-  const [isTranscriptHistoryOpen, setIsTranscriptHistoryOpen] = useState(false);
 
   // Sync global selectedLevel
   useEffect(() => {
@@ -162,6 +155,13 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
       setCurrentLevel(selectedLevel);
     }
   }, [selectedLevel]);
+
+  // Auto-scroll chat to latest message
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, speechInterimText, voiceState]);
 
   // Cleanly stop any ongoing audio playback
   const stopAudio = useCallback(() => {
@@ -205,8 +205,8 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
   // SPEECH RECOGNITION (LISTENING)
   // ----------------------------------------------------
   const startListening = useCallback(async () => {
-    // Prevent starting if muted or session is ended
-    if (isMutedRef.current || !isSessionActiveRef.current) {
+    // Prevent starting if session is ended
+    if (!isSessionActiveRef.current) {
       return;
     }
 
@@ -286,9 +286,9 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
           setVoiceState('idle');
         } else if (event.error === 'no-speech') {
           // User didn't say anything; if session still active, seamlessly re-arm
-          if (isSessionActiveRef.current && !isMutedRef.current && voiceStateRef.current === 'listening') {
+          if (isSessionActiveRef.current && voiceStateRef.current === 'listening') {
             resumeListeningTimeoutRef.current = setTimeout(() => {
-              if (isSessionActiveRef.current && !isMutedRef.current) {
+              if (isSessionActiveRef.current) {
                 startListening();
               }
             }, 500);
@@ -305,10 +305,10 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
           currentTranscriptRef.current = '';
           setSpeechInterimText('');
           handleProcessUserSpeech(textSpoken);
-        } else if (isSessionActiveRef.current && !isMutedRef.current && voiceStateRef.current === 'listening') {
+        } else if (isSessionActiveRef.current && voiceStateRef.current === 'listening') {
           // If ended without speech (timeout), restart listening after a brief moment
           resumeListeningTimeoutRef.current = setTimeout(() => {
-            if (isSessionActiveRef.current && !isMutedRef.current && voiceStateRef.current === 'listening') {
+            if (isSessionActiveRef.current && voiceStateRef.current === 'listening') {
               startListening();
             }
           }, 400);
@@ -328,15 +328,14 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
   // ----------------------------------------------------
   const playAiVoice = useCallback(
     async (text: string, audioDataUri?: string | null) => {
-      // PREVENT AI FROM LISTENING TO ITSELF: strictly stop recognition before audio
+      // Strictly stop recognition before audio to avoid feedback loop
       stopRecognition();
       stopAudio();
 
       const clean = speechService.cleanJapanese(text);
 
       if (!clean) {
-        // Return to listening
-        if (isSessionActiveRef.current && !isMutedRef.current) {
+        if (isSessionActiveRef.current) {
           startListening();
         } else {
           setVoiceState('idle');
@@ -349,7 +348,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
       const onSpeechComplete = () => {
         // Anti-echo protection buffer: 350ms pause before microphone reopens
         resumeListeningTimeoutRef.current = setTimeout(() => {
-          if (isSessionActiveRef.current && !isMutedRef.current) {
+          if (isSessionActiveRef.current) {
             startListening();
           } else {
             setVoiceState('idle');
@@ -357,7 +356,6 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
         }, 350);
       };
 
-      // Play via centralized neural speechService (using pre-generated audio if provided)
       await speechService.play(clean, {
         audioUri: audioDataUri,
         voice: voicePersona === 'Puck' ? 'Puck' : 'Aoede',
@@ -440,8 +438,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
         setVoiceState('idle');
       } else {
         setErrorMessage(err?.message || 'Хариулт авахад алдаа гарлаа. Дахин ярина уу.');
-        // Return to listening so conversation doesn't die
-        if (isSessionActiveRef.current && !isMutedRef.current) {
+        if (isSessionActiveRef.current) {
           startListening();
         } else {
           setVoiceState('idle');
@@ -457,7 +454,6 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
     const topicToUse = topicId || selectedTopicId;
     setSelectedTopicId(topicToUse);
     setIsSessionActive(true);
-    setIsMuted(false);
     setErrorMessage(null);
 
     const topic = STARTER_TOPICS.find(t => t.id === topicToUse) || STARTER_TOPICS[0];
@@ -472,13 +468,12 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
 
     setMessages([welcomeMsg]);
 
-    // AI immediately speaks the opening greeting, and automatically transitions to listening!
+    // AI speaks opening greeting, and automatically transitions to listening
     playAiVoice(topic.cleanGreeting);
   };
 
-  const handleOrbClick = () => {
-    // 1. If AI is speaking -> USER INTERRUPTION!
-    // Immediately cut off AI audio and start listening for user input
+  const handleMicClick = () => {
+    // 1. If AI is speaking -> USER INTERRUPTION! Cut off audio and start listening
     if (voiceState === 'speaking') {
       stopAudio();
       if (isSessionActive) {
@@ -489,7 +484,12 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
 
     // 2. If idle or session not active -> Start Conversation
     if (!isSessionActive || voiceState === 'idle') {
-      startConversation();
+      if (messages.length === 0) {
+        startConversation();
+      } else {
+        setIsSessionActive(true);
+        startListening();
+      }
       return;
     }
 
@@ -502,37 +502,19 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
         setSpeechInterimText('');
         handleProcessUserSpeech(textToProcess);
       } else {
-        // Mute / pause listening
-        setIsMuted(true);
+        // Pause listening
         setVoiceState('idle');
       }
       return;
-    }
-
-    // 4. If thinking -> do nothing, wait for response
-  };
-
-  // Toggle Mute / Pause during session
-  const toggleMute = () => {
-    if (!isSessionActive) return;
-
-    if (isMuted) {
-      setIsMuted(false);
-      startListening();
-    } else {
-      setIsMuted(true);
-      stopAudio();
-      stopRecognition();
-      setVoiceState('idle');
     }
   };
 
   // End conversation session & show feedback
   const handleEndConversation = async () => {
+    setShowSettings(false);
     stopAudio();
     stopRecognition();
     setIsSessionActive(false);
-    setIsMuted(false);
     setVoiceState('idle');
     setSpeechInterimText('');
 
@@ -561,10 +543,10 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
 
   // Reset conversation to fresh state
   const handleReset = () => {
+    setShowSettings(false);
     stopAudio();
     stopRecognition();
     setIsSessionActive(false);
-    setIsMuted(false);
     setVoiceState('idle');
     setMessages([]);
     setSpeechInterimText('');
@@ -577,7 +559,6 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
     const text = keyboardInput.trim();
     if (!text) return;
     setKeyboardInput('');
-    setIsTextDrawerOpen(false);
 
     if (!isSessionActive) {
       setIsSessionActive(true);
@@ -585,18 +566,17 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
     handleProcessUserSpeech(text);
   };
 
-  // Extract latest user and latest AI messages for the minimal live transcript
+  // Latest AI message for the replay button
   const latestAiMsg = [...messages].reverse().find(m => m.role === 'assistant');
-  const latestUserMsg = [...messages].reverse().find(m => m.role === 'user');
 
   return (
-    <div className="ai-conversation-container w-full min-w-0 max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex flex-col min-h-[calc(100vh-5.5rem)] justify-between space-y-4 animate-fade-in select-none overflow-x-hidden">
+    <div className="w-full min-w-0 max-w-3xl mx-auto flex flex-col h-[calc(100dvh-5rem)] px-3 sm:px-4 py-2 select-none overflow-hidden animate-fade-in">
       
-      {/* 1. TOP BAR: Title, Controls, Level Selector & End Session */}
-      <header className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-3xl bg-white/90 dark:bg-stone-900/90 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 shadow-2xs">
+      {/* 1. COMPACT HEADER */}
+      <header className="shrink-0 flex items-center justify-between gap-3 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl bg-white/90 dark:bg-stone-900/90 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 shadow-2xs">
         
-        {/* Left: Back button & Title */}
-        <div className="flex items-center gap-3">
+        {/* Left: Back button & Title with Live Status */}
+        <div className="flex items-center gap-2.5 min-w-0">
           {onBackToRoleplay && (
             <button
               type="button"
@@ -605,620 +585,507 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
                 stopRecognition();
                 onBackToRoleplay();
               }}
-              className="p-2.5 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-orange-100 dark:hover:bg-orange-950/50 text-stone-600 dark:text-stone-300 hover:text-orange-800 dark:hover:text-orange-300 transition-colors cursor-pointer shrink-0"
-              title="Roleplay руу буцах"
+              className="p-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 transition-colors cursor-pointer shrink-0"
+              title="Буцах"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
           )}
 
-          <div>
-            <div className="flex items-center gap-2">
-              <span
-                className={`w-2.5 h-2.5 rounded-full ${
-                  voiceState === 'listening'
-                    ? 'bg-red-500 animate-ping'
-                    : voiceState === 'speaking'
-                    ? 'bg-emerald-500 animate-pulse'
-                    : voiceState === 'thinking'
-                    ? 'bg-orange-500 animate-spin'
-                    : 'bg-stone-400'
-                }`}
-              />
-              <h1 className="text-base sm:text-lg font-black text-stone-900 dark:text-stone-100 font-jp tracking-tight">
-                日本語フリートーク / Чөлөөт яриа
-              </h1>
-            </div>
-            <p className="text-[11px] sm:text-xs text-stone-500 dark:text-stone-400">
-              Япон хэлний дуут ярианы дадлага (Voice-First)
-            </p>
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className={`w-2 h-2 rounded-full shrink-0 ${
+                voiceState === 'listening'
+                  ? 'bg-red-500 animate-ping'
+                  : voiceState === 'speaking'
+                  ? 'bg-pink-500 animate-pulse'
+                  : voiceState === 'thinking'
+                  ? 'bg-orange-500 animate-spin'
+                  : isSessionActive
+                  ? 'bg-emerald-500'
+                  : 'bg-stone-400'
+              }`}
+            />
+            <h1 className="text-sm sm:text-base font-black text-stone-900 dark:text-stone-100 font-jp tracking-tight truncate">
+              Sunny AI · フリートーク
+            </h1>
+            <span className="hidden sm:inline-block text-[11px] font-semibold text-stone-400 dark:text-stone-500">
+              {voiceState === 'listening'
+                ? '• Сонсож байна'
+                : voiceState === 'speaking'
+                ? '• Хариулж байна'
+                : voiceState === 'thinking'
+                ? '• Бодож байна'
+                : isSessionActive
+                ? `• ${currentLevel}`
+                : '• Чөлөөт яриа'}
+            </span>
           </div>
         </div>
 
-        {/* Right: JLPT Level chips, Settings, End / Feedback button */}
-        <div className="flex items-center flex-wrap gap-2 justify-end">
-          {/* Level Chips */}
-          <div className="inline-flex items-center p-1 rounded-2xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs">
-            {(['N5', 'N4', 'N3', 'N2', 'N1'] as JLPTLevel[]).map(lvl => (
-              <button
-                key={lvl}
-                type="button"
-                onClick={() => setCurrentLevel(lvl)}
-                className={`px-2.5 py-1 rounded-xl font-bold transition-all cursor-pointer ${
-                  currentLevel === lvl
-                    ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-xs'
-                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
-                }`}
-              >
-                {lvl}
-              </button>
-            ))}
-          </div>
-
-          {/* Furigana Toggle */}
+        {/* Right: Settings Icon Button */}
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
-            onClick={() => setShowFurigana(!showFurigana)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
-              showFurigana
-                ? 'bg-orange-50 dark:bg-orange-950/40 border-orange-300 dark:border-orange-700 text-orange-800 dark:text-orange-300'
-                : 'bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-500'
-            }`}
-            title="Фүригана дээр харуулах"
-          >
-            <span className="font-jp text-[11px]">あ</span>
-            <span>{showFurigana ? 'ON' : 'OFF'}</span>
-          </button>
-
-          {/* Settings button */}
-          <button
-            type="button"
-            onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-2xl border transition-colors cursor-pointer ${
-              showSettings
-                ? 'bg-orange-600 text-white border-orange-700'
-                : 'bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
-            }`}
+            onClick={() => setShowSettings(true)}
+            className="p-2 sm:p-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-600 dark:text-stone-300 transition-colors cursor-pointer"
             title="Тохиргоо"
           >
             <Settings className="w-4 h-4" />
           </button>
-
-          {/* End Conversation / Feedback review */}
-          {isSessionActive && (
-            <button
-              type="button"
-              onClick={handleEndConversation}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-stone-900 dark:bg-stone-100 hover:bg-orange-600 dark:hover:bg-orange-600 text-white dark:text-stone-900 font-bold text-xs shadow-2xs transition-all cursor-pointer"
-            >
-              <Award className="w-3.5 h-3.5 text-orange-500" />
-              <span>Яриаг дуусгах</span>
-            </button>
-          )}
         </div>
       </header>
 
-      {/* EXPANDABLE SETTINGS */}
-      {showSettings && (
-        <div className="p-4 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-3 animate-fade-in text-xs">
-          <div className="flex items-center justify-between">
-            <span className="font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider">
-              Ярианы тохиргоо (音声・会話設定)
-            </span>
-            <button
-              type="button"
-              onClick={() => setShowSettings(false)}
-              className="text-stone-400 hover:text-stone-600 cursor-pointer text-xs"
-            >
-              Хаах
-            </button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <span className="block font-bold text-stone-600 dark:text-stone-400 mb-1.5">
-                Найзын ярианы хэв маяг (タメ口):
-              </span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setConversationStyle('easy')}
-                  className={`flex-1 py-1.5 px-2.5 rounded-xl border font-bold text-center transition-all cursor-pointer ${
-                    conversationStyle === 'easy'
-                      ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
-                      : 'bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400'
-                  }`}
-                >
-                  Хялбар тамегүчи (やさしい)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConversationStyle('natural')}
-                  className={`flex-1 py-1.5 px-2.5 rounded-xl border font-bold text-center transition-all cursor-pointer ${
-                    conversationStyle === 'natural'
-                      ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
-                      : 'bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400'
-                  }`}
-                >
-                  Байгалийн тамегүчи (自然)
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <span className="block font-bold text-stone-600 dark:text-stone-400 mb-1.5">
-                AI найзын дуу хоолой (Persona):
-              </span>
-              <div className="flex gap-2">
-                {(
-                  [
-                    { id: 'Aoede', name: 'Сакура (Эмэгтэй)' },
-                    { id: 'Puck', name: 'Кэн (Эрэгтэй)' },
-                    { id: 'Kore', name: 'Аой (Тайван)' }
-                  ] as { id: VoicePersona; name: string }[]
-                ).map(vp => (
-                  <button
-                    key={vp.id}
-                    type="button"
-                    onClick={() => setVoicePersona(vp.id)}
-                    className={`flex-1 py-1.5 px-2 rounded-xl border font-bold text-center transition-all cursor-pointer ${
-                      voicePersona === vp.id
-                        ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
-                        : 'bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400'
-                    }`}
-                  >
-                    {vp.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MIC PERMISSION WARNING */}
+      {/* ERROR & PERMISSION ALERTS */}
       {micPermissionDenied && (
-        <div className="p-3.5 rounded-2xl bg-orange-500/15 border border-orange-500/30 flex items-start gap-3 text-xs animate-shake">
-          <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <span className="font-bold text-orange-900 dark:text-orange-200">
-              Микрофон ашиглах зөвшөөрөл шаардлагатай
-            </span>
-            <p className="text-stone-700 dark:text-stone-300 leading-relaxed">
-              Дуугаар ярилцахын тулд хөтчийн хаягийн мөр дээрх цоожны (🔒) дүрс дээр дарж микрофоныг зөвшөөрнө үү.
-            </p>
-          </div>
+        <div className="shrink-0 mt-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-200 animate-fade-in">
+          <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <span className="flex-1">Хөтчийн хаягийн мөр дээрх цоож (🔒) дээр дарж микрофоныг зөвшөөрнө үү.</span>
         </div>
       )}
 
-      {/* ERROR BANNER */}
       {errorMessage && (
-        <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-center justify-between gap-3 animate-fade-in">
-          <div className="flex items-center gap-2">
+        <div className="shrink-0 mt-2 p-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between gap-2 text-xs text-rose-700 dark:text-rose-300 animate-fade-in">
+          <div className="flex items-center gap-2 min-w-0">
             <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{errorMessage}</span>
+            <span className="truncate">{errorMessage}</span>
           </div>
           <button
             type="button"
             onClick={() => setErrorMessage(null)}
-            className="text-xs font-bold underline cursor-pointer"
+            className="text-xs font-bold underline cursor-pointer shrink-0 ml-2"
           >
             Хаах
           </button>
         </div>
       )}
 
-      {/* 2. CENTER STAGE: LARGE ANIMATED VOICE ORB & INTERACTION STATE */}
-      <main className="flex-1 flex flex-col items-center justify-center my-auto py-6 sm:py-10 relative">
+      {/* 2. MAIN CONVERSATION / TRANSCRIPT AREA */}
+      <main className="flex-1 min-h-0 overflow-y-auto px-1 sm:px-2 py-4 space-y-3.5 overscroll-contain">
         
-        {/* Ambient Halo Glow */}
-        <div
-          className={`absolute w-72 h-72 sm:w-96 sm:h-96 rounded-full blur-3xl pointer-events-none transition-all duration-700 ${
-            voiceState === 'listening'
-              ? 'bg-[#FF3366]/16 dark:bg-[#FF3366]/20 scale-120'
-              : voiceState === 'speaking'
-              ? 'bg-[#FF6699]/16 dark:bg-[#FF6699]/20 scale-110'
-              : voiceState === 'thinking'
-              ? 'bg-[#CC0066]/16 dark:bg-[#CC0066]/20 scale-105'
-              : 'bg-[#990033]/12 dark:bg-[#990033]/16 scale-95'
-          }`}
-        />
+        {/* Initial Empty State: Clean, Inviting Voice-First Greeting */}
+        {messages.length === 0 ? (
+          <div className="h-full min-h-[280px] flex flex-col items-center justify-center text-center px-4 max-w-md mx-auto my-auto animate-fade-in space-y-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-[#FF0000] via-[#FF1A4B] to-[#FF3366] flex items-center justify-center shadow-lg shadow-red-500/20 text-white transform hover:scale-105 transition-transform">
+              <Sparkles className="w-8 h-8 sm:w-10 sm:h-10" />
+            </div>
 
-        {/* Concentric Animated Soundwave Rings (when listening or speaking) */}
-        <div className="relative flex items-center justify-center">
-          {voiceState === 'listening' && (
-            <>
-              <div className="absolute w-52 h-52 sm:w-64 sm:h-64 rounded-full border border-[#FF3366]/30 animate-voice-pulse-ring pointer-events-none" />
-              <div className="absolute w-44 h-44 sm:w-56 sm:h-56 rounded-full bg-[#FF3366]/8 animate-pulse pointer-events-none" />
-            </>
-          )}
-
-          {voiceState === 'speaking' && (
-            <>
-              <div className="absolute w-52 h-52 sm:w-64 sm:h-64 rounded-full border border-[#FF6699]/30 animate-voice-pulse-ring pointer-events-none" />
-              <div className="absolute w-44 h-44 sm:w-56 sm:h-56 rounded-full bg-[#FF6699]/8 animate-pulse pointer-events-none" />
-            </>
-          )}
-
-          {voiceState === 'thinking' && (
-            <div className="absolute w-44 h-44 sm:w-52 sm:h-52 rounded-full border-2 border-dashed border-[#FF3366]/50 animate-spin pointer-events-none" />
-          )}
-
-          {/* MAIN VOICE ORB - Dimensional Red-Coral-Pink Atmosphere */}
-          <button
-            id="voice-orb-main"
-            type="button"
-            onClick={handleOrbClick}
-            disabled={voiceState === 'thinking'}
-            className={`relative z-10 w-36 h-36 sm:w-48 sm:h-48 rounded-full flex flex-col items-center justify-center transition-all duration-500 transform active:scale-95 shadow-2xl cursor-pointer ${
-              voiceState === 'listening'
-                ? 'bg-[radial-gradient(circle_at_35%_30%,#FFA3B8_0%,#FF3366_38%,#CC0000_70%,#66001A_100%)] text-white ring-4 ring-[#FF3366]/35 animate-voice-orb-listen'
-                : voiceState === 'speaking'
-                ? 'bg-[radial-gradient(circle_at_35%_30%,#FFB3C6_0%,#FF6699_35%,#CC0066_68%,#4D0026_100%)] text-white ring-4 ring-[#FF6699]/35 animate-voice-orb-breathe'
-                : voiceState === 'thinking'
-                ? 'bg-[radial-gradient(circle_at_35%_30%,#FFCCE0_0%,#FF3366_35%,#990066_70%,#330022_100%)] text-white ring-4 ring-[#FF3366]/35 animate-pulse'
-                : 'bg-[radial-gradient(circle_at_35%_30%,#FFCCD8_0%,#FF3366_35%,#990033_70%,#330011_100%)] text-white ring-4 ring-[#FF3366]/20 hover:ring-[#FF3366]/35 animate-voice-orb-breathe'
-            }`}
-            title={
-              voiceState === 'speaking'
-                ? 'AI яриаг таслах (Товших)'
-                : voiceState === 'listening'
-                ? 'Сонсож дуусах'
-                : 'Яриагаа эхлүүлэх'
-            }
-          >
-            {/* Orb Inner Elements based on Voice State */}
-            {voiceState === 'idle' && (
-              <div className="flex flex-col items-center space-y-1.5">
-                <div className="p-3 rounded-full bg-white/20 backdrop-blur-xs">
-                  <Mic className="w-8 h-8 sm:w-11 sm:h-11 text-white" />
-                </div>
-                <span className="text-xs sm:text-sm font-bold tracking-wide drop-shadow-xs">
-                  Яриагаа эхлүүлэх
-                </span>
-              </div>
-            )}
-
-            {voiceState === 'listening' && (
-              <div className="flex flex-col items-center space-y-2">
-                <div className="flex items-center gap-1.5 h-8">
-                  <div className="w-1.5 bg-white rounded-full animate-voice-wave-1" />
-                  <div className="w-1.5 bg-white rounded-full animate-voice-wave-2" />
-                  <div className="w-1.5 bg-white rounded-full animate-voice-wave-3" />
-                  <div className="w-1.5 bg-white rounded-full animate-voice-wave-2" />
-                  <div className="w-1.5 bg-white rounded-full animate-voice-wave-1" />
-                </div>
-                <span className="text-xs sm:text-sm font-bold tracking-wide drop-shadow-xs">
-                  Сонсож байна...
-                </span>
-              </div>
-            )}
-
-            {voiceState === 'thinking' && (
-              <div className="flex flex-col items-center space-y-2">
-                <Sparkles className="w-8 h-8 sm:w-10 sm:h-10 text-white animate-spin" />
-                <span className="text-xs sm:text-sm font-bold tracking-wide drop-shadow-xs">
-                  Бодож байна...
-                </span>
-              </div>
-            )}
-
-            {voiceState === 'speaking' && (
-              <div className="flex flex-col items-center space-y-2">
-                <div className="flex items-center gap-1.5 h-8">
-                  <div className="w-1.5 bg-white rounded-full animate-voice-wave-3" />
-                  <div className="w-1.5 bg-white rounded-full animate-voice-wave-1" />
-                  <div className="w-1.5 bg-white rounded-full animate-voice-wave-2" />
-                  <div className="w-1.5 bg-white rounded-full animate-voice-wave-1" />
-                  <div className="w-1.5 bg-white rounded-full animate-voice-wave-3" />
-                </div>
-                <span className="text-xs sm:text-sm font-bold tracking-wide drop-shadow-xs">
-                  Хариулж байна...
-                </span>
-                <span className="text-[10px] opacity-85 font-medium">
-                  Товшиж таслах
-                </span>
-              </div>
-            )}
-          </button>
-        </div>
-
-        {/* State Label & Subtext */}
-        <div className="mt-5 text-center max-w-md px-4">
-          {voiceState === 'idle' && (
-            <p className="text-xs sm:text-sm font-medium text-stone-600 dark:text-stone-300">
-              Бөмбөлөг дээр товшиж япон хэлээр чөлөөтэй ярьж эхлээрэй
-            </p>
-          )}
-
-          {voiceState === 'listening' && (
-            <p className="text-xs sm:text-sm font-semibold text-[#FF0000] dark:text-[#FF6699] animate-pulse">
-              Японоор ярина уу... Ярьж дуусахад AI автоматаар хариулна
-            </p>
-          )}
-
-          {voiceState === 'thinking' && (
-            <p className="text-xs sm:text-sm font-semibold text-[#FF3366] dark:text-[#FF6699]">
-              Sunny AI таны яриаг ойлгож хариулт бэлтгэж байна...
-            </p>
-          )}
-
-          {voiceState === 'speaking' && (
-            <p className="text-xs sm:text-sm font-semibold text-[#CC0000] dark:text-[#FF3366]">
-              AI хариулж байна (дуусмагц таны яриаг автоматаар үргэлжлүүлэн сонсоно)
-            </p>
-          )}
-        </div>
-
-        {/* 3. LIVE TRANSCRIPT — RESPONSIVE & STRICT OVERFLOW PREVENTION */}
-        <div className="w-full min-w-0 max-w-xl mt-4 sm:mt-6 px-1 sm:px-3">
-          
-          {/* Live speech interim while user speaks */}
-          {voiceState === 'listening' && speechInterimText && (
-            <div className="w-full min-w-0 max-w-full p-3.5 sm:p-4 rounded-3xl bg-white/90 dark:bg-[#16131C]/90 backdrop-blur-md border border-[#D48B97]/30 dark:border-[#6B2D5C]/40 shadow-sm text-center animate-fade-in overflow-hidden">
-              <span className="text-[10px] font-bold text-[#C85A54] dark:text-[#D48B97] uppercase tracking-wider block mb-1">
-                Таны яриа:
+            <div className="space-y-2">
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-red-950/40 text-[#CC0000] dark:text-[#FF6699] border border-red-200/60 dark:border-red-900/40">
+                タメ口 • Найзын яриа
               </span>
-              <p className="font-jp text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 break-words [overflow-wrap:anywhere] [word-break:break-word]">
-                「{speechInterimText}」
+              <h2 className="text-xl sm:text-2xl font-black font-jp text-stone-900 dark:text-stone-100 tracking-tight">
+                やっほー！今日は何話す？
+              </h2>
+              <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
+                Япон хэлээр найзтайгаа ярьж байгаа мэт чөлөөтэй ярьж, өөртөө итгэлтэй болоорой.
               </p>
             </div>
-          )}
 
-          {/* Latest Exchange Card (Minimal, responsive, zero-overflow) */}
-          {voiceState !== 'listening' && (latestAiMsg || latestUserMsg) && (
-            <div className="w-full min-w-0 max-w-full p-4 sm:p-5 rounded-3xl bg-white/85 dark:bg-stone-900/85 backdrop-blur-md border border-stone-200 dark:border-stone-800 shadow-sm space-y-3 transition-all overflow-hidden">
-              
-              {/* Header with turn count and full history toggle */}
-              <div className="flex items-center justify-between pb-1 border-b border-stone-100 dark:border-stone-800/60 text-[11px] text-stone-400">
-                <span className="font-semibold">
-                  Ээлж #{messages.length}
-                </span>
-                {messages.length > 2 && (
-                  <button
-                    type="button"
-                    onClick={() => setIsTranscriptHistoryOpen(!isTranscriptHistoryOpen)}
-                    className="font-bold text-[#CC0000] dark:text-[#FF6699] hover:underline cursor-pointer flex items-center gap-1"
-                  >
-                    <span>{isTranscriptHistoryOpen ? 'Түүх хураах' : 'Өмнөх яриаг харах'}</span>
-                  </button>
-                )}
-              </div>
+            <p className="text-[11px] text-stone-400 dark:text-stone-500 flex items-center gap-1.5 pt-2">
+              <span>Доорх улаан микрофон дээр дарж яриагаа эхлүүлээрэй</span>
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3.5 pb-2">
+            {/* Message Stream */}
+            {messages.map((m) => {
+              if (m.role === 'user') {
+                return (
+                  <div key={m.id} className="flex flex-col items-end space-y-1.5 animate-fade-in">
+                    <div className="max-w-[85%] sm:max-w-[75%] px-4 py-2.5 rounded-2xl rounded-tr-xs bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 text-xs sm:text-sm font-jp leading-relaxed shadow-xs break-words [overflow-wrap:anywhere] [word-break:break-word]">
+                      {m.cleanContent || m.content}
+                    </div>
 
-              {/* Collapsible History Drawer */}
-              {isTranscriptHistoryOpen && messages.length > 2 && (
-                <div className="max-h-60 overflow-y-auto space-y-2.5 pr-1 py-1 border-b border-stone-100 dark:border-stone-800/80 w-full min-w-0 max-w-full">
-                  {messages.slice(0, -2).map((m, mIdx) => (
-                    <div
-                      key={m.id || mIdx}
-                      className={`p-2.5 rounded-2xl text-xs w-full min-w-0 max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] ${
-                        m.role === 'user'
-                          ? 'bg-stone-100/80 dark:bg-stone-800/50 text-stone-700 dark:text-stone-300 ml-auto max-w-[90%]'
-                          : 'bg-red-50/50 dark:bg-red-950/20 text-stone-900 dark:text-stone-100 mr-auto max-w-[95%]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1 font-bold text-[10px] text-stone-400">
-                        <span>{m.role === 'user' ? 'Та' : 'Sunny'}</span>
+                    {/* Correction Tip attached if present */}
+                    {m.correction && (
+                      <div className="max-w-[85%] sm:max-w-[75%] p-2.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-[11px] text-stone-700 dark:text-stone-300 space-y-0.5 break-words [overflow-wrap:anywhere]">
+                        <span className="font-bold text-amber-700 dark:text-amber-400 block text-[10px] uppercase">
+                          💡 Илүү байгалийн хэллэг:
+                        </span>
+                        <p className="font-jp font-bold text-stone-900 dark:text-stone-100">
+                          {m.correction.corrected}
+                        </p>
+                        {m.correction.explanation && (
+                          <p className="text-[10px] text-stone-500 dark:text-stone-400">
+                            {m.correction.explanation}
+                          </p>
+                        )}
                       </div>
+                    )}
+                  </div>
+                );
+              }
+
+              // Assistant message
+              return (
+                <div key={m.id} className="flex flex-col items-start space-y-1 animate-fade-in">
+                  <div className="max-w-[92%] sm:max-w-[82%] px-4 py-3 rounded-2xl rounded-tl-xs bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 shadow-2xs space-y-1.5">
+                    <div className="flex items-center justify-between gap-2 border-b border-stone-100 dark:border-stone-800 pb-1">
+                      <span className="text-[10px] font-bold text-[#FF0000] dark:text-[#FF6699] tracking-wider uppercase">
+                        Sunny AI
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => playAiVoice(m.content, m.audioUrl)}
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-stone-400 hover:text-[#FF0000] dark:hover:text-[#FF6699] transition-colors cursor-pointer"
+                        title="Дахин сонсох"
+                      >
+                        <Volume2 className="w-3 h-3" />
+                        <span>Сонсох</span>
+                      </button>
+                    </div>
+
+                    <div className="font-jp text-stone-900 dark:text-stone-100 text-xs sm:text-sm font-medium leading-relaxed break-words [overflow-wrap:anywhere] [word-break:break-word]">
                       <FuriganaText
                         text={m.content}
                         showFurigana={showFurigana}
-                        className="text-xs sm:text-sm font-jp"
+                        className="text-xs sm:text-sm"
                       />
                     </div>
-                  ))}
-                </div>
-              )}
-
-              {/* What user said */}
-              {latestUserMsg && (
-                <div className="flex items-start gap-2.5 text-xs sm:text-sm text-stone-600 dark:text-stone-300 w-full min-w-0">
-                  <span className="px-2 py-0.5 rounded-lg bg-stone-100 dark:bg-stone-800 text-[11px] font-bold shrink-0 mt-0.5">
-                    Та
-                  </span>
-                  <p className="font-jp font-medium leading-relaxed flex-1 min-w-0 max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word]">
-                    {latestUserMsg.cleanContent || latestUserMsg.content}
-                  </p>
-                </div>
-              )}
-
-              {/* What AI said */}
-              {latestAiMsg && (
-                <div className="flex items-start gap-2.5 text-xs sm:text-sm pt-2 border-t border-stone-100 dark:border-stone-800/80 w-full min-w-0">
-                  <span className="px-2 py-0.5 rounded-lg bg-[#6B2D5C]/15 text-[#6B2D5C] dark:text-[#DEC9EF] text-[11px] font-bold shrink-0 mt-0.5">
-                    Sunny
-                  </span>
-                  <div className="flex-1 min-w-0 max-w-full space-y-1">
-                    <div className="ai-conversation-message font-jp text-stone-900 dark:text-stone-100 font-medium leading-relaxed w-full min-w-0 max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word]">
-                      <FuriganaText
-                        text={latestAiMsg.content}
-                        showFurigana={showFurigana}
-                        className="text-sm sm:text-base"
-                      />
-                    </div>
-
-                    {/* Replay audio button */}
-                    <button
-                      type="button"
-                      onClick={() => playAiVoice(latestAiMsg.content, latestAiMsg.audioUrl)}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#C85A54] dark:text-[#D48B97] hover:underline pt-1 cursor-pointer"
-                    >
-                      <Volume2 className="w-3 h-3" />
-                      <span>Дахин сонсох</span>
-                    </button>
                   </div>
                 </div>
-              )}
+              );
+            })}
 
-              {/* Gentle phrasing tip if user had an unnatural phrase */}
-              {latestUserMsg?.correction && (
-                <div className="p-2.5 rounded-2xl bg-stone-50/90 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700/60 text-[11px] space-y-1 w-full min-w-0 max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word]">
-                  <span className="font-bold text-[#C85A54] dark:text-[#D48B97]">
-                    💡 Илүү байгалийн хэллэг:
-                  </span>
-                  <p className="font-jp font-bold text-emerald-700 dark:text-emerald-400 break-words [overflow-wrap:anywhere]">
-                    {latestUserMsg.correction.corrected}
-                  </p>
-                  {latestUserMsg.correction.explanation && (
-                    <p className="text-stone-500 dark:text-stone-400 text-[10px] break-words [overflow-wrap:anywhere]">
-                      {latestUserMsg.correction.explanation}
-                    </p>
-                  )}
+            {/* Live User Interim Transcript */}
+            {voiceState === 'listening' && speechInterimText && (
+              <div className="flex justify-end animate-fade-in">
+                <div className="max-w-[85%] sm:max-w-[75%] px-4 py-2.5 rounded-2xl rounded-tr-xs bg-red-500/10 dark:bg-red-500/20 border border-red-500/30 text-xs sm:text-sm font-jp text-red-600 dark:text-red-300 animate-pulse break-words [overflow-wrap:anywhere]">
+                  <span className="text-[10px] font-bold block opacity-75">Та:</span>
+                  「{speechInterimText}」
                 </div>
-              )}
+              </div>
+            )}
 
-            </div>
-          )}
+            {/* AI Thinking State */}
+            {voiceState === 'thinking' && (
+              <div className="flex justify-start animate-fade-in">
+                <div className="px-4 py-2.5 rounded-2xl rounded-tl-xs bg-white dark:bg-stone-900 border border-stone-200/80 dark:border-stone-800/80 shadow-2xs flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 font-medium">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FF0000] dark:text-[#FF6699]" />
+                  <span>Sunny хариулт бэлтгэж байна...</span>
+                </div>
+              </div>
+            )}
 
-        </div>
-
+            <div ref={chatEndRef} className="h-1" />
+          </div>
+        )}
       </main>
 
-      {/* 4. STARTER TOPIC CARDS (Quick topic switcher) */}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between px-1 text-xs">
-          <div className="flex items-center gap-1.5 font-bold text-stone-600 dark:text-stone-400">
-            <Sparkles className="w-3.5 h-3.5 text-[#C85A54] dark:text-[#D48B97]" />
-            <span>Сэдэв сонгож яриагаа чиглүүлэх:</span>
-          </div>
-          {messages.length > 1 && (
-            <span className="text-[11px] text-stone-400">
-              Яриа үргэлжилж байна ({messages.length} ээлж)
-            </span>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-          {STARTER_TOPICS.map(topic => {
-            const isSelected = selectedTopicId === topic.id;
-            return (
-              <button
-                key={topic.id}
-                type="button"
-                onClick={() => {
-                  if (voiceState === 'speaking') stopAudio();
-                  startConversation(topic.id);
-                }}
-                className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                  isSelected && isSessionActive
-                    ? 'bg-[#6B2D5C]/15 dark:bg-[#6B2D5C]/25 border-[#6B2D5C]/40 dark:border-[#9D8EC2]/40 text-[#6B2D5C] dark:text-[#DEC9EF] shadow-2xs'
-                    : 'bg-white/80 dark:bg-stone-900/80 border-stone-200 dark:border-stone-800 hover:border-[#D48B97]/40 text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-850'
-                }`}
-              >
-                <span className="font-jp block text-xs font-bold truncate">
-                  {topic.title}
-                </span>
-                <span className="text-[10px] text-stone-400 dark:text-stone-500 block truncate">
-                  {topic.labelMn}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 5. BOTTOM CONTROL BAR: Mute, Restart, Text Input Fallback */}
-      <footer className="flex items-center justify-between gap-3 p-3 sm:p-3.5 rounded-3xl bg-white/90 dark:bg-stone-900/90 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 shadow-2xs">
+      {/* 3. SIMPLIFIED BOTTOM CONTROL BAR */}
+      <footer className="shrink-0 p-3 sm:p-3.5 rounded-3xl bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 shadow-lg space-y-2.5">
         
-        {/* Left: Session / Usage Status */}
-        <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
-          {isPremium ? (
-            <span className="text-orange-600 dark:text-orange-400 font-bold">
-              💎 Premium хязгааргүй
-            </span>
-          ) : sunnyAIUsage ? (
-            <span>
-              Үлдсэн: <b>{sunnyAIUsage.remaining}</b>/20
-            </span>
-          ) : (
-            <span>Дуут яриа бэлэн</span>
-          )}
-        </div>
-
-        {/* Center: Audio Mute / Resume toggle */}
-        <div className="flex items-center gap-2">
-          {isSessionActive && (
-            <button
-              type="button"
-              onClick={toggleMute}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
-                isMuted
-                  ? 'bg-red-500 text-white border-red-600 shadow-2xs'
-                  : 'bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300'
-              }`}
-              title={isMuted ? 'Сонсохыг сэргээх' : 'Түр зогсоох (Mute)'}
-            >
-              {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              <span>{isMuted ? 'Чимээгүй' : 'Идэвхтэй'}</span>
-            </button>
-          )}
-
-          {/* Restart Button */}
-          {messages.length > 0 && (
-            <button
-              type="button"
-              onClick={handleReset}
-              className="p-2 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-500 dark:text-stone-400 transition-colors cursor-pointer"
-              title="Яриаг шинээр эхлэх"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
-        {/* Right: Discreet Text Keyboard Toggle (For noisy/quiet environments) */}
-        <div>
-          <button
-            type="button"
-            onClick={() => setIsTextDrawerOpen(!isTextDrawerOpen)}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
-              isTextDrawerOpen
-                ? 'bg-stone-800 text-white dark:bg-stone-200 dark:text-stone-900 border-transparent'
-                : 'bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300'
-            }`}
-            title="Гар дээрээс бичиж хариулах"
-          >
-            <Keyboard className="w-4 h-4" />
-            <span className="hidden sm:inline">Бичих</span>
-          </button>
-        </div>
-      </footer>
-
-      {/* DISCREET TEXT DRAWER (Only when user explicitly taps keyboard icon) */}
-      {isTextDrawerOpen && (
-        <div className="p-3.5 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-lg animate-fade-in">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-stone-500">
-              Чимээгүй орчинд зориулсан текст оруулалт (AI дуугаар хариулна):
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsTextDrawerOpen(false)}
-              className="text-stone-400 hover:text-stone-600 cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-          <form onSubmit={handleKeyboardSubmit} className="flex items-center gap-2">
+        {/* Discreet Inline Text Form (only visible when keyboard is opened) */}
+        {isTextDrawerOpen && (
+          <form onSubmit={handleKeyboardSubmit} className="flex items-center gap-2 animate-fade-in">
             <input
               type="text"
               value={keyboardInput}
               onChange={e => setKeyboardInput(e.target.value)}
               disabled={voiceState === 'thinking'}
-              placeholder="Японоор бичнэ үү (жишээ: 今日は学校に行きました)..."
-              className="flex-1 px-4 py-2.5 rounded-2xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white font-jp text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-[#FF3366]/30 focus:border-[#FF3366]"
+              placeholder="Японоор бичнэ үү (жишээ: 今日は何食べた？)..."
+              className="flex-1 px-4 py-2 rounded-2xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-white font-jp text-xs sm:text-sm focus:outline-hidden focus:ring-2 focus:ring-[#FF3366]/30 focus:border-[#FF3366]"
             />
             <button
               type="submit"
               disabled={!keyboardInput.trim() || voiceState === 'thinking'}
-              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-bold text-xs shadow-xs disabled:opacity-40 cursor-pointer shrink-0"
+              className="p-2.5 rounded-2xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white disabled:opacity-40 cursor-pointer shrink-0 transition-opacity"
             >
               <Send className="w-4 h-4" />
             </button>
+            <button
+              type="button"
+              onClick={() => setIsTextDrawerOpen(false)}
+              className="p-2.5 rounded-2xl bg-stone-100 dark:bg-stone-800 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </form>
+        )}
+
+        {/* The 3-Control Primary Bar: [ Keyboard ]  [ Large Mic Button ]  [ Audio Replay ] */}
+        <div className="flex items-center justify-between px-2 sm:px-6">
+          
+          {/* Left: Keyboard toggle for quiet typing */}
+          <button
+            type="button"
+            onClick={() => setIsTextDrawerOpen(!isTextDrawerOpen)}
+            className={`p-3 rounded-2xl border transition-all cursor-pointer ${
+              isTextDrawerOpen
+                ? 'bg-stone-900 text-white dark:bg-white dark:text-stone-900 border-transparent shadow-xs'
+                : 'bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300'
+            }`}
+            title="Гараар бичих"
+          >
+            <Keyboard className="w-5 h-5" />
+          </button>
+
+          {/* Center: Large Glowing Primary Microphone */}
+          <button
+            id="voice-orb-main"
+            type="button"
+            onClick={handleMicClick}
+            disabled={voiceState === 'thinking'}
+            className={`relative w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 transform active:scale-95 cursor-pointer ${
+              voiceState === 'listening'
+                ? 'bg-gradient-to-tr from-[#FF0000] via-[#FF1A4B] to-[#FF3366] ring-6 ring-[#FF3366]/40 shadow-[0_0_30px_rgba(255,51,102,0.5)] animate-pulse'
+                : voiceState === 'speaking'
+                ? 'bg-gradient-to-tr from-[#FF3366] via-[#FF6699] to-[#CC0066] ring-6 ring-[#FF6699]/40 shadow-[0_0_25px_rgba(255,102,153,0.5)]'
+                : voiceState === 'thinking'
+                ? 'bg-gradient-to-tr from-[#CC0066] via-[#FF3366] to-[#990033] ring-4 ring-[#FF3366]/30 opacity-80 cursor-wait'
+                : 'bg-gradient-to-tr from-[#FF0000] via-[#FF1A4B] to-[#FF3366] ring-4 ring-[#FF3366]/20 hover:ring-[#FF3366]/40 shadow-[0_0_20px_rgba(255,0,0,0.3)] hover:scale-105'
+            }`}
+            title={
+              voiceState === 'speaking'
+                ? 'AI яриаг таслах'
+                : voiceState === 'listening'
+                ? 'Сонсож дуусгах'
+                : 'Ярьж эхлэх'
+            }
+          >
+            {voiceState === 'listening' && (
+              <div className="flex items-center gap-1 h-6">
+                <div className="w-1 bg-white rounded-full animate-voice-wave-1" />
+                <div className="w-1 bg-white rounded-full animate-voice-wave-2" />
+                <div className="w-1 bg-white rounded-full animate-voice-wave-3" />
+                <div className="w-1 bg-white rounded-full animate-voice-wave-2" />
+                <div className="w-1 bg-white rounded-full animate-voice-wave-1" />
+              </div>
+            )}
+            {voiceState === 'speaking' && (
+              <div className="flex items-center gap-1 h-6">
+                <div className="w-1 bg-white rounded-full animate-voice-wave-3" />
+                <div className="w-1 bg-white rounded-full animate-voice-wave-1" />
+                <div className="w-1 bg-white rounded-full animate-voice-wave-2" />
+                <div className="w-1 bg-white rounded-full animate-voice-wave-1" />
+                <div className="w-1 bg-white rounded-full animate-voice-wave-3" />
+              </div>
+            )}
+            {voiceState === 'thinking' && (
+              <Loader2 className="w-7 h-7 text-white animate-spin" />
+            )}
+            {voiceState === 'idle' && (
+              <Mic className="w-7 h-7 sm:w-8 sm:h-8 text-white drop-shadow-sm" />
+            )}
+          </button>
+
+          {/* Right: Audio / Speaker Replay Button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (voiceState === 'speaking') {
+                stopAudio();
+              } else if (latestAiMsg) {
+                playAiVoice(latestAiMsg.content, latestAiMsg.audioUrl);
+              }
+            }}
+            disabled={!latestAiMsg && voiceState !== 'speaking'}
+            className={`p-3 rounded-2xl border transition-all cursor-pointer ${
+              voiceState === 'speaking'
+                ? 'bg-rose-100 dark:bg-rose-950/60 border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400'
+                : latestAiMsg
+                ? 'bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300'
+                : 'bg-stone-50 dark:bg-stone-850 border-stone-200/50 dark:border-stone-800/50 text-stone-300 dark:text-stone-600 cursor-not-allowed'
+            }`}
+            title={voiceState === 'speaking' ? 'Дууг зогсоох' : 'Сүүлийн хариултыг дахин сонсох'}
+          >
+            {voiceState === 'speaking' ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+          </button>
+        </div>
+      </footer>
+
+      {/* 4. SETTINGS MODAL (Houses all secondary options without wiping history) */}
+      {showSettings && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="w-full max-w-md max-h-[90vh] overflow-y-auto p-5 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-2xl space-y-4 text-xs">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-stone-800">
+              <div className="flex items-center gap-2">
+                <Settings className="w-4 h-4 text-[#FF0000] dark:text-[#FF6699]" />
+                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100">
+                  Тохиргоо (設定)
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSettings(false)}
+                className="p-1.5 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* JLPT Level Selector */}
+            <div className="space-y-1.5">
+              <span className="block font-bold text-stone-600 dark:text-stone-400">
+                JLPT түвшин:
+              </span>
+              <div className="grid grid-cols-5 gap-1.5 p-1 rounded-2xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
+                {(['N5', 'N4', 'N3', 'N2', 'N1'] as JLPTLevel[]).map(lvl => (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => setCurrentLevel(lvl)}
+                    className={`py-1.5 rounded-xl font-bold text-center transition-all cursor-pointer ${
+                      currentLevel === lvl
+                        ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-xs'
+                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                    }`}
+                  >
+                    {lvl}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Furigana Display Toggle */}
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700/60">
+              <div>
+                <span className="font-bold text-stone-800 dark:text-stone-200 block">
+                  Фүригана дуудлага харуулах
+                </span>
+                <span className="text-[11px] text-stone-500 dark:text-stone-400">
+                  Канжи үсэг дээр дуудлагыг жижиг хэлбэрээр харуулна
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowFurigana(!showFurigana)}
+                className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                  showFurigana
+                    ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-xs'
+                    : 'bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300'
+                }`}
+              >
+                {showFurigana ? 'Асаалттай' : 'Унтраалттай'}
+              </button>
+            </div>
+
+            {/* Conversation Style (Easy vs Natural) */}
+            <div className="space-y-1.5">
+              <span className="block font-bold text-stone-600 dark:text-stone-400">
+                Ярианы хэв маяг (タメ口):
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConversationStyle('easy')}
+                  className={`py-2 px-3 rounded-xl border font-bold text-center transition-all cursor-pointer ${
+                    conversationStyle === 'easy'
+                      ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
+                      : 'bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400'
+                  }`}
+                >
+                  Хялбар (やさしい)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConversationStyle('natural')}
+                  className={`py-2 px-3 rounded-xl border font-bold text-center transition-all cursor-pointer ${
+                    conversationStyle === 'natural'
+                      ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
+                      : 'bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400'
+                  }`}
+                >
+                  Байгалийн (自然)
+                </button>
+              </div>
+            </div>
+
+            {/* Voice Persona */}
+            <div className="space-y-1.5">
+              <span className="block font-bold text-stone-600 dark:text-stone-400">
+                AI дуу хоолой (Persona):
+              </span>
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    { id: 'Aoede', name: 'Сакура', sub: 'Эмэгтэй' },
+                    { id: 'Puck', name: 'Кэн', sub: 'Эрэгтэй' },
+                    { id: 'Kore', name: 'Аой', sub: 'Тайван' }
+                  ] as { id: VoicePersona; name: string; sub: string }[]
+                ).map(vp => (
+                  <button
+                    key={vp.id}
+                    type="button"
+                    onClick={() => setVoicePersona(vp.id)}
+                    className={`py-2 px-2 rounded-xl border font-bold text-center transition-all cursor-pointer ${
+                      voicePersona === vp.id
+                        ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
+                        : 'bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400'
+                    }`}
+                  >
+                    <span className="block">{vp.name}</span>
+                    <span className="text-[10px] font-normal opacity-75">{vp.sub}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Topic Ideas (Inspiration) */}
+            <div className="space-y-1.5 pt-1">
+              <span className="block font-bold text-stone-600 dark:text-stone-400">
+                Сэдвийн санаанууд (хүсвэл сонгох):
+              </span>
+              <div className="grid grid-cols-2 gap-1.5 max-h-36 overflow-y-auto pr-1">
+                {STARTER_TOPICS.map(topic => (
+                  <button
+                    key={topic.id}
+                    type="button"
+                    onClick={() => {
+                      if (voiceState === 'speaking') stopAudio();
+                      setShowSettings(false);
+                      startConversation(topic.id);
+                    }}
+                    className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                      selectedTopicId === topic.id && isSessionActive
+                        ? 'bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-800 text-red-700 dark:text-red-300'
+                        : 'bg-stone-50 dark:bg-stone-800/70 border-stone-200 dark:border-stone-700/70 text-stone-700 dark:text-stone-300 hover:bg-stone-100'
+                    }`}
+                  >
+                    <span className="font-jp block text-xs font-bold truncate">
+                      {topic.title}
+                    </span>
+                    <span className="text-[10px] text-stone-400 block truncate">
+                      {topic.labelMn}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Session Actions (Restart & End Session) */}
+            <div className="pt-2 border-t border-stone-100 dark:border-stone-800 space-y-2">
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="w-full py-2.5 px-3 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Яриаг шинээр эхлэх</span>
+                </button>
+              )}
+
+              {isSessionActive && (
+                <button
+                  type="button"
+                  onClick={handleEndConversation}
+                  className="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all"
+                >
+                  <Award className="w-4 h-4" />
+                  <span>Яриаг дуусгаж дүгнэлт авах</span>
+                </button>
+              )}
+            </div>
+
+          </div>
         </div>
       )}
 
-      {/* 6. CONVERSATION FEEDBACK MODAL (Upon Ending Session) */}
+      {/* 5. FEEDBACK MODAL (Upon Ending Session) */}
       <FreeConversationFeedbackModal
         isOpen={isFeedbackModalOpen}
         onClose={() => setIsFeedbackModalOpen(false)}

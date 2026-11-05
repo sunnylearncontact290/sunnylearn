@@ -253,52 +253,27 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 space-y-8 sm:space-y-12 animate-fade-in">
-      {/* PUBLIC BETA ANNOUNCEMENT BANNER */}
+      {/* COMPACT PUBLIC BETA ANNOUNCEMENT STRIP */}
       {isPublicBeta && (
-        <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#1F1015] via-[#2D141E] to-[#1F1015] border border-[#FF3366]/35 p-5 sm:p-7 shadow-xl">
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-[#CC0000]/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-            <div className="flex items-start gap-4">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-[#CC0000] to-[#FF3366] text-white flex items-center justify-center shrink-0 shadow-lg shadow-red-500/25">
-                <Sparkles className="w-6 h-6" />
-              </div>
-              <div className="space-y-1.5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-red-500/20 text-[#FF6699] text-[10px] sm:text-xs font-black uppercase tracking-wider border border-red-500/30">
-                    PUBLIC BETA — Үнэгүй туршилт
-                  </span>
-                  <h2 className="text-base sm:text-xl font-extrabold text-white">
-                    🎉 SunnyLearn Public Beta эхэллээ!
-                  </h2>
-                </div>
-                <p className="text-xs sm:text-sm text-stone-200 leading-relaxed max-w-2xl">
-                  SunnyLearn одоогоор нээлттэй туршилтын шатандаа байна. Энэ хугацаанд JLPT N5–N1 бүх сургалтын контентыг үнэ төлбөргүй ашиглаарай!
-                </p>
-                <p className="text-[11px] sm:text-xs text-stone-400">
-                  Sunny AI болон AI Roleplay-ийн үнэгүй хэрэглээний хязгаар (өдөрт 20 мессеж) хэвээр үйлчилнэ.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full md:w-auto shrink-0 pt-1 md:pt-0">
-              <button
-                type="button"
-                onClick={scrollToLevelSelection}
-                className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#CC0000] to-[#FF3366] hover:opacity-95 text-white font-bold text-xs shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
-              >
-                <span>Түвшин сонгох</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsFeedbackModalOpen(true)}
-                className="flex-1 md:flex-none px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <MessagesSquare className="w-3.5 h-3.5 text-red-400" />
-                <span>Санал хүсэлт илгээх</span>
-              </button>
-            </div>
+        <section className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#1E0F14] via-[#2A131C] to-[#1E0F14] border border-[#FF3366]/25 px-3.5 sm:px-5 py-2.5 sm:py-3 shadow-md flex items-center justify-between gap-3 text-xs animate-fade-in">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="px-2 py-0.5 rounded-md bg-red-500/20 text-[#FF6699] text-[10px] font-black uppercase tracking-wider shrink-0 border border-red-500/30">
+              PUBLIC BETA
+            </span>
+            <span className="text-stone-200 text-xs sm:text-sm font-medium truncate">
+              ✨ Public Beta — SunnyLearn-ийг үнэгүй туршаарай (JLPT N5–N1 бүх контент нээлттэй)
+            </span>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setIsFeedbackModalOpen(true)}
+            className="px-3 py-1 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold text-[11px] sm:text-xs transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+          >
+            <MessagesSquare className="w-3.5 h-3.5 text-red-400" />
+            <span className="hidden sm:inline">Санал хүсэлт илгээх</span>
+            <span className="sm:hidden">Санал</span>
+          </button>
         </section>
       )}
 
@@ -317,15 +292,9 @@ export const HomePage: React.FC = () => {
 
         <div className="relative z-10 max-w-3xl space-y-5 sm:space-y-6">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-xs font-semibold backdrop-blur-md">
-              <div className="w-4 h-4 rounded-full overflow-hidden shrink-0">
-                <SunnyLogo className="w-full h-full object-cover" />
-              </div>
-              <span>SunnyLearn Платформ</span>
-            </div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span>Монгол хэлээр бүрэн орчуулга ба тайлбартай</span>
+              <span>Монгол тайлбартай JLPT N5–N1 сургалт</span>
             </div>
           </div>
 
