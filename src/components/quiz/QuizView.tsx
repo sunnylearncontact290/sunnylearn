@@ -323,10 +323,17 @@ export const QuizView: React.FC = () => {
                       : 'border-rose-200 dark:border-rose-900/60'
                   }`}
                 >
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setExpandedReviewId(isExpanded ? null : q.id)}
-                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setExpandedReviewId(isExpanded ? null : q.id);
+                      }
+                    }}
+                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors select-none"
                   >
                     <div className="flex items-center gap-3">
                       <div
@@ -351,13 +358,15 @@ export const QuizView: React.FC = () => {
                           <span className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 font-jp">
                             {q.question}
                           </span>
-                          <AudioButton
-                            text={q.question}
-                            reading={q.questionReading}
-                            id={`quiz_rev_${q.id}`}
-                            size="xs"
-                            title="Асуултыг сонсох"
-                          />
+                          <span onClick={(e) => e.stopPropagation()}>
+                            <AudioButton
+                              text={q.question}
+                              reading={q.questionReading}
+                              id={`quiz_rev_${q.id}`}
+                              size="xs"
+                              title="Асуултыг сонсох"
+                            />
+                          </span>
                         </div>
                         {q.questionReading && (
                           <span className="text-xs text-stone-500 dark:text-stone-400">
@@ -383,7 +392,7 @@ export const QuizView: React.FC = () => {
                         <ChevronDown className="w-4 h-4 text-stone-400" />
                       )}
                     </div>
-                  </button>
+                  </div>
 
                   {isExpanded && (
                     <div className="p-4 sm:p-5 pt-0 border-t border-stone-100 dark:border-stone-800 space-y-4">

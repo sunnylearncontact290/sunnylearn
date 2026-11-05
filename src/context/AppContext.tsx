@@ -34,6 +34,8 @@ import {
   isComplimentaryPremiumAccount,
   isAdminAccount,
   hasPremiumAccess,
+  isLearningContentUnlocked,
+  PUBLIC_BETA_ENABLED,
   ADMIN_EMAIL
 } from '../data/accessControl';
 import {
@@ -217,6 +219,12 @@ interface AppContextType {
   sunnyAIUsage: SunnyAIUsageStatus | null;
   refreshSunnyAIUsage: () => Promise<void>;
 
+  // Public Beta & Content Access
+  isPublicBeta: boolean;
+  isContentUnlocked: boolean;
+  isFeedbackModalOpen: boolean;
+  setIsFeedbackModalOpen: (open: boolean) => void;
+
   // Toast & refresh
   toasts: ToastMessage[];
   showToast: (text: string, type?: 'success' | 'error' | 'info') => void;
@@ -389,6 +397,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const isPremium = useMemo(() => {
     return hasPremiumAccess(currentUser);
   }, [currentUser]);
+
+  // Centralized Public Beta status & Content Unlocking
+  const isPublicBeta = PUBLIC_BETA_ENABLED;
+  const isContentUnlocked = useMemo(() => {
+    return isPublicBeta || isPremium || isAdmin;
+  }, [isPublicBeta, isPremium, isAdmin]);
+
+  // Feedback modal
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState<boolean>(false);
 
   const premiumExpiresAt = currentUser?.premiumExpiresAt || null;
   const inAppNotification = currentUser?.inAppNotification || null;
@@ -657,16 +674,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Content Gating and Access Permissions
   const canAccessItem = useCallback((item: { jlptLevel: JLPTLevel; accessTier?: AccessTier }): boolean => {
-    if (isAdmin || isPremium) return true;
+    if (isPublicBeta || isAdmin || isPremium) return true;
     if (item.jlptLevel === 'N5') return true;
     return item.accessTier === 'FREE';
-  }, [isAdmin, isPremium]);
+  }, [isPublicBeta, isAdmin, isPremium]);
 
   const canAccessLevel = useCallback((level: JLPTLevel): boolean => {
-    if (isAdmin || isPremium) return true;
+    if (isPublicBeta || isAdmin || isPremium) return true;
     if (level === 'N5') return true;
     return false;
-  }, [isAdmin, isPremium]);
+  }, [isPublicBeta, isAdmin, isPremium]);
 
   // User Logout
   const userLogout = useCallback(async () => {
@@ -1443,6 +1460,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         closeSunnyAI,
         sunnyAIUsage,
         refreshSunnyAIUsage,
+        isPublicBeta,
+        isContentUnlocked,
+        isFeedbackModalOpen,
+        setIsFeedbackModalOpen,
         toasts,
         showToast,
         removeToast,

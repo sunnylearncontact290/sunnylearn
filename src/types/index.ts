@@ -165,7 +165,15 @@ export interface CategoryItem {
   description?: string;
 }
 
-export type FeedbackType = 'feedback' | 'bug' | 'suggestion' | 'question' | 'other';
+export type FeedbackType =
+  | 'feedback'
+  | 'bug'
+  | 'suggestion'
+  | 'question'
+  | 'japanese_content'
+  | 'translation'
+  | 'audio'
+  | 'other';
 
 export interface FeedbackItem {
   id: string;

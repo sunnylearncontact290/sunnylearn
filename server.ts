@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import './src/server/url-polyfill';
 import http from 'http';
 import path from 'path';

@@ -27,6 +27,7 @@ import { SunnyLogo } from '../common/SunnyLogo';
 import { AudioButton } from '../common/AudioButton';
 import { speechService, extractKanjiPronunciation, extractVocabPronunciation } from '../../services/speech';
 import { getCleanVocabExplanation } from '../../utils/vocabUtils';
+import { InteractiveJapaneseSentence } from '../learn/InteractiveJapaneseSentence';
 
 export const HomePage: React.FC = () => {
   const {
@@ -748,10 +749,15 @@ export const HomePage: React.FC = () => {
                     })()}
 
                     {vocabOfTheDay.exampleSentence && (
-                      <div className="mt-3 p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 text-xs space-y-1 border border-stone-200/60 dark:border-stone-700/50">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="text-stone-900 dark:text-stone-200 font-jp font-medium min-w-0">
-                            <span className="break-words">{vocabOfTheDay.exampleSentence}</span>
+                      <div className="mt-3 p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 text-xs space-y-1.5 border border-stone-200/60 dark:border-stone-700/50">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <InteractiveJapaneseSentence
+                              sentence={vocabOfTheDay.exampleSentence}
+                              reading={vocabOfTheDay.exampleReading}
+                              mongolian={vocabOfTheDay.exampleMongolian}
+                              className="text-xs text-stone-900 dark:text-stone-100"
+                            />
                           </div>
                           <AudioButton
                             text={vocabOfTheDay.exampleSentence}
@@ -761,9 +767,11 @@ export const HomePage: React.FC = () => {
                             title="Жишээ өгүүлбэр сонсох"
                           />
                         </div>
-                        <p className="text-stone-500 dark:text-stone-400 italic">
-                          {vocabOfTheDay.exampleMongolian}
-                        </p>
+                        {vocabOfTheDay.exampleMongolian && (
+                          <p className="text-stone-500 dark:text-stone-400 italic text-[11px] pt-0.5">
+                            {vocabOfTheDay.exampleMongolian}
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>

@@ -16,7 +16,8 @@ import {
   COMPLIMENTARY_PREMIUM_EMAIL,
   isComplimentaryPremiumAccount,
   isAdminAccount,
-  hasPremiumAccess
+  hasPremiumAccess,
+  PUBLIC_BETA_ENABLED
 } from '../data/accessControl';
 import { INITIAL_ROLEPLAY_SCENARIOS, getScenarioById } from '../data/roleplayScenarios';
 
@@ -876,12 +877,14 @@ app.get(
   }
 );
 
-// Content-protected learning dataset (Server-side enforcement - Fail Closed)
+// Content-protected learning dataset (Server-side enforcement)
 app.get('/api/data', (req, res) => {
   const access = getRequesterAccess(req);
   const counts = computeLevelCounts(db);
 
-  if (access.isPremium || access.isAdmin) {
+  // During Public Beta, ALL JLPT N5-N1 learning content is unlocked for all users.
+  // When Public Beta is disabled, strictly gate non-free tiers to Premium/Admin users.
+  if (PUBLIC_BETA_ENABLED || access.isPremium || access.isAdmin) {
     // Authorized: return complete content for all levels
     return res.json({
       categories: db.categories,
@@ -893,13 +896,25 @@ app.get('/api/data', (req, res) => {
       reading: db.reading,
       listening: db.listening,
       quizzes: db.quizzes,
-      counts
+      counts,
+      publicBeta: PUBLIC_BETA_ENABLED
     });
   }
 
   // Free / Guest / Expired user: Strictly sanitize using buildFreeTierData (Fail Closed)
   const freeTierData = buildFreeTierData(db);
-  res.json(freeTierData);
+  res.json({
+    ...freeTierData,
+    publicBeta: false
+  });
+});
+
+app.get('/api/config/launch-mode', (_req, res) => {
+  res.json({
+    publicBeta: PUBLIC_BETA_ENABLED,
+    platform: 'SunnyLearn',
+    version: '1.0.0-beta'
+  });
 });
 
 // ----------------------------------------------------
@@ -951,6 +966,7 @@ let ttsQuotaReason = '';
  * Maintains persistent warm WebSocket connection for 100-180ms response times.
  */
 class EdgeTTSConnectionManager {
+  private static isUnavailable = false;
   private client: MsEdgeTTS | null = null;
   private voice: string;
   private initPromise: Promise<MsEdgeTTS | null> | null = null;
@@ -959,7 +975,12 @@ class EdgeTTSConnectionManager {
     this.voice = voice;
   }
 
+  public static isDisabled(): boolean {
+    return EdgeTTSConnectionManager.isUnavailable;
+  }
+
   private async getClient(): Promise<MsEdgeTTS | null> {
+    if (EdgeTTSConnectionManager.isUnavailable) return null;
     if (this.client) return this.client;
     if (this.initPromise) return this.initPromise;
 
@@ -969,8 +990,9 @@ class EdgeTTSConnectionManager {
         await c.setMetadata(this.voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
         this.client = c;
         return c;
-      } catch (err) {
-        console.warn(`[EdgeTTS Init Warning - ${this.voice}]`, err);
+      } catch (err: any) {
+        // Microsoft Edge TTS endpoint returns 403 in container/cloud IP environments
+        EdgeTTSConnectionManager.isUnavailable = true;
         this.client = null;
         return null;
       } finally {
@@ -982,6 +1004,7 @@ class EdgeTTSConnectionManager {
   }
 
   public async synthesize(cleanText: string): Promise<string | null> {
+    if (EdgeTTSConnectionManager.isUnavailable) return null;
     // Attempt 1: Fast stream via warm pooled client
     const pooled = await this.getClient();
     if (pooled) {
@@ -1042,6 +1065,7 @@ class EdgeTTSConnectionManager {
   }
 
   private synthesizeOneShot(text: string): Promise<string | null> {
+    if (EdgeTTSConnectionManager.isUnavailable) return Promise.resolve(null);
     return new Promise((resolve) => {
       let settled = false;
       let ttsInstance: MsEdgeTTS | null = null;
@@ -1194,23 +1218,70 @@ async function generateNeuralJapaneseAudio(text: string, voiceName: string = 'Ao
     } catch {}
   }
 
-  // 3. Primary Engine: High-fidelity Microsoft Neural TTS (~140ms latency)
-  try {
-    const manager = isMale ? maleEdgeManager : femaleEdgeManager;
-    const edgeAudio = await manager.synthesize(clean);
-    if (edgeAudio) {
-      audioMemoryCache.set(cacheKey, edgeAudio);
-      try {
-        const base64Data = edgeAudio.replace(/^data:audio\/mp3;base64,/, '');
-        fs.writeFileSync(diskPathMp3, Buffer.from(base64Data, 'base64'));
-      } catch {}
-      return edgeAudio;
+  // 3. Primary Engine: High-fidelity Gemini 3.8 / 3.1 Flash Neural TTS with conversational prosody
+  if (Date.now() >= ttsQuotaCooldownUntil) {
+    try {
+      const ai = getGeminiClient();
+      if (ai) {
+        for (const ttsModel of ['gemini-3.8-flash-tts', 'gemini-3.1-flash-tts-preview']) {
+          try {
+            const resp = await ai.models.generateContent({
+              model: ttsModel,
+              contents: clean,
+              config: {
+                responseModalities: ['AUDIO'],
+                speechConfig: {
+                  voiceConfig: {
+                    prebuiltVoiceConfig: {
+                      voiceName: geminiVoice
+                    }
+                  }
+                }
+              }
+            });
+
+            const parts = resp.candidates?.[0]?.content?.parts || [];
+            const audioPart = parts.find((p: any) => p.inlineData?.mimeType?.startsWith('audio/'));
+            if (audioPart && audioPart.inlineData?.data) {
+              const pcmBuffer = Buffer.from(audioPart.inlineData.data, 'base64');
+              const wavBuffer = pcmToWavBuffer(pcmBuffer, 24000, 1, 16);
+              const uri = `data:audio/wav;base64,${wavBuffer.toString('base64')}`;
+
+              audioMemoryCache.set(cacheKey, uri);
+              try {
+                fs.writeFileSync(diskPathWav, wavBuffer);
+              } catch {}
+              return uri;
+            }
+          } catch {}
+        }
+      }
+    } catch (err: any) {
+      const errMsg = err?.message || String(err);
+      const isQuota429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED');
+      if (isQuota429) {
+        ttsQuotaCooldownUntil = Date.now() + 60 * 1000;
+      }
     }
-  } catch (edgeErr) {
-    console.warn('[Primary Neural TTS Warning]', edgeErr);
   }
 
-  // 3.5. Highly Reliable Japanese Neural Engine: Google Translate TTS stream (MP3, 24kHz)
+  // 3.5. Secondary Engine: Microsoft Neural TTS (if not 403-restricted)
+  if (!EdgeTTSConnectionManager.isDisabled()) {
+    try {
+      const manager = isMale ? maleEdgeManager : femaleEdgeManager;
+      const edgeAudio = await manager.synthesize(clean);
+      if (edgeAudio) {
+        audioMemoryCache.set(cacheKey, edgeAudio);
+        try {
+          const base64Data = edgeAudio.replace(/^data:audio\/mp3;base64,/, '');
+          fs.writeFileSync(diskPathMp3, Buffer.from(base64Data, 'base64'));
+        } catch {}
+        return edgeAudio;
+      }
+    } catch {}
+  }
+
+  // 4. Reliable Google Japanese Audio stream fallback
   try {
     const googleAudio = await fetchGoogleJapaneseTTS(clean);
     if (googleAudio) {
@@ -1222,54 +1293,7 @@ async function generateNeuralJapaneseAudio(text: string, voiceName: string = 'Ao
       return googleAudio;
     }
   } catch (googleErr) {
-    console.warn('[Google Neural TTS Warning]', googleErr);
-  }
-
-  // 4. Secondary Fallback: Gemini 3.1 Flash TTS Preview (if quota available)
-  if (Date.now() >= ttsQuotaCooldownUntil) {
-    try {
-      const ai = getGeminiClient();
-      if (ai) {
-        const resp = await ai.models.generateContent({
-          model: 'gemini-3.1-flash-tts-preview',
-          contents: clean,
-          config: {
-            responseModalities: ['AUDIO'],
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: {
-                  voiceName: geminiVoice
-                }
-              }
-            }
-          }
-        });
-
-        const parts = resp.candidates?.[0]?.content?.parts || [];
-        const audioPart = parts.find((p: any) => p.inlineData?.mimeType?.startsWith('audio/'));
-        if (audioPart && audioPart.inlineData?.data) {
-          const pcmBuffer = Buffer.from(audioPart.inlineData.data, 'base64');
-          const wavBuffer = pcmToWavBuffer(pcmBuffer, 24000, 1, 16);
-          const uri = `data:audio/wav;base64,${wavBuffer.toString('base64')}`;
-
-          audioMemoryCache.set(cacheKey, uri);
-          try {
-            fs.writeFileSync(diskPathWav, wavBuffer);
-          } catch {}
-          return uri;
-        }
-      }
-    } catch (err: any) {
-      const errMsg = err?.message || String(err);
-      const isQuota429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED');
-      if (isQuota429) {
-        ttsQuotaCooldownUntil = Date.now() + 60 * 1000;
-        ttsQuotaReason = 'Rate limit exceeded';
-        console.info(`[Neural Japanese TTS] Gemini quota cooldown active. Using primary neural engine.`);
-      } else {
-        console.warn('[Gemini TTS Warning]', errMsg);
-      }
-    }
+    console.warn('[Google Audio Warning]', googleErr);
   }
 
   return null;
@@ -1324,12 +1348,24 @@ app.post('/api/tts', async (req: Request, res: Response) => {
   }
 });
 
-// Submit Feedback (Бидэнтэй холбогдох)
+// In-memory rate limiting map for feedback spam protection
+const feedbackRateLimitMap = new Map<string, number>();
+
+// Submit Feedback (Бидэнтэй холбогдох / Public Beta санал хүсэлт)
 app.post('/api/feedback', async (req, res) => {
   const { name, email, type, message } = req.body;
   if (!message || !message.trim()) {
     return res.status(400).json({ error: 'Зурвасын утга хоосон байна.' });
   }
+
+  // Rate limiting & spam protection: 1 submission per 8 seconds per client
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'client';
+  const rateLimitKey = `${clientIp}_${(email || '').trim().toLowerCase()}`;
+  const lastSub = feedbackRateLimitMap.get(rateLimitKey as string);
+  if (lastSub && Date.now() - lastSub < 8000) {
+    return res.status(429).json({ error: 'Та түр хүлээнэ үү. Дахин илгээхээс өмнө 8 секунд хүлээнэ үү.' });
+  }
+  feedbackRateLimitMap.set(rateLimitKey as string, Date.now());
 
   const newFeedback = {
     id: 'fb-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
@@ -1995,6 +2031,14 @@ app.post('/api/user/notification/dismiss', verifyUserToken, (req, res) => {
 
 // Submit Payment Request (Bank Transfer)
 app.post('/api/payment/request', async (req, res) => {
+  // During Public Beta, paid checkouts are temporarily disabled since all learning content is free.
+  if (PUBLIC_BETA_ENABLED) {
+    return res.status(400).json({
+      error: 'Одоогоор SunnyLearn Public Beta үнэгүй туршилтын шатандаа явагдаж байгаа тул төлбөр төлөх шаардлагагүй. Бүх сургалтын контент үнэгүй нээлттэй байна.',
+      publicBeta: true
+    });
+  }
+
   try {
     const { senderName, transferDate, notes } = req.body;
     let userName = (req.body.userName || '').trim();
@@ -2234,6 +2278,19 @@ app.get('/api/admin/stats', verifyAdminToken, (_req, res) => {
   const pendingPayments = allPayments.filter(p => p.status === 'PENDING').length;
   const approvedPayments = allPayments.filter(p => p.status === 'APPROVED').length;
 
+  const allUsers = db.users || [];
+  const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const dailyActiveUsers = allUsers.filter(u => u.lastActiveAt && new Date(u.lastActiveAt).getTime() > oneDayAgo).length;
+  const weeklyActiveUsers = allUsers.filter(u => u.lastActiveAt && new Date(u.lastActiveAt).getTime() > sevenDaysAgo).length;
+  
+  let totalAIRecords = 0;
+  if (db.aiUsageRecords) {
+    for (const arr of Object.values(db.aiUsageRecords)) {
+      if (Array.isArray(arr)) totalAIRecords += arr.length;
+    }
+  }
+
   res.json({
     totalVocab: db.vocabulary.length,
     totalKanji: db.kanji.length,
@@ -2248,7 +2305,13 @@ app.get('/api/admin/stats', verifyAdminToken, (_req, res) => {
     pendingPayments,
     totalPayments: allPayments.length,
     approvedPayments,
-    levelCounts
+    levelCounts,
+    // Public Beta Aggregated Analytics
+    publicBeta: PUBLIC_BETA_ENABLED,
+    totalUsers: allUsers.length,
+    dailyActiveUsers: Math.max(1, dailyActiveUsers),
+    weeklyActiveUsers: Math.max(1, weeklyActiveUsers),
+    totalAIRecords
   });
 });
 
@@ -3396,7 +3459,8 @@ app.get('/api/ai/roleplay/session/:id', (req, res) => {
 async function callGeminiFreeChatTurn(
   messages: { role: 'user' | 'assistant'; content: string }[],
   jlptLevel: JLPTLevel = 'N5',
-  style: 'easy' | 'natural' = 'natural'
+  style: 'easy' | 'natural' = 'natural',
+  voiceName: string = 'Aoede'
 ): Promise<{
   reply: string;
   cleanReply: string;
@@ -3404,47 +3468,60 @@ async function callGeminiFreeChatTurn(
 }> {
   const ai = getGeminiClient();
 
-  const systemInstruction = `YOU ARE SUNNY (サニー), A WARM, NATURAL, CONVERSATIONAL JAPANESE SPEAKING PARTNER.
-You are having an open-ended, spontaneous Japanese conversation with a learner.
+  const isMale = voiceName === 'Puck' || voiceName === 'Keita' || voiceName === 'Charon' || voiceName === 'Fenrir';
+  const friendName = isMale ? 'ケン (Ken)' : 'サクラ (Sakura)';
 
-LEARNER'S CURRENT JLPT LEVEL: ${jlptLevel}
-CONVERSATION STYLE: ${style === 'easy' ? 'やさしい日本語 (Easy, accessible Japanese)' : '自然な日本語 (Natural everyday conversational Japanese)'}
+  const systemInstruction = `YOU ARE ${friendName}, A CLOSE, WARM JAPANESE FRIEND HAVING A CASUAL CHAT (日本語フリートーク / ため口モード).
+You are NOT a teacher, NOT a customer support agent, and NOT an examiner. You are a peer and friend chatting comfortably with the user.
 
-CRITICAL CONVERSATIONAL RULES:
-1. PURE CONVERSATION, NOT A LESSON:
-   - Talk naturally about whatever topic the learner brings up (daily life, what they did today, hobbies, work, school, travel, sports, food, cars, movies, music, weather, future goals, or casual life in Japan/Mongolia).
-   - Follow the learner's topic naturally. Do NOT redirect them to a scripted scenario.
-   - Keep responses CONVERSATIONAL AND SHORT (1 to 2 natural sentences, at most 3 short sentences).
-   - React with genuine conversational nuance (e.g. 「そうなんですね！」「いいね！」「へえ、知らなかった！」「それ面白そう！」「なるほど！」).
-   - Ask a friendly, natural follow-up question to keep the conversation flowing comfortably.
+FRIEND PERSONA:
+- Name: ${friendName}
+- Gender expression: ${isMale ? 'Male Japanese peer (uses friendly casual male/gender-neutral speech: だよな, じゃん, ぜ, かい, だろ)' : 'Female Japanese peer (uses friendly casual female/gender-neutral speech: だよね, よ, かも, の？, じゃん)'}
+- Learner's JLPT Level: ${jlptLevel}
+- Conversation Mode: ${style === 'easy' ? 'やさしいタメ口 (Easy, accessible casual Japanese)' : '自然なタメ口 (Natural everyday conversational Japanese)'}
 
-2. DO NOT INTERRUPT TO CORRECT:
-   - NEVER interrupt the conversational flow in your reply to lecture about grammar.
-   - If the learner makes a Japanese mistake (e.g. 「バスケするました」), understand their intended meaning and continue naturally (「バスケいいですね！友達とプレーしたんですか？」).
-   - Only if the learner made a clear grammatical/vocabulary slip in their latest message, formulate a subtle correction note for the separate 'correction' field so they can optionally review it later. If their message was natural, set 'correction' to null.
+CRITICAL RULES FOR NATURAL FRIEND CONVERSATION:
+1. PURE CASUAL JAPANESE (タメ口 / 友達言葉) ONLY:
+   - NEVER use です, ます, ございます, or stiff 敬語!
+   - Speak 100% in natural casual Japanese that close friends use with each other in Japan.
+   - Use lively emotional reactions and natural conversational fillers at the start of sentences:
+     「そうなんだ！」「へえ、マジで？」「いいね！」「それめっちゃ楽しそう！」「わかる〜！」「うわ、大変だったね」「なるほどね！」「それ最高じゃん！」
+   - Fallback ending: never use 「〜てください」, use casual forms like 「〜してみてよ」「〜教えて」「もっと聞かせてよ」.
 
-3. JLPT & STYLE ADAPTATION:
-   - N5: Simple daily vocabulary, short clear sentences, friendly and welcoming tone.
-   - N4: Basic natural daily conversation, clear polite or friendly forms.
-   - N3: Intermediate conversational fluency, variety of common expressions and natural conjunctions.
-   - N2: Nuanced conversational Japanese, rich expressions, idioms where natural.
-   - N1: Native-like fluency, natural colloquial or business registers suited to topic.
-   ${style === 'easy' ? '- Use easy, clear sentence structures and gentle vocabulary.' : '- Use completely authentic, conversational Japanese.'}
+2. AVOID THE "INTERVIEW TRAP" (Do NOT interrogate):
+   - A real conversation is a two-way exchange, NOT a survey where you ask a question every single turn.
+   - Varied flow:
+     * ~40% of turns: Simply react with warmth, empathy, humor, or share your own related thought or experience (e.g. 「私もそれ大好き！」「この前食べたけどめっちゃ美味しかったよ」「最近本当に寒くなってきたよね」) WITHOUT asking a question.
+     * ~60% of turns: Ask a natural, open-ended question to keep the chat going (e.g. 「どんなの買ったの？」「今度どこ行く予定？」).
+   - Keep replies CONCISE: 1 to 2 natural sentences (maximum 3 short sentences). Never output long paragraphs.
 
-4. LANGUAGE ACCURACY:
+3. JLPT LEVEL ADAPTATION (CASUAL REGISTER):
+   - N5: Simple everyday words and short, clear casual endings (〜だよ, 〜だね, 〜の？, 〜する？, 〜たの？).
+   - N4: Everyday conversational casual Japanese (〜ちゃう, 〜とく, 〜かも, 〜んじゃない？).
+   - N3: Smooth peer dialogue with natural colloquial contractions and particles (マジで？, 〜しちゃった, 〜っぽい, 確かに).
+   - N2/N1: Expressive colloquial, idiomatic, and nuanced Japanese without reverting to formal です/ます.
+   ${style === 'easy' ? '- Keep sentences short, vocabulary accessible, and avoid complex compound idioms.' : '- Use completely authentic, vibrant conversational Japanese.'}
+
+4. ERROR CORRECTION (BACKGROUND ONLY):
+   - NEVER interrupt the conversational flow in your reply to lecture the user about grammar. Stay in character as a supportive friend.
+   - If the user made a grammar or usage slip in their latest turn, provide a gentle, supportive tip in the separate 'correction' JSON field with a brief explanation in Mongolian.
+   - If the user's Japanese was natural, set 'correction' to null.
+
+5. ACCURACY & KANJI FURIGANA:
    - STRICTLY NO Romaji.
-   - STRICTLY NO Cyrillic or Mongolian pronunciation.
-   - Format Kanji with Japanese furigana brackets: 漢字（ふりがな） (e.g. 今日（きょう）はいい天気（てんき）ですね) for the visual transcript.
+   - STRICTLY NO Cyrillic or Mongolian transliteration of Japanese words.
+   - For visual display, format words containing KANJI with Japanese furigana brackets: 漢字（ふりがな） (e.g. 今日（きょう）はいい天気（てんき）だね).
+   - NEVER put furigana on Hiragana-only or Katakana-only words (e.g. NO 「し（し）」, NO 「ピザ（ピザ）」).
 
-5. OUTPUT FORMAT:
-You MUST output ONLY a valid JSON object matching:
+6. OUTPUT FORMAT:
+Output ONLY a valid JSON object matching:
 {
-  "reply": "Your in-character Japanese response with furigana brackets",
+  "reply": "Your casual Japanese response with Kanji furigana brackets",
   "correction": {
-    "original": "Learner's phrase that had an error",
-    "corrected": "More natural Japanese phrasing",
-    "explanation": "Brief, friendly explanation in Mongolian (e.g. 「する」-ийн өнгөрсөн цаг нь 「した」 юм.)"
-  } // OR null if no significant mistake was made
+    "original": "Learner's phrase that had a slip",
+    "corrected": "More natural casual Japanese phrasing",
+    "explanation": "Brief, friendly explanation in Mongolian (e.g. найзууд хоорондоо 『〜したよ』 гэвэл илүү эвтэйхэн сонсогдоно)"
+  } // OR null if no significant mistake
 }
 Return ONLY valid JSON. No markdown code blocks.`;
 
@@ -3460,7 +3537,7 @@ Return ONLY valid JSON. No markdown code blocks.`;
     contents,
     config: {
       systemInstruction,
-      temperature: 0.7
+      temperature: 0.75
     },
     tag: 'FreeChat Turn'
   });
@@ -3481,15 +3558,15 @@ Return ONLY valid JSON. No markdown code blocks.`;
       }
 
       return {
-        reply: reply || 'そうなんですね！もっと聞かせてください。',
-        cleanReply: cleanReply || 'そうなんですね！もっと聞かせてください。',
+        reply: reply || 'そうなんだ！もっと聞かせてよ。',
+        cleanReply: cleanReply || 'そうなんだ！もっと聞かせてよ。',
         correction
       };
     } catch {
       const rawText = resp.text.trim();
       return {
-        reply: rawText,
-        cleanReply: stripFuriganaServer(rawText),
+        reply: rawText || 'そうなんだ！もっと聞かせてよ。',
+        cleanReply: stripFuriganaServer(rawText) || 'そうなんだ！もっと聞かせてよ。',
         correction: null
       };
     }
@@ -3586,7 +3663,7 @@ app.post('/api/ai/free-chat', async (req: Request, res: Response) => {
 
   try {
     const validMessages = Array.isArray(messages) ? messages : [];
-    const turnResult = await callGeminiFreeChatTurn(validMessages, jlptLevel as JLPTLevel, style);
+    const turnResult = await callGeminiFreeChatTurn(validMessages, jlptLevel as JLPTLevel, style, voiceName);
 
     // Increment AI usage count for non-premium user
     if (!isPremium) {

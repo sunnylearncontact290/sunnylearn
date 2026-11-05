@@ -559,3 +559,48 @@ select:focus {
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   Japanese Furigana / Ruby Typography (JLPT N5-N1) & Conversational Layout
+   Clean, proportional, centered Furigana strictly over Kanji with zero overflow
+   ========================================================================== */
+ruby.ruby-unit {
+  ruby-align: center;
+  ruby-position: over;
+  display: inline-ruby;
+  break-inside: avoid;
+  max-width: 100%;
+  white-space: normal;
+}
+
+rt.ruby-reading {
+  font-size: 0.58em;
+  line-height: 1.1;
+  text-align: center;
+  user-select: none;
+  font-weight: 500;
+  color: #71717a;
+  letter-spacing: -0.02em;
+}
+
+.dark rt.ruby-reading {
+  color: #a1a1aa;
+}
+
+/* AI Free Conversation Anti-Overflow Layout Guards */
+.ai-conversation-container {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.ai-conversation-message {
+  min-width: 0;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 2.2;
+}
+

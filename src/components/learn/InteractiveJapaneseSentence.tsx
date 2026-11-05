@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { tokenizeJapaneseSentence, DetailedWordInfo } from '../../utils/japaneseTokenizer';
+import { hasKanji } from '../../utils/furiganaRenderer';
 import { WordDictionaryModal } from './WordDictionaryModal';
 import { useApp } from '../../context/AppContext';
 
@@ -30,26 +31,53 @@ export const InteractiveJapaneseSentence: React.FC<InteractiveJapaneseSentencePr
       <div className={`font-jp leading-relaxed ${className}`}>
         <p className="inline flex-wrap items-baseline">
           {tokens.map((token, idx) => {
-            if (token.isPunctuation) {
+            const isKanjiWord = !token.isPunctuation && hasKanji(token.surface);
+
+            // Render accurate Furigana ruby elements
+            const rubyContent = token.rubyParts && token.rubyParts.length > 0 ? (
+              token.rubyParts.map((chunk, cIdx) => {
+                if (chunk.kanji) {
+                  return (
+                    <ruby key={`c-${cIdx}-${chunk.kanji}`} className="ruby-unit">
+                      {chunk.kanji}
+                      <rt className="ruby-reading">{chunk.ruby}</rt>
+                    </ruby>
+                  );
+                }
+                return <span key={`c-${cIdx}`}>{chunk.text}</span>;
+              })
+            ) : (
+              token.surface
+            );
+
+            // 1. NON-INTERACTIVE: Hiragana-only, Katakana-only, punctuation, particles
+            // Strictly NO click handlers, NO cursor-pointer, NO hover effect, NO underline, NO tooltip
+            if (!isKanjiWord) {
               return (
-                <span key={`${token.surface}-${idx}`} className="text-stone-700 dark:text-stone-300 select-none">
-                  {token.surface}
+                <span
+                  key={`${token.surface}-${idx}`}
+                  className="select-text text-stone-900 dark:text-stone-100"
+                >
+                  {rubyContent}
                 </span>
               );
             }
 
+            // 2. INTERACTIVE: Strictly Kanji-containing words ONLY
+            // Displays interactive affordance and opens dictionary popup on click
             return (
-              <span
+              <button
+                type="button"
                 key={`${token.surface}-${idx}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedWord(token);
                 }}
-                className="inline-block px-0.5 py-0.5 mx-[1px] rounded transition-all duration-150 cursor-pointer text-stone-900 dark:text-stone-100 font-bold border-b border-dotted border-stone-300/80 dark:border-stone-700 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-600 dark:hover:text-red-400 active:scale-95"
+                className="inline-block px-0.5 py-0.5 mx-[0.5px] rounded transition-all duration-150 cursor-pointer text-stone-900 dark:text-stone-100 font-bold border-b border-dotted border-stone-300/80 dark:border-stone-700 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-600 dark:hover:text-red-400 active:scale-95 leading-[2.1] bg-transparent text-left font-jp focus:outline-none focus:ring-1 focus:ring-red-400/50"
                 title={`"${token.surface}" толь бичиг, тайлбар, ханзны 書き順 харах`}
               >
-                {token.surface}
-              </span>
+                {rubyContent}
+              </button>
             );
           })}
         </p>

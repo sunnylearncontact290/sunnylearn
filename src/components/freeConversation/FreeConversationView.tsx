@@ -48,43 +48,43 @@ const STARTER_TOPICS: StarterTopic[] = [
     id: 'today',
     title: '今日何をしたか',
     labelMn: 'Өнөөдрийн тухай',
-    greeting: 'こんにちは！今日（きょう）はどんな一日（いちにち）でしたか？何（なに）か楽（たの）しいことはありましたか？',
-    cleanGreeting: 'こんにちは！今日はどんな一日でしたか？何か楽しいことはありましたか？'
+    greeting: 'やっほー！今日（きょう）はどんな一日（いちにち）だった？何（なに）か楽（たの）しいことあった？',
+    cleanGreeting: 'やっほー！今日はどんな一日だった？何か楽しいことあった？'
   },
   {
     id: 'hobbies',
     title: '趣味や好きなこと',
     labelMn: 'Хобби, сонирхол',
-    greeting: 'こんにちは！普段（ふだん）の休（やす）みの日（ひ）は何（なに）をして過（す）ごすのが好（す）きですか？',
-    cleanGreeting: 'こんにちは！普段の休みの日は何をして過ごすのが好きですか？'
+    greeting: 'やっほー！休（やす）みの日（ひ）って普段（ふだん）何（なに）して過（す）ごすのが好（す）き？',
+    cleanGreeting: 'やっほー！休みの日って普段何して過ごすのが好き？'
   },
   {
     id: 'food',
     title: '好きな食べ物・料理',
     labelMn: 'Япон хоол',
-    greeting: 'こんにちは！日本料理（にほんりょうり）で何（なに）が一番（いちばん）好（す）きですか？ラーメンやすしなど好（す）きなものはありますか？',
-    cleanGreeting: 'こんにちは！日本料理で何が一番好きですか？ラーメンやすしなど好きなものはありますか？'
+    greeting: 'ねえねえ、日本料理（にほんりょうり）で何（なに）が一番（いちばん）好（す）き？ラーメンとか寿司（すし）とか好（す）きなのある？',
+    cleanGreeting: 'ねえねえ、日本料理で何が一番好き？ラーメンとか寿司とか好きなのある？'
   },
   {
     id: 'anime',
     title: 'アニメや映画',
     labelMn: 'Аниме, кино',
-    greeting: 'こんにちは！最近（さいきん）見（み）たアニメや映画（えいが）で、おすすめのものはありますか？',
-    cleanGreeting: 'こんにちは！最近見たアニメや映画で、おすすめのものはありますか？'
+    greeting: '最近（さいきん）見（み）たアニメとか映画（えいが）で、おすすめってある？めっちゃ気（き）になる！',
+    cleanGreeting: '最近見たアニメとか映画で、おすすめってある？めっちゃ気になる！'
   },
   {
     id: 'cars',
     title: '車やドライブ',
     labelMn: 'Машин, тээвэр',
-    greeting: 'こんにちは！車（くるま）やドライブは好（す）きですか？日本（にほん）の車（くるま）で好（す）きな車種（しゃしゅ）はありますか？',
-    cleanGreeting: 'こんにちは！車やドライブは好きですか？日本の車で好きな車種はありますか？'
+    greeting: '車（くるま）とかドライブって好（す）き？日本（にほん）の車（くるま）で好（す）きな車種（しゃしゅ）とか乗（の）ってみたいやつある？',
+    cleanGreeting: '車とかドライブって好き？日本の車で好きな車種とか乗ってみたいやつある？'
   },
   {
     id: 'travel',
     title: '旅行してみたい場所',
     labelMn: 'Аялал зугаалга',
-    greeting: 'こんにちは！日本（にほん）で行（い）ってみたい場所（ばしょ）はどこですか？東京（とうきょう）や京都（きょうと）など気（き）になるところはありますか？',
-    cleanGreeting: 'こんにちは！日本で行ってみたい場所はどこですか？東京や京都など気になるところはありますか？'
+    greeting: '日本（にほん）で行（い）ってみたい場所（ばしょ）ってある？東京（とうきょう）とか京都（きょうと）とか、気（き）になるところどこ？',
+    cleanGreeting: '日本で行ってみたい場所ってある？東京とか京都とか、気になるところどこ？'
   }
 ];
 
@@ -154,6 +154,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
   // Discreet keyboard input drawer (for quiet environments)
   const [isTextDrawerOpen, setIsTextDrawerOpen] = useState(false);
   const [keyboardInput, setKeyboardInput] = useState('');
+  const [isTranscriptHistoryOpen, setIsTranscriptHistoryOpen] = useState(false);
 
   // Sync global selectedLevel
   useEffect(() => {
@@ -589,7 +590,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
   const latestUserMsg = [...messages].reverse().find(m => m.role === 'user');
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex flex-col min-h-[calc(100vh-5.5rem)] justify-between space-y-4 animate-fade-in select-none">
+    <div className="ai-conversation-container w-full min-w-0 max-w-4xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex flex-col min-h-[calc(100vh-5.5rem)] justify-between space-y-4 animate-fade-in select-none overflow-x-hidden">
       
       {/* 1. TOP BAR: Title, Controls, Level Selector & End Session */}
       <header className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-3xl bg-white/90 dark:bg-stone-900/90 backdrop-blur-md border border-stone-200/80 dark:border-stone-800/80 shadow-2xs">
@@ -715,7 +716,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <span className="block font-bold text-stone-600 dark:text-stone-400 mb-1.5">
-                AI ярианы хэв маяг:
+                Найзын ярианы хэв маяг (タメ口):
               </span>
               <div className="flex gap-2">
                 <button
@@ -723,35 +724,35 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
                   onClick={() => setConversationStyle('easy')}
                   className={`flex-1 py-1.5 px-2.5 rounded-xl border font-bold text-center transition-all cursor-pointer ${
                     conversationStyle === 'easy'
-                      ? 'bg-orange-600 text-white border-orange-700'
+                      ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
                       : 'bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400'
                   }`}
                 >
-                  Хялбар япон хэл (やさしい)
+                  Хялбар тамегүчи (やさしい)
                 </button>
                 <button
                   type="button"
                   onClick={() => setConversationStyle('natural')}
                   className={`flex-1 py-1.5 px-2.5 rounded-xl border font-bold text-center transition-all cursor-pointer ${
                     conversationStyle === 'natural'
-                      ? 'bg-orange-600 text-white border-orange-700'
+                      ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
                       : 'bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400'
                   }`}
                 >
-                  Байгалийн яриа (自然)
+                  Байгалийн тамегүчи (自然)
                 </button>
               </div>
             </div>
 
             <div>
               <span className="block font-bold text-stone-600 dark:text-stone-400 mb-1.5">
-                AI дуу хоолой (Persona):
+                AI найзын дуу хоолой (Persona):
               </span>
               <div className="flex gap-2">
                 {(
                   [
-                    { id: 'Aoede', name: 'Сакура (Эм)' },
-                    { id: 'Puck', name: 'Кэн (Эр)' },
+                    { id: 'Aoede', name: 'Сакура (Эмэгтэй)' },
+                    { id: 'Puck', name: 'Кэн (Эрэгтэй)' },
                     { id: 'Kore', name: 'Аой (Тайван)' }
                   ] as { id: VoicePersona; name: string }[]
                 ).map(vp => (
@@ -761,7 +762,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
                     onClick={() => setVoicePersona(vp.id)}
                     className={`flex-1 py-1.5 px-2 rounded-xl border font-bold text-center transition-all cursor-pointer ${
                       voicePersona === vp.id
-                        ? 'bg-orange-600 text-white border-orange-700'
+                        ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white border-transparent shadow-xs'
                         : 'bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-400'
                     }`}
                   >
@@ -948,32 +949,73 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
           )}
         </div>
 
-        {/* 3. LIVE TRANSCRIPT — MINIMAL ONLY (Subtle latest exchange, NOT chat bubbles) */}
-        <div className="w-full max-w-xl mt-6 px-3">
+        {/* 3. LIVE TRANSCRIPT — RESPONSIVE & STRICT OVERFLOW PREVENTION */}
+        <div className="w-full min-w-0 max-w-xl mt-4 sm:mt-6 px-1 sm:px-3">
           
           {/* Live speech interim while user speaks */}
           {voiceState === 'listening' && speechInterimText && (
-            <div className="p-3.5 sm:p-4 rounded-3xl bg-white/90 dark:bg-[#16131C]/90 backdrop-blur-md border border-[#D48B97]/30 dark:border-[#6B2D5C]/40 shadow-sm text-center animate-fade-in">
+            <div className="w-full min-w-0 max-w-full p-3.5 sm:p-4 rounded-3xl bg-white/90 dark:bg-[#16131C]/90 backdrop-blur-md border border-[#D48B97]/30 dark:border-[#6B2D5C]/40 shadow-sm text-center animate-fade-in overflow-hidden">
               <span className="text-[10px] font-bold text-[#C85A54] dark:text-[#D48B97] uppercase tracking-wider block mb-1">
                 Таны яриа:
               </span>
-              <p className="font-jp text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100">
+              <p className="font-jp text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 break-words [overflow-wrap:anywhere] [word-break:break-word]">
                 「{speechInterimText}」
               </p>
             </div>
           )}
 
-          {/* Latest Exchange Card (Minimal, fades between turns) */}
+          {/* Latest Exchange Card (Minimal, responsive, zero-overflow) */}
           {voiceState !== 'listening' && (latestAiMsg || latestUserMsg) && (
-            <div className="p-4 sm:p-5 rounded-3xl bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border border-stone-200 dark:border-stone-800 shadow-sm space-y-3 transition-all">
+            <div className="w-full min-w-0 max-w-full p-4 sm:p-5 rounded-3xl bg-white/85 dark:bg-stone-900/85 backdrop-blur-md border border-stone-200 dark:border-stone-800 shadow-sm space-y-3 transition-all overflow-hidden">
               
+              {/* Header with turn count and full history toggle */}
+              <div className="flex items-center justify-between pb-1 border-b border-stone-100 dark:border-stone-800/60 text-[11px] text-stone-400">
+                <span className="font-semibold">
+                  Ээлж #{messages.length}
+                </span>
+                {messages.length > 2 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsTranscriptHistoryOpen(!isTranscriptHistoryOpen)}
+                    className="font-bold text-[#CC0000] dark:text-[#FF6699] hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <span>{isTranscriptHistoryOpen ? 'Түүх хураах' : 'Өмнөх яриаг харах'}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Collapsible History Drawer */}
+              {isTranscriptHistoryOpen && messages.length > 2 && (
+                <div className="max-h-60 overflow-y-auto space-y-2.5 pr-1 py-1 border-b border-stone-100 dark:border-stone-800/80 w-full min-w-0 max-w-full">
+                  {messages.slice(0, -2).map((m, mIdx) => (
+                    <div
+                      key={m.id || mIdx}
+                      className={`p-2.5 rounded-2xl text-xs w-full min-w-0 max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] ${
+                        m.role === 'user'
+                          ? 'bg-stone-100/80 dark:bg-stone-800/50 text-stone-700 dark:text-stone-300 ml-auto max-w-[90%]'
+                          : 'bg-red-50/50 dark:bg-red-950/20 text-stone-900 dark:text-stone-100 mr-auto max-w-[95%]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1 font-bold text-[10px] text-stone-400">
+                        <span>{m.role === 'user' ? 'Та' : 'Sunny'}</span>
+                      </div>
+                      <FuriganaText
+                        text={m.content}
+                        showFurigana={showFurigana}
+                        className="text-xs sm:text-sm font-jp"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* What user said */}
               {latestUserMsg && (
-                <div className="flex items-start gap-2.5 text-xs sm:text-sm text-stone-600 dark:text-stone-300">
+                <div className="flex items-start gap-2.5 text-xs sm:text-sm text-stone-600 dark:text-stone-300 w-full min-w-0">
                   <span className="px-2 py-0.5 rounded-lg bg-stone-100 dark:bg-stone-800 text-[11px] font-bold shrink-0 mt-0.5">
                     Та
                   </span>
-                  <p className="font-jp font-medium leading-relaxed">
+                  <p className="font-jp font-medium leading-relaxed flex-1 min-w-0 max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word]">
                     {latestUserMsg.cleanContent || latestUserMsg.content}
                   </p>
                 </div>
@@ -981,12 +1023,12 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
 
               {/* What AI said */}
               {latestAiMsg && (
-                <div className="flex items-start gap-2.5 text-xs sm:text-sm pt-2 border-t border-stone-100 dark:border-stone-800/80">
+                <div className="flex items-start gap-2.5 text-xs sm:text-sm pt-2 border-t border-stone-100 dark:border-stone-800/80 w-full min-w-0">
                   <span className="px-2 py-0.5 rounded-lg bg-[#6B2D5C]/15 text-[#6B2D5C] dark:text-[#DEC9EF] text-[11px] font-bold shrink-0 mt-0.5">
                     Sunny
                   </span>
-                  <div className="flex-1 space-y-1">
-                    <div className="font-jp text-stone-900 dark:text-stone-100 font-medium leading-relaxed">
+                  <div className="flex-1 min-w-0 max-w-full space-y-1">
+                    <div className="ai-conversation-message font-jp text-stone-900 dark:text-stone-100 font-medium leading-relaxed w-full min-w-0 max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word]">
                       <FuriganaText
                         text={latestAiMsg.content}
                         showFurigana={showFurigana}
@@ -1009,15 +1051,15 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
 
               {/* Gentle phrasing tip if user had an unnatural phrase */}
               {latestUserMsg?.correction && (
-                <div className="p-2.5 rounded-2xl bg-stone-50/90 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700/60 text-[11px] space-y-1">
+                <div className="p-2.5 rounded-2xl bg-stone-50/90 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700/60 text-[11px] space-y-1 w-full min-w-0 max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word]">
                   <span className="font-bold text-[#C85A54] dark:text-[#D48B97]">
                     💡 Илүү байгалийн хэллэг:
                   </span>
-                  <p className="font-jp font-bold text-emerald-700 dark:text-emerald-400">
+                  <p className="font-jp font-bold text-emerald-700 dark:text-emerald-400 break-words [overflow-wrap:anywhere]">
                     {latestUserMsg.correction.corrected}
                   </p>
                   {latestUserMsg.correction.explanation && (
-                    <p className="text-stone-500 dark:text-stone-400 text-[10px]">
+                    <p className="text-stone-500 dark:text-stone-400 text-[10px] break-words [overflow-wrap:anywhere]">
                       {latestUserMsg.correction.explanation}
                     </p>
                   )}

@@ -448,12 +448,12 @@ class CentralizedSpeechService {
         return;
       }
 
-      // If network/server TTS failed, fallback to native ja-JP browser speech
-      this.playBrowserSpeech(clean, id, rate, onStart, onEnd, onError);
+      // If network/server TTS failed, fallback to native ja-JP browser speech with best neural voice
+      this.playBrowserSpeech(clean, id, rate, voice, onStart, onEnd, onError);
     } catch (err: any) {
       console.warn('[SpeechService] Play error, attempting browser speech:', err);
       try {
-        this.playBrowserSpeech(clean, id, rate, onStart, onEnd, onError);
+        this.playBrowserSpeech(clean, id, rate, voice, onStart, onEnd, onError);
       } catch (browserErr) {
         const errorMsg = err?.message || 'Дуу тоглуулахад алдаа гарлаа.';
         this.setState({
@@ -472,6 +472,7 @@ class CentralizedSpeechService {
     text: string,
     id: string,
     rate: number = 1.0,
+    voice?: string,
     onStart?: () => void,
     onEnd?: () => void,
     onError?: (err: any) => void
@@ -490,9 +491,28 @@ class CentralizedSpeechService {
       utterance.rate = Math.max(0.6, Math.min(1.5, rate));
 
       const voices = window.speechSynthesis.getVoices();
-      const jaVoice = voices.find(v => v.lang === 'ja-JP' || v.lang.startsWith('ja')) || null;
-      if (jaVoice) {
-        utterance.voice = jaVoice;
+      const jaVoices = voices.filter(v => v.lang === 'ja-JP' || v.lang.startsWith('ja'));
+      
+      const isMale = /keita|puck|fenrir|charon|male/i.test(voice || '');
+      let bestVoice: SpeechSynthesisVoice | null = null;
+      if (isMale) {
+        bestVoice =
+          jaVoices.find(v => /(keita|otoya|ichiro|male|man)/i.test(v.name) && /(natural|neural|online|enhanced|premium)/i.test(v.name)) ||
+          jaVoices.find(v => /(keita|otoya|ichiro|male)/i.test(v.name)) ||
+          null;
+      }
+
+      if (!bestVoice) {
+        // Prioritize natural/neural/online voices (e.g. Nanami Natural, Kyoko Enhanced, Siri, Google Natural)
+        bestVoice =
+          jaVoices.find(v => /(natural|neural|online|enhanced|premium|siri|nanami)/i.test(v.name)) ||
+          jaVoices.find(v => /(kyoko|otoya|ayumi|haruka|google)/i.test(v.name)) ||
+          jaVoices[0] ||
+          null;
+      }
+
+      if (bestVoice) {
+        utterance.voice = bestVoice;
       }
 
       utterance.onstart = () => {

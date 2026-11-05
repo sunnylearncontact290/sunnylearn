@@ -79,18 +79,22 @@ export const Navbar: React.FC = () => {
 
   const jlptLevels: JLPTLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
-  // Core Learning & AI tabs shown directly on desktop navigation
-  const primaryNavItems: { tab: MainTab; label: string; icon: React.ElementType }[] = [
-    { tab: 'home', label: 'Нүүр', icon: Compass },
+  // Core Learning tabs shown on all desktop screens (lg, xl, 2xl)
+  const coreNavItems: { tab: MainTab; label: string; icon: React.ElementType }[] = [
     { tab: 'learn', label: 'Сурах', icon: BookOpen },
     { tab: 'dictionary', label: 'Толь бичиг', icon: BookA },
     { tab: 'practice', label: 'Дасгал', icon: CheckSquare },
     { tab: 'quiz', label: 'Сорил', icon: Target },
+  ];
+
+  // Extended items shown directly on xl+ (1280px+), or moved to "Бусад" dropdown on lg (1024-1279px)
+  const extendedNavItems: { tab: MainTab; label: string; icon: React.ElementType }[] = [
+    { tab: 'home', label: 'Нүүр', icon: Compass },
     { tab: 'roleplay', label: 'AI Roleplay', icon: MessagesSquare },
     { tab: 'ai', label: 'Sunny AI', icon: Bot },
   ];
 
-  // Secondary tabs kept in accessible "Цааш" (More) dropdown to prevent horizontal overlap on 1024px-1440px screens
+  // Secondary tabs always housed in accessible "Бусад" (More) dropdown
   const secondaryNavItems: { tab: MainTab; label: string; icon: React.ElementType }[] = [
     { tab: 'progress', label: 'Миний явц', icon: TrendingUp },
     { tab: 'premium', label: 'Premium эрх', icon: Crown },
@@ -113,20 +117,21 @@ export const Navbar: React.FC = () => {
   };
 
   const isSecondaryActive = secondaryNavItems.some(item => item.tab === activeTab);
+  const isExtendedActive = extendedNavItems.some(item => item.tab === activeTab);
 
   return (
-    <header className="glass-header sticky top-0 z-40 w-full max-w-full transition-colors shadow-2xs box-border border-b border-stone-200/80 dark:border-stone-800/80">
-      <div className="w-full max-w-[1720px] mx-auto px-2.5 sm:px-4 md:px-6 lg:px-6 xl:px-8 box-border">
-        <div className="flex items-center justify-between h-14 sm:h-16 xl:h-17 gap-1 sm:gap-2 lg:gap-3 xl:gap-4 w-full max-w-full min-w-0 box-border">
+    <header className="glass-header sticky top-0 z-40 w-full max-w-full transition-colors shadow-2xs box-border border-b border-stone-200/80 dark:border-stone-800/80 bg-white/95 dark:bg-[#120B0E]/95 backdrop-blur-md">
+      <div className="w-full max-w-[1720px] mx-auto px-3 sm:px-4 md:px-6 lg:px-6 xl:px-8 box-border">
+        <div className="flex items-center justify-between h-14 sm:h-16 xl:h-17 gap-2 lg:gap-3 xl:gap-4 w-full max-w-full min-w-0 box-border">
           
           {/* ========================================================= */}
           {/* 1. LEFT SECTION: Logo, Brand & JLPT Level Selector       */}
           {/* ========================================================= */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0">
             {/* Logo and Brand */}
             <div
               onClick={() => handleNavClick('home')}
-              className="flex items-center gap-1.5 sm:gap-2.5 cursor-pointer group select-none shrink-0"
+              className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group select-none shrink-0"
               title="SunnyLearn Нүүр хуудас"
             >
               <div className="relative w-8 h-8 sm:w-9 sm:h-9 xl:w-10 xl:h-10 rounded-xl overflow-hidden shadow-xs border border-stone-200 dark:border-stone-800 bg-transparent group-hover:scale-105 transition-transform shrink-0">
@@ -134,20 +139,21 @@ export const Navbar: React.FC = () => {
               </div>
               
               <div className="flex flex-col justify-center shrink-0">
-                <div className="flex items-center gap-1">
-                  <span className="font-black text-sm sm:text-base xl:text-lg tracking-tight text-stone-900 dark:text-white whitespace-nowrap">
-                    Sunny<span className="text-[#CC0000] dark:text-[#FF3366]">Learn</span>
-                  </span>
-                </div>
+                <span className="font-black text-sm sm:text-base xl:text-lg tracking-tight text-stone-900 dark:text-white whitespace-nowrap">
+                  Sunny<span className="text-[#CC0000] dark:text-[#FF3366]">Learn</span>
+                </span>
               </div>
             </div>
 
-            {/* JLPT Level Selector (Always visible, clean, zero overlap) */}
+            {/* Subtle vertical divider separating Brand from JLPT selector */}
+            <div className="h-4 sm:h-5 w-px bg-stone-200 dark:bg-stone-800 shrink-0 hidden min-[400px]:block mx-0.5 sm:mx-1" />
+
+            {/* JLPT Level Selector (Always visible, distinct, zero overlap) */}
             <div className="relative shrink-0" ref={levelMenuRef}>
               <button
                 type="button"
                 onClick={() => setIsLevelMenuOpen(prev => !prev)}
-                className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg sm:rounded-xl bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/60 border border-red-200/80 dark:border-red-900/60 text-[#CC0000] dark:text-[#FF6699] font-black text-xs transition-all cursor-pointer select-none shrink-0 shadow-2xs"
+                className="inline-flex items-center gap-1 px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/60 border border-red-200/80 dark:border-red-900/60 text-[#CC0000] dark:text-[#FF6699] font-black text-xs transition-all cursor-pointer select-none shrink-0 shadow-2xs"
                 title="JLPT түвшин солих"
               >
                 <span className="font-mono">{effectiveLevel}</span>
@@ -184,10 +190,25 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* ========================================================= */}
-          {/* 2. CENTER SECTION: Desktop Navigation (>=1200px / xl)     */}
+          {/* 2. CENTER SECTION: Desktop Navigation (Adaptive lg / xl) */}
           {/* ========================================================= */}
-          <nav className="hidden lg:flex items-center justify-center gap-0.5 xl:gap-1.5 flex-1 min-w-0 mx-1 xl:mx-3">
-            {primaryNavItems.map(item => {
+          <nav className="hidden lg:flex items-center justify-center gap-1 xl:gap-1.5 flex-1 min-w-0 mx-2 xl:mx-4">
+            {/* Extended tab "Нүүр" visible directly on xl+ (1280px+) */}
+            <button
+              type="button"
+              onClick={() => handleNavClick('home')}
+              className={`hidden xl:inline-flex items-center gap-1.5 px-2.5 2xl:px-3 py-1.5 rounded-xl text-xs xl:text-[13px] font-semibold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                activeTab === 'home'
+                  ? 'bg-red-50 dark:bg-red-950/60 text-[#CC0000] dark:text-[#FF4D4D] font-extrabold border border-red-200 dark:border-red-900/50 shadow-2xs'
+                  : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100/90 dark:hover:bg-stone-800/80 border border-transparent'
+              }`}
+            >
+              <Compass className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'home' ? 'text-[#CC0000] dark:text-[#FF4D4D]' : 'text-stone-400'}`} />
+              <span>Нүүр</span>
+            </button>
+
+            {/* Core 4 Learning tabs visible directly on both lg and xl */}
+            {coreNavItems.map(item => {
               const Icon = item.icon;
               const isActive = activeTab === item.tab;
               return (
@@ -201,19 +222,46 @@ export const Navbar: React.FC = () => {
                       : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100/90 dark:hover:bg-stone-800/80 border border-transparent'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#CC0000] dark:text-[#FF4D4D]' : 'text-stone-400 dark:text-stone-500'}`} />
+                  <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#CC0000] dark:text-[#FF4D4D]' : 'text-stone-400'}`} />
                   <span>{item.label}</span>
                 </button>
               );
             })}
 
-            {/* "Цааш" (More) Accessible Dropdown for secondary tabs */}
+            {/* AI Roleplay & Sunny AI visible directly on xl+ (1280px+) */}
+            <button
+              type="button"
+              onClick={() => handleNavClick('roleplay')}
+              className={`hidden xl:inline-flex items-center gap-1.5 px-2.5 2xl:px-3 py-1.5 rounded-xl text-xs xl:text-[13px] font-semibold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                activeTab === 'roleplay'
+                  ? 'bg-red-50 dark:bg-red-950/60 text-[#CC0000] dark:text-[#FF4D4D] font-extrabold border border-red-200 dark:border-red-900/50 shadow-2xs'
+                  : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100/90 dark:hover:bg-stone-800/80 border border-transparent'
+              }`}
+            >
+              <MessagesSquare className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'roleplay' ? 'text-[#CC0000] dark:text-[#FF4D4D]' : 'text-stone-400'}`} />
+              <span>AI Roleplay</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleNavClick('ai')}
+              className={`hidden xl:inline-flex items-center gap-1.5 px-2.5 2xl:px-3 py-1.5 rounded-xl text-xs xl:text-[13px] font-semibold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                activeTab === 'ai'
+                  ? 'bg-red-50 dark:bg-red-950/60 text-[#CC0000] dark:text-[#FF4D4D] font-extrabold border border-red-200 dark:border-red-900/50 shadow-2xs'
+                  : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100/90 dark:hover:bg-stone-800/80 border border-transparent'
+              }`}
+            >
+              <Bot className={`w-3.5 h-3.5 shrink-0 ${activeTab === 'ai' ? 'text-[#CC0000] dark:text-[#FF4D4D]' : 'text-stone-400'}`} />
+              <span>Sunny AI</span>
+            </button>
+
+            {/* "Бусад" (More) Accessible Dropdown for secondary tabs */}
             <div className="relative shrink-0" ref={moreMenuRef}>
               <button
                 type="button"
                 onClick={() => setIsMoreMenuOpen(prev => !prev)}
-                className={`inline-flex items-center gap-1 px-2 xl:px-2.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-semibold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
-                  isSecondaryActive
+                className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs xl:text-[13px] font-semibold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                  isSecondaryActive || isExtendedActive
                     ? 'bg-red-50 dark:bg-red-950/60 text-[#CC0000] dark:text-[#FF4D4D] font-extrabold border border-red-200 dark:border-red-900/50 shadow-2xs'
                     : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100/90 dark:hover:bg-stone-800/80 border border-transparent'
                 }`}
@@ -224,7 +272,31 @@ export const Navbar: React.FC = () => {
               </button>
 
               {isMoreMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-stone-900 shadow-xl border border-stone-200 dark:border-stone-800 py-1.5 z-50 animate-fadeIn">
+                <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white dark:bg-stone-900 shadow-xl border border-stone-200 dark:border-stone-800 py-1.5 z-50 animate-fadeIn">
+                  {/* On lg (1024-1279px), show the extended items in dropdown */}
+                  <div className="xl:hidden border-b border-stone-100 dark:border-stone-800 pb-1 mb-1">
+                    {extendedNavItems.map(item => {
+                      const Icon = item.icon;
+                      const isActive = activeTab === item.tab;
+                      return (
+                        <button
+                          key={item.tab}
+                          type="button"
+                          onClick={() => handleNavClick(item.tab)}
+                          className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer ${
+                            isActive
+                              ? 'bg-red-50 dark:bg-red-950/60 text-[#CC0000] dark:text-[#FF4D4D] font-bold'
+                              : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'
+                          }`}
+                        >
+                          <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-[#CC0000] dark:text-[#FF4D4D]' : 'text-stone-400'}`} />
+                          <span>{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Standard secondary items */}
                   {secondaryNavItems.map(item => {
                     const Icon = item.icon;
                     const isActive = activeTab === item.tab;
@@ -244,6 +316,24 @@ export const Navbar: React.FC = () => {
                       </button>
                     );
                   })}
+
+                  {/* Admin link inside More menu if authenticated */}
+                  {isAdmin && (
+                    <div className="border-t border-stone-100 dark:border-stone-800 pt-1 mt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleNavClick('admin')}
+                        className={`w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold transition-colors cursor-pointer ${
+                          activeTab === 'admin'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
+                            : 'text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30'
+                        }`}
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Админ удирдлага</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -252,7 +342,7 @@ export const Navbar: React.FC = () => {
           {/* ========================================================= */}
           {/* 3. RIGHT SECTION: Premium, Streak, Theme, User/Login     */}
           {/* ========================================================= */}
-          <div className="flex items-center gap-1 sm:gap-1.5 xl:gap-2 shrink-0 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 min-w-0">
             
             {/* Quick Premium Pill Button */}
             <button

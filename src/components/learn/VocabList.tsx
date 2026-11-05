@@ -17,6 +17,7 @@ export const VocabList: React.FC = () => {
     toggleFavorite,
     isPremium,
     isAdmin,
+    isContentUnlocked,
     setActiveTab,
     setIsAuthModalOpen,
     currentUser
@@ -29,9 +30,9 @@ export const VocabList: React.FC = () => {
 
   const effectiveLevel = selectedLevel || 'N5';
   const isLevelPremium = effectiveLevel !== 'N5';
-  const isUnlocked = !isLevelPremium || isPremium || isAdmin;
+  const isUnlocked = isContentUnlocked || !isLevelPremium;
   const levelCounts = data.counts?.[effectiveLevel];
-  const lockedCount = levelCounts?.lockedVocab || 0;
+  const lockedCount = isUnlocked ? 0 : (levelCounts?.lockedVocab || 0);
 
   const filteredVocab = useMemo(() => {
     return (data.vocabulary || []).filter(item => {

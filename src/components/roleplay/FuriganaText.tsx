@@ -1,4 +1,5 @@
 import React from 'react';
+import { alignRubyParts, hasKanji, stripFurigana as cleanFurigana } from '../../utils/furiganaRenderer';
 
 interface FuriganaTextProps {
   text: string;
@@ -6,25 +7,17 @@ interface FuriganaTextProps {
   showFurigana?: boolean;
 }
 
-// Regex matching Kanji sequence followed by Japanese reading inside brackets
-// Kanji range: Standard CJK Ideographs (4E00-9FFF), Extension A (3400-4DBF), iteration marks (々仝〆〇ヶ)
-// Reading range: Hiragana (ぁ-ん), Katakana (ァ-ヶ), prolonged mark (ー), middle dot (・)
-export const FURIGANA_REGEX = /([\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]+)\s*[（\(\[【]\s*([ぁ-んァ-ヶー・]+)\s*[）\)\]】]/g;
+export { cleanFurigana as stripFurigana };
 
-/**
- * Strips furigana annotations from Japanese text, returning clean normal Japanese.
- * Example: '私（わたし）の名前（なまえ）' -> '私の名前'
- */
-export function stripFurigana(text: string): string {
-  if (!text) return '';
-  return text.replace(FURIGANA_REGEX, '$1').trim();
-}
+// Match bracket annotations like 漢字（ふりがな） or existing <ruby>base<rt>reading</rt></ruby>
+const ANNOTATION_REGEX = /<ruby[^>]*>([\s\S]*?)<rt[^>]*>([\s\S]*?)<\/rt>[\s\S]*?<\/ruby>|([^\s（\(\[【<]+)\s*[（\(\[【]\s*([ぁ-んァ-ヶー・]+)\s*[）\)\]】]/g;
 
 /**
  * Renders Japanese text with native semantic <ruby> and <rt> annotations.
  * Readings appear directly ABOVE the Kanji.
- * When Furigana is OFF, all reading annotations are stripped cleanly,
- * leaving pure Japanese text with zero layout disruption.
+ * Strictly guarantees that Furigana is NEVER added to Hiragana-only or Katakana-only words.
+ * Correctly aligns Okurigana on verbs (e.g. <ruby>食<rt>た</rt></ruby>べる).
+ * When Furigana is OFF, all reading annotations are stripped cleanly.
  */
 export const FuriganaText: React.FC<FuriganaTextProps> = ({
   text,
@@ -34,25 +27,25 @@ export const FuriganaText: React.FC<FuriganaTextProps> = ({
   if (!text) return null;
 
   // When Furigana is OFF:
-  // Strip all reading brackets cleanly to leave pure, normal Japanese text.
-  // Zero ruby elements, zero rt elements, zero phantom spacing.
+  // Strip all reading brackets and ruby cleanly to leave pure, normal Japanese text.
   if (!showFurigana) {
-    const cleanText = stripFurigana(text);
+    const cleanText = cleanFurigana(text);
     const lineSpacing = className.includes('leading-') ? '' : 'leading-relaxed';
     return (
-      <span className={`font-jp whitespace-pre-line ${lineSpacing} ${className}`.trim()}>
+      <span
+        className={`font-jp inline-block w-full max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap select-text ${lineSpacing} ${className}`.trim()}
+      >
         {cleanText}
       </span>
     );
   }
 
   // When Furigana is ON:
-  // Render semantic HTML5 <ruby> and <rt> elements.
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  const regex = new RegExp(FURIGANA_REGEX.source, 'g');
+  const regex = new RegExp(ANNOTATION_REGEX.source, 'g');
 
   while ((match = regex.exec(text)) !== null) {
     // Append preceding plain text
@@ -60,15 +53,29 @@ export const FuriganaText: React.FC<FuriganaTextProps> = ({
       parts.push(text.substring(lastIndex, match.index));
     }
 
-    const kanji = match[1];
-    const reading = match[2];
+    // Match group 1 & 2: <ruby>BASE<rt>READING</rt></ruby>
+    // Match group 3 & 4: WORD（READING）
+    const base = match[1] || match[3] || '';
+    const reading = match[2] || match[4] || '';
 
-    parts.push(
-      <ruby key={`rb-${match.index}-${kanji}`} className="ruby-unit">
-        {kanji}
-        <rt className="ruby-reading">{reading}</rt>
-      </ruby>
-    );
+    // Linguistic Rule: If base text does not contain Kanji, NEVER add Furigana!
+    if (!hasKanji(base)) {
+      parts.push(base);
+    } else {
+      const aligned = alignRubyParts(base, reading);
+      aligned.forEach((chunk, cIdx) => {
+        if (chunk.kanji) {
+          parts.push(
+            <ruby key={`rb-${match!.index}-${cIdx}-${chunk.kanji}`} className="ruby-unit">
+              {chunk.kanji}
+              <rt className="ruby-reading">{chunk.ruby}</rt>
+            </ruby>
+          );
+        } else if (chunk.text) {
+          parts.push(chunk.text);
+        }
+      });
+    }
 
     lastIndex = match.index + match[0].length;
   }
@@ -81,7 +88,9 @@ export const FuriganaText: React.FC<FuriganaTextProps> = ({
   const lineSpacing = className.includes('leading-') ? '' : 'leading-[2.2]';
 
   return (
-    <span className={`font-jp whitespace-pre-line ${lineSpacing} ${className}`.trim()}>
+    <span
+      className={`font-jp inline-block w-full max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] whitespace-pre-wrap select-text ${lineSpacing} ${className}`.trim()}
+    >
       {parts}
     </span>
   );

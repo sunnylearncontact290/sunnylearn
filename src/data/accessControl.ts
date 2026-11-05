@@ -5,6 +5,23 @@ export const COMPLIMENTARY_PREMIUM_EMAIL = 'uugii.su@gmail.com';
 export const ADMIN_EMAIL = 'sanaa0419z@gmail.com';
 
 /**
+ * Global Public Beta Configuration
+ * When enabled (true):
+ * - All JLPT N5–N1 learning content is 100% unlocked and free for all users.
+ * - AI usage limits remain strictly enforced (20 free messages per rolling 24h).
+ * - Existing Premium subscriptions and complimentary accounts remain preserved.
+ * - Admin authorization remains strictly enforced.
+ * - New payment checkouts are safely paused.
+ *
+ * When disabled (false):
+ * - Original Free/Premium restrictions are immediately and seamlessly restored.
+ */
+export const PUBLIC_BETA_ENABLED: boolean =
+  typeof process !== 'undefined' && process.env?.PUBLIC_BETA_ENABLED !== undefined
+    ? process.env.PUBLIC_BETA_ENABLED !== 'false'
+    : true;
+
+/**
  * Checks if the given email corresponds to the verified complimentary Premium account.
  * uugii.su@gmail.com receives full, permanent, free access to all Premium features
  * without administrative privileges. Also handles uugii.su@gmai.com typo gracefully.
@@ -54,6 +71,20 @@ export function hasPremiumAccess(
   }
 
   return false;
+}
+
+/**
+ * Checks whether learning content (Vocab, Kanji, Grammar, Quizzes, Practice) is unlocked.
+ * During Public Beta, ALL learning content is unlocked for everyone.
+ * When Public Beta is turned off, N5 is free and N4-N1 requires Premium or Admin.
+ */
+export function isLearningContentUnlocked(
+  user?: { email?: string | null; isPremium?: boolean; premiumExpiresAt?: string | null } | null,
+  level?: JLPTLevel
+): boolean {
+  if (PUBLIC_BETA_ENABLED) return true;
+  if (!level || level === 'N5') return true;
+  return hasPremiumAccess(user);
 }
 
 export const FREE_LIMITS = {
@@ -208,4 +239,9 @@ ensureAccessTiers(initialSeedData);
  * Used on app initial load, during network transit, and on offline fallback.
  * Guaranteed to NEVER leak locked Premium content.
  */
-export const freeTierSeedData: DatabaseSchema = buildFreeTierData(initialSeedData);
+export const freeTierSeedData: DatabaseSchema = PUBLIC_BETA_ENABLED
+  ? {
+      ...initialSeedData,
+      counts: computeLevelCounts(initialSeedData)
+    }
+  : buildFreeTierData(initialSeedData);
