@@ -39,10 +39,11 @@ export const PracticeView: React.FC = () => {
     setPracticeMissedItems,
     isPremium,
     isAdmin,
+    isContentUnlocked,
     openSunnyAIWithQuiz
   } = useApp();
 
-  const isUnlocked = isPremium || isAdmin;
+  const isUnlocked = isContentUnlocked || isPremium || isAdmin;
   const currentLevel: JLPTLevel = selectedLevel || 'N5';
 
   // Category state

@@ -47,7 +47,9 @@ export const Navbar: React.FC = () => {
     isComplimentaryPremium,
     selectedLevel,
     setSelectedLevel,
-    effectiveLevel
+    effectiveLevel,
+    isPublicBeta,
+    setIsFeedbackModalOpen
   } = useApp();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -138,10 +140,15 @@ export const Navbar: React.FC = () => {
                 <SunnyLogo className="w-full h-full object-cover" />
               </div>
               
-              <div className="flex flex-col justify-center shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <span className="font-black text-sm sm:text-base xl:text-lg tracking-tight text-stone-900 dark:text-white whitespace-nowrap">
                   Sunny<span className="text-[#CC0000] dark:text-[#FF3366]">Learn</span>
                 </span>
+                {isPublicBeta && (
+                  <span className="hidden min-[480px]:inline-flex px-1.5 py-0.5 rounded-md bg-red-500/15 border border-red-500/30 text-[#CC0000] dark:text-[#FF6699] text-[9px] font-black uppercase tracking-wider">
+                    BETA
+                  </span>
+                )}
               </div>
             </div>
 
@@ -316,6 +323,20 @@ export const Navbar: React.FC = () => {
                       </button>
                     );
                   })}
+
+                  <div className="border-t border-stone-100 dark:border-stone-800 pt-1 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMoreMenuOpen(false);
+                        setIsFeedbackModalOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-[#CC0000] dark:text-[#FF6699] hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                      <span>Санал хүсэлт илгээх</span>
+                    </button>
+                  </div>
 
                   {/* Admin link inside More menu if authenticated */}
                   {isAdmin && (
@@ -717,6 +738,18 @@ export const Navbar: React.FC = () => {
                 </button>
               );
             })}
+
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsFeedbackModalOpen(true);
+              }}
+              className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold text-[#CC0000] dark:text-[#FF6699] bg-red-50/60 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200/60 dark:border-red-900/40 transition-colors cursor-pointer"
+            >
+              <MessageSquare className="w-4 h-4 text-[#CC0000] dark:text-[#FF4D4D]" />
+              <span>Санал хүсэлт илгээх (Public Beta)</span>
+            </button>
 
             {isAdmin && (
               <button

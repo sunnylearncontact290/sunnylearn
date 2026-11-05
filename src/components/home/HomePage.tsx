@@ -43,7 +43,9 @@ export const HomePage: React.FC = () => {
     currentUser,
     setIsAuthModalOpen,
     isBannerDismissed,
-    dismissBanner
+    dismissBanner,
+    isPublicBeta,
+    setIsFeedbackModalOpen
   } = useApp();
 
   const scrollToLevelSelection = () => {
@@ -251,6 +253,55 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 space-y-8 sm:space-y-12 animate-fade-in">
+      {/* PUBLIC BETA ANNOUNCEMENT BANNER */}
+      {isPublicBeta && (
+        <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#1F1015] via-[#2D141E] to-[#1F1015] border border-[#FF3366]/35 p-5 sm:p-7 shadow-xl">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-[#CC0000]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+            <div className="flex items-start gap-4">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-[#CC0000] to-[#FF3366] text-white flex items-center justify-center shrink-0 shadow-lg shadow-red-500/25">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-red-500/20 text-[#FF6699] text-[10px] sm:text-xs font-black uppercase tracking-wider border border-red-500/30">
+                    PUBLIC BETA — Үнэгүй туршилт
+                  </span>
+                  <h2 className="text-base sm:text-xl font-extrabold text-white">
+                    🎉 SunnyLearn Public Beta эхэллээ!
+                  </h2>
+                </div>
+                <p className="text-xs sm:text-sm text-stone-200 leading-relaxed max-w-2xl">
+                  SunnyLearn одоогоор нээлттэй туршилтын шатандаа байна. Энэ хугацаанд JLPT N5–N1 бүх сургалтын контентыг үнэ төлбөргүй ашиглаарай!
+                </p>
+                <p className="text-[11px] sm:text-xs text-stone-400">
+                  Sunny AI болон AI Roleplay-ийн үнэгүй хэрэглээний хязгаар (өдөрт 20 мессеж) хэвээр үйлчилнэ.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full md:w-auto shrink-0 pt-1 md:pt-0">
+              <button
+                type="button"
+                onClick={scrollToLevelSelection}
+                className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#CC0000] to-[#FF3366] hover:opacity-95 text-white font-bold text-xs shadow-md shadow-red-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+              >
+                <span>Түвшин сонгох</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsFeedbackModalOpen(true)}
+                className="flex-1 md:flex-none px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <MessagesSquare className="w-3.5 h-3.5 text-red-400" />
+                <span>Санал хүсэлт илгээх</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 1. HERO INTRODUCTION */}
       <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-[radial-gradient(circle_at_85%_20%,rgba(255,51,102,0.18),transparent_35%),radial-gradient(circle_at_10%_80%,rgba(153,0,0,0.20),transparent_40%),linear-gradient(135deg,#160C0F,#211014,#120A0C)] text-white p-5 sm:p-8 md:p-12 shadow-2xl border border-[rgba(255,51,102,0.20)] backdrop-blur-xl">
         {/* Soft subtle wine-red atmosphere inside Hero card */}

@@ -15,6 +15,7 @@ export const GrammarList: React.FC = () => {
     toggleFavorite,
     isPremium,
     isAdmin,
+    isContentUnlocked,
     setActiveTab,
     setIsAuthModalOpen,
     currentUser
@@ -25,9 +26,9 @@ export const GrammarList: React.FC = () => {
 
   const effectiveLevel = selectedLevel || 'N5';
   const isLevelPremium = effectiveLevel !== 'N5';
-  const isUnlocked = !isLevelPremium || isPremium || isAdmin;
+  const isUnlocked = isContentUnlocked || !isLevelPremium;
   const levelCounts = data.counts?.[effectiveLevel];
-  const lockedCount = levelCounts?.lockedGrammar || 0;
+  const lockedCount = isUnlocked ? 0 : (levelCounts?.lockedGrammar || 0);
 
   const filteredGrammar = useMemo(() => {
     return (data.grammar || []).filter(item => {

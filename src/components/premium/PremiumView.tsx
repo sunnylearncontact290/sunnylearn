@@ -16,7 +16,9 @@ import {
   RefreshCw,
   Award,
   ChevronRight,
-  Info
+  Info,
+  BookOpen,
+  MessageSquare
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { SunnyLogo } from '../common/SunnyLogo';
@@ -33,7 +35,9 @@ export const PremiumView: React.FC = () => {
     submitPaymentRequest,
     showToast,
     setIsAuthModalOpen,
-    setActiveTab
+    setActiveTab,
+    isPublicBeta,
+    setIsFeedbackModalOpen
   } = useApp();
 
   // Form State
@@ -133,28 +137,32 @@ export const PremiumView: React.FC = () => {
           <div className="space-y-3 max-w-xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-extrabold uppercase tracking-wider text-rose-100">
               <Sparkles className="w-3.5 h-3.5" />
-              SunnyLearn Premium
+              {isPublicBeta ? '💎 SunnyLearn Premium — Coming Soon' : 'SunnyLearn Premium'}
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
-              Япон хэлийг хязгааргүй, үр дүнтэй суралц
+              {isPublicBeta ? 'Бүх сургалтын контент Public Beta-д үнэгүй' : 'Япон хэлийг хязгааргүй, үр дүнтэй суралц'}
             </h1>
             <p className="text-sm sm:text-base text-rose-100/90 leading-relaxed">
-              30 хоногийн хугацаатай бүх түвшний сургалтын хөтөлбөр, интерактив сорил, дүрэм, толь бичгийг бүрэн ашиглах боломж.
+              {isPublicBeta
+                ? 'Одоогоор SunnyLearn Public Beta үе шатандаа байгаа тул JLPT N5–N1 бүх түвшний сургалтын хөтөлбөр, сорил, дүрэм, толь бичиг үнэ төлбөргүй нээлттэй байна.'
+                : '30 хоногийн хугацаатай бүх түвшний сургалтын хөтөлбөр, интерактив сорил, дүрэм, толь бичгийг бүрэн ашиглах боломж.'}
             </p>
           </div>
 
           <div className="shrink-0 flex flex-col items-start md:items-end gap-2 bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20">
-            <span className="text-xs text-rose-200 font-semibold">Багцын үнэ</span>
+            <span className="text-xs text-rose-200 font-semibold">
+              {isPublicBeta ? 'Төлөвлөсөн үнэ' : 'Багцын үнэ'}
+            </span>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl sm:text-4xl font-black text-white">
                 {isComplimentaryPremium ? 'Үнэгүй' : '¥880'}
               </span>
               <span className="text-xs text-rose-100 font-medium">
-                {isComplimentaryPremium ? '/ Байнгын эрх' : '/ 30 хоног'}
+                {isComplimentaryPremium ? '/ Байнгын эрх' : isPublicBeta ? '/ сар (Удахгүй)' : '/ 30 хоног'}
               </span>
             </div>
             <span className="text-[11px] text-rose-200/80">
-              {isComplimentaryPremium ? 'Бүрэн эрх идэвхтэй' : 'Гар шилжүүлэг (Банк)'}
+              {isComplimentaryPremium ? 'Бүрэн эрх идэвхтэй' : isPublicBeta ? 'Одоогоор бүх хичээл үнэгүй' : 'Гар шилжүүлэг (Банк)'}
             </span>
           </div>
         </div>
@@ -292,6 +300,63 @@ export const PremiumView: React.FC = () => {
             >
               <span>Сургалтаа эхлүүлэх</span>
               <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      ) : isPublicBeta ? (
+        /* PUBLIC BETA MODE PRESENTATION */
+        <div className="bg-gradient-to-br from-[#1E1015] via-[#2A141D] to-[#1E1015] border-2 border-[#FF3366]/40 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#CC0000] to-[#FF3366] text-white flex items-center justify-center shadow-lg shadow-red-500/25 shrink-0">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-red-500/20 text-[#FF6699] text-xs font-black uppercase tracking-wider border border-red-500/30">
+                  PUBLIC BETA
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-white">
+                  💎 SunnyLearn Premium — Coming Soon
+                </h2>
+              </div>
+              <p className="text-sm sm:text-base text-stone-200 leading-relaxed pt-1">
+                Одоогоор SunnyLearn Public Beta үе шатандаа байгаа тул JLPT N5–N1 сургалтын бүх контент үнэгүй нээлттэй байна. Premium үйлчилгээ төлбөрийн систем бэлэн болсны дараа албан ёсоор нээгдэнэ.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-5 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+              <div>
+                <span className="text-xs text-stone-400 block font-medium">Төлөвлөсөн багцын үнэ:</span>
+                <span className="text-2xl sm:text-3xl font-black text-white">¥880<span className="text-sm font-semibold text-stone-300">/сар</span></span>
+              </div>
+              <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold">
+                Албан ёсны нээлтийн дараа
+              </span>
+            </div>
+            <p className="text-xs text-stone-300 leading-relaxed">
+              Албан ёсны нээлтийн өдөр болон төлбөрийн эцсийн нөхцөлийг төлбөрийн систем бүрэн баталгаажсаны дараа урьдчилан зарлах болно. Одоогоор та ямар нэгэн төлбөр төлөх шаардлагагүйгээр бүх хичээл, сорилоо үнэгүй ашиглаарай.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => setActiveTab('learn')}
+              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white font-bold text-sm shadow-lg shadow-red-500/25 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>Сургалтаа үнэгүй эхлүүлэх</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsFeedbackModalOpen(true)}
+              className="px-5 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold text-sm transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <MessageSquare className="w-4 h-4 text-red-400" />
+              <span>Санал хүсэлт илгээх</span>
             </button>
           </div>
         </div>

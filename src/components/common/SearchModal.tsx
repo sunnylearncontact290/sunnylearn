@@ -12,10 +12,11 @@ export const SearchModal: React.FC = () => {
     setSelectedLevel,
     setLearnSubTab,
     isPremium,
-    isAdmin
+    isAdmin,
+    isContentUnlocked
   } = useApp();
 
-  const isUnlocked = isPremium || isAdmin;
+  const isUnlocked = isContentUnlocked || isPremium || isAdmin;
   const [query, setQuery] = useState('');
 
   const searchResults = useMemo(() => {

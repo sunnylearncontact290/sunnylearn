@@ -35,6 +35,7 @@ export const QuizView: React.FC = () => {
     setPracticeMissedItems,
     isPremium,
     isAdmin,
+    isContentUnlocked,
     setIsAuthModalOpen,
     currentUser,
     openSunnyAIWithQuiz
@@ -42,7 +43,7 @@ export const QuizView: React.FC = () => {
 
   const currentLevel: JLPTLevel = selectedLevel || 'N5';
   const isLevelPremium = currentLevel !== 'N5';
-  const isUnlocked = !isLevelPremium || isPremium || isAdmin;
+  const isUnlocked = isContentUnlocked || !isLevelPremium;
 
   // Config state
   const [category, setCategory] = useState<'mixed' | 'vocab' | 'kanji' | 'grammar'>('mixed');

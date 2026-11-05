@@ -134237,6 +134237,15 @@
   ],
   "feedback": [
     {
+      "id": "fb-1793878153967-nvli5",
+      "name": "Tester",
+      "email": "test@example.com",
+      "type": "bug",
+      "message": "Туршилтын санал хүсэлт амжилттай илгээгдэж байна.",
+      "status": "new",
+      "createdAt": "2026.11.05 19:29:13"
+    },
+    {
       "id": "fb-1789458221727-f6rkf",
       "name": "turshilt",
       "email": "sunnnyqq@gmail.com",

@@ -7,8 +7,8 @@ import { JLPTLevel } from '../../types';
 import { getCleanVocabExplanation } from '../../utils/vocabUtils';
 
 export const DictionaryView: React.FC = () => {
-  const { data, userProgress, toggleFavorite, isPremium, isAdmin, setActiveTab, setIsAuthModalOpen, currentUser } = useApp();
-  const isUnlocked = isPremium || isAdmin;
+  const { data, userProgress, toggleFavorite, isPremium, isAdmin, isContentUnlocked, setActiveTab, setIsAuthModalOpen, currentUser } = useApp();
+  const isUnlocked = isContentUnlocked || isPremium || isAdmin;
   const [query, setQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState<JLPTLevel | 'all'>('all');
   const [posFilter, setPosFilter] = useState('all');

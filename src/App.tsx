@@ -19,6 +19,7 @@ import { AdminDashboard } from './components/admin/AdminDashboard';
 import { SunnyAIView } from './components/ai/SunnyAIView';
 import { RoleplayView } from './components/roleplay/RoleplayView';
 import { QuizExplanationModal } from './components/quiz/QuizExplanationModal';
+import { FeedbackModal } from './components/common/FeedbackModal';
 import { Analytics } from '@vercel/analytics/react';
 
 const MainContent: React.FC = () => {
@@ -80,6 +81,7 @@ const MainContent: React.FC = () => {
       <Footer />
       <SearchModal />
       <AuthModal />
+      <FeedbackModal />
       <QuizExplanationModal />
       <ToastContainer />
     </div>

@@ -231,6 +231,7 @@ export interface UserProfile {
   progress: UserProgress;
   createdAt: string;
   updatedAt: string;
+  lastActiveAt?: string;
   timezone?: string;
   notifiedAdmin?: boolean;
   isPremium?: boolean;

@@ -2281,8 +2281,14 @@ app.get('/api/admin/stats', verifyAdminToken, (_req, res) => {
   const allUsers = db.users || [];
   const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const dailyActiveUsers = allUsers.filter(u => u.lastActiveAt && new Date(u.lastActiveAt).getTime() > oneDayAgo).length;
-  const weeklyActiveUsers = allUsers.filter(u => u.lastActiveAt && new Date(u.lastActiveAt).getTime() > sevenDaysAgo).length;
+  const dailyActiveUsers = allUsers.filter(u => {
+    const ts = u.lastActiveAt || u.updatedAt || u.createdAt;
+    return ts ? new Date(ts).getTime() > oneDayAgo : false;
+  }).length;
+  const weeklyActiveUsers = allUsers.filter(u => {
+    const ts = u.lastActiveAt || u.updatedAt || u.createdAt;
+    return ts ? new Date(ts).getTime() > sevenDaysAgo : false;
+  }).length;
   
   let totalAIRecords = 0;
   if (db.aiUsageRecords) {
