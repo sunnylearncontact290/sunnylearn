@@ -88,7 +88,7 @@ export const KanjiList: React.FC = () => {
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white font-extrabold text-xs shadow-md shadow-red-500/20 transition-all shrink-0 cursor-pointer"
           >
             <Lock className="w-3.5 h-3.5" />
-            <span>Premium нээх (¥880 / 30 хоног)</span>
+            <span>Premium нээх (¥480 / 30 хоног)</span>
           </button>
         </div>
       )}
@@ -336,7 +336,7 @@ export const KanjiList: React.FC = () => {
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white font-extrabold text-xs shadow-md shadow-red-500/20 transition-all cursor-pointer"
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Premium идэвхжүүлэх (¥880 / 30 хоног)</span>
+                <span>Premium идэвхжүүлэх (¥480 / 30 хоног)</span>
               </button>
             </div>
           )}

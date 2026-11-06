@@ -2,7 +2,7 @@ export type JLPTLevel = 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
 
 export type MainTab = 'home' | 'learn' | 'dictionary' | 'practice' | 'quiz' | 'roleplay' | 'progress' | 'profile' | 'contact' | 'admin' | 'premium' | 'tutor' | 'ai' | 'tokushoho';
 
-export const PREMIUM_PRICE_YEN = 880;
+export const PREMIUM_PRICE_YEN = 480;
 export const PREMIUM_DURATION_DAYS = 30;
 
 export type LearnSubTab = 'vocab' | 'kanji' | 'grammar';
@@ -192,7 +192,7 @@ export interface PaymentRequestItem {
   userId?: string;
   userName: string;
   userEmail: string;
-  amount: number; // 880
+  amount: number; // 480
   currency: string; // 'JPY'
   plan: string; // 'SunnyLearn Premium — 30 days'
   durationDays: number; // 30

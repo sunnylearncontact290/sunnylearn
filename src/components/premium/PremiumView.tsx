@@ -155,7 +155,7 @@ export const PremiumView: React.FC = () => {
             </span>
             <div className="flex items-baseline gap-1">
               <span className="text-3xl sm:text-4xl font-black text-white">
-                {isComplimentaryPremium ? 'Үнэгүй' : '¥880'}
+                {isComplimentaryPremium ? 'Үнэгүй' : '¥480'}
               </span>
               <span className="text-xs text-rose-100 font-medium">
                 {isComplimentaryPremium ? '/ Байнгын эрх' : isPublicBeta ? '/ сар (Удахгүй)' : '/ 30 хоног'}
@@ -268,7 +268,7 @@ export const PremiumView: React.FC = () => {
           <div className="bg-orange-100/60 dark:bg-orange-900/30 p-3.5 rounded-xl text-xs text-orange-900 dark:text-orange-200 flex items-start gap-2">
             <Info className="w-4 h-4 shrink-0 mt-0.5 text-orange-600" />
             <p>
-              <strong>Санамж:</strong> Та дахин ¥880 шилжүүлэх шаардлагагүй. Таны хүсэлт аюулгүй хадгалагдсан тул админ хуулга шалгаад баталгаажуулна. Энэ хугацаанд та сайтын үндсэн хичээлүүдээ чөлөөтэй үзэж болно.
+              <strong>Санамж:</strong> Та дахин ¥480 шилжүүлэх шаардлагагүй. Таны хүсэлт аюулгүй хадгалагдсан тул админ хуулга шалгаад баталгаажуулна. Энэ хугацаанд та сайтын үндсэн хичээлүүдээ чөлөөтэй үзэж болно.
             </p>
           </div>
         </div>
@@ -329,7 +329,7 @@ export const PremiumView: React.FC = () => {
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
               <div>
                 <span className="text-xs text-stone-400 block font-medium">Төлөвлөсөн багцын үнэ:</span>
-                <span className="text-2xl sm:text-3xl font-black text-white">¥880<span className="text-sm font-semibold text-stone-300">/сар</span></span>
+                <span className="text-2xl sm:text-3xl font-black text-white">¥480<span className="text-sm font-semibold text-stone-300"> / сар (Удахгүй)</span></span>
               </div>
               <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold">
                 Албан ёсны нээлтийн дараа
@@ -378,7 +378,7 @@ export const PremiumView: React.FC = () => {
         </div>
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-orange-200/60 dark:border-orange-900/40">
           <span className="px-3 py-1 rounded-full bg-orange-200/70 dark:bg-orange-900/60 text-orange-950 dark:text-orange-200 font-black text-xs">
-            ¥880
+            ¥480
           </span>
           <span className="px-3 py-1 rounded-full bg-stone-200/70 dark:bg-stone-800 text-stone-800 dark:text-stone-200 font-bold text-xs">
             30 хоног
@@ -552,11 +552,11 @@ export const PremiumView: React.FC = () => {
               <div className="p-3 bg-stone-50 dark:bg-stone-800/60 rounded-xl flex items-center justify-between">
                 <div>
                   <span className="text-[11px] text-stone-500 dark:text-stone-400 block">振込金額</span>
-                  <span className="font-extrabold text-red-600 dark:text-red-400 text-base">¥880</span>
+                  <span className="font-extrabold text-red-600 dark:text-red-400 text-base">¥480</span>
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleCopy('880', 'amount')}
+                  onClick={() => handleCopy('480', 'amount')}
                   className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors"
                   title="Хуулах"
                 >
@@ -670,7 +670,7 @@ export const PremiumView: React.FC = () => {
                     Шилжүүлсэн дүн
                   </label>
                   <div className="px-3.5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs sm:text-sm font-bold">
-                    ¥880 (SunnyLearn Premium — 30 days)
+                    ¥480 (SunnyLearn Premium — 30 days)
                   </div>
                 </div>
               </div>

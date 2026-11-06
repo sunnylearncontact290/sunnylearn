@@ -146,7 +146,7 @@ export const TokushohoView: React.FC = () => {
             <dd className="sm:col-span-2 text-xs sm:text-sm text-stone-800 dark:text-stone-200 space-y-1">
               <div className="flex items-baseline gap-2">
                 <span className="text-base sm:text-lg font-black text-[#FF0000] dark:text-[#FF6699]">
-                  SunnyLearn Premium: 880円（税込）
+                  SunnyLearn Premium: 480円（税込）
                 </span>
                 <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">/ 30日間</span>
               </div>
