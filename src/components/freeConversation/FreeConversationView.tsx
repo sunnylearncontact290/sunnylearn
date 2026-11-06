@@ -693,8 +693,23 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
               if (m.role === 'user') {
                 return (
                   <div key={m.id} className="flex flex-col items-end space-y-1.5 animate-fade-in">
-                    <div className="max-w-[85%] sm:max-w-[75%] px-4 py-2.5 rounded-2xl rounded-tr-xs bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 text-xs sm:text-sm font-jp leading-relaxed shadow-xs break-words [overflow-wrap:anywhere] [word-break:break-word]">
-                      {m.cleanContent || m.content}
+                    <div className="user-bubble max-w-[85%] sm:max-w-[75%] px-4 py-3 rounded-2xl rounded-tr-xs bg-gradient-to-r from-[#990000] via-[#CC0000] to-[#E60033] dark:from-[#800000] dark:via-[#A30018] dark:to-[#B80024] text-white shadow-md shadow-red-950/20 border border-red-500/25 break-words [overflow-wrap:anywhere] [word-break:break-word]">
+                      <div className="flex items-center justify-between gap-3 mb-1.5 pb-1 border-b border-white/20 text-[10px] text-white/90">
+                        <span className="font-bold tracking-wide text-white">Та</span>
+                        {m.createdAt && (
+                          <span className="text-white/80 font-medium">
+                            {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
+                      </div>
+                      <div className="font-jp text-white font-medium text-xs sm:text-sm leading-relaxed">
+                        <FuriganaText
+                          text={m.cleanContent || m.content}
+                          showFurigana={showFurigana}
+                          isUser={true}
+                          className="text-white text-xs sm:text-sm"
+                        />
+                      </div>
                     </div>
 
                     {/* Correction Tip attached if present */}
@@ -751,9 +766,12 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
             {/* Live User Interim Transcript */}
             {voiceState === 'listening' && speechInterimText && (
               <div className="flex justify-end animate-fade-in">
-                <div className="max-w-[85%] sm:max-w-[75%] px-4 py-2.5 rounded-2xl rounded-tr-xs bg-red-500/10 dark:bg-red-500/20 border border-red-500/30 text-xs sm:text-sm font-jp text-red-600 dark:text-red-300 animate-pulse break-words [overflow-wrap:anywhere]">
-                  <span className="text-[10px] font-bold block opacity-75">Та:</span>
-                  「{speechInterimText}」
+                <div className="user-bubble max-w-[85%] sm:max-w-[75%] px-4 py-2.5 rounded-2xl rounded-tr-xs bg-gradient-to-r from-[#990000]/95 via-[#CC0000]/95 to-[#E60033]/95 border border-red-400/50 text-xs sm:text-sm font-jp text-white shadow-md break-words [overflow-wrap:anywhere]">
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-white mb-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                    <span>Та ярьж байна:</span>
+                  </div>
+                  <div className="text-white font-medium">「{speechInterimText}」</div>
                 </div>
               </div>
             )}

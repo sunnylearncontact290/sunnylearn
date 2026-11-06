@@ -117,6 +117,13 @@ const COMMON_GRAMMAR_MAP: Record<string, { reading: string; mongolian: string; p
   'しないでください': { reading: 'しないでください', mongolian: 'Битгий хийгээрэй (хориглох гуйлт)', partOfSpeech: 'Үйл үг (дүрэм)', jlptLevel: 'N5' },
   'して': { reading: 'して', mongolian: 'Хийгээд, хийж (する-ийн て хэлбэр)', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' },
   'する': { reading: 'する', mongolian: 'Хийх (төлөөний үйл үг)', partOfSpeech: 'Үйл үг (3-р бүлэг)', jlptLevel: 'N5' },
+  'します': { reading: 'します', mongolian: 'Хийнэ (эелдэг)', partOfSpeech: 'Үйл үг (3-р бүлэг)', jlptLevel: 'N5' },
+  'しました': { reading: 'しました', mongolian: 'Хийсэн (эелдэг)', partOfSpeech: 'Үйл үг (3-р бүлэг)', jlptLevel: 'N5' },
+  'しません': { reading: 'しません', mongolian: 'Хийхгүй (эелдэг)', partOfSpeech: 'Үйл үг (3-р бүлэг)', jlptLevel: 'N5' },
+  'した': { reading: 'した', mongolian: 'Хийсэн (энгийн)', partOfSpeech: 'Үйл үг (3-р бүлэг)', jlptLevel: 'N5' },
+  'しない': { reading: 'しない', mongolian: 'Хийхгүй (энгийн)', partOfSpeech: 'Үйл үг (3-р бүлэг)', jlptLevel: 'N5' },
+  'している': { reading: 'している', mongolian: 'Хийж байгаа (энгийн)', partOfSpeech: 'Үйл үг (3-р бүлэг)', jlptLevel: 'N5' },
+  'しています': { reading: 'しています', mongolian: 'Хийж байна (эелдэг)', partOfSpeech: 'Үйл үг (3-р бүлэг)', jlptLevel: 'N5' },
   'いる': { reading: 'いる', mongolian: 'Байх (хүн, амьд биет)', partOfSpeech: 'Үйл үг (2-р бүлэг)', jlptLevel: 'N5' },
   'ある': { reading: 'ある', mongolian: 'Байх (эд зүйл, үзэгдэл)', partOfSpeech: 'Үйл үг (1-р бүлэг)', jlptLevel: 'N5' },
 
@@ -154,13 +161,42 @@ export function cleanSentenceForTokenization(sentence: string): string {
  * - Compound kanji words and expressions (e.g. 今日 + 中 -> 今日中, 間 + に + 合う -> 間に合う)
  */
 function regroupTokens(rawSegments: string[]): string[] {
+  // 1. Normalize segments: split counters from accidentally glued verb/kana stems (e.g. "三人い" -> "三人", "い")
+  const normalized: string[] = [];
+  for (const seg of rawSegments) {
+    const counterKanaMatch = seg.match(/^([一二三四五六七八九十何]+[人つ日月年回本匹枚個着冊杯歳])([ぁ-んァ-ヶ]+)$/);
+    if (counterKanaMatch) {
+      normalized.push(counterKanaMatch[1]);
+      normalized.push(counterKanaMatch[2]);
+    } else {
+      normalized.push(seg);
+    }
+  }
+
   const result: string[] = [];
 
-  for (let i = 0; i < rawSegments.length; i++) {
-    const cur = rawSegments[i];
-    const n1 = rawSegments[i + 1];
-    const n2 = rawSegments[i + 2];
-    const n3 = rawSegments[i + 3];
+  for (let i = 0; i < normalized.length; i++) {
+    const cur = normalized[i];
+    const n1 = normalized[i + 1];
+    const n2 = normalized[i + 2];
+    const n3 = normalized[i + 3];
+
+    // Case: い + ます / ました (from separate verb or after counter)
+    if (cur === 'い' && (n1 === 'ます' || n1 === 'ました')) {
+      result.push('い' + n1);
+      i++;
+      continue;
+    }
+    if (cur === 'い' && n1 === 'まし' && n2 === 'た') {
+      result.push('いました');
+      i += 2;
+      continue;
+    }
+    if (cur === 'い' && (n1 === 'る' || n1 === 'た' || n1 === 'ない')) {
+      result.push('い' + n1);
+      i++;
+      continue;
+    }
 
     // Case: 今 + 日中 -> 今日中, 今 + 日 -> 今日
     if (cur === '今' && n1 === '日中') {
@@ -338,20 +374,24 @@ function regroupTokens(rawSegments: string[]): string[] {
       }
 
       // cur + し + ました / ます
-      if (n1 === 'し' && n2 === 'まし' && n3 === 'た') {
-        result.push(cur + 'しました');
-        i += 3;
-        continue;
-      }
-      if (n1 === 'し' && n2 === 'ました') {
-        result.push(cur + 'しました');
-        i += 2;
-        continue;
-      }
-      if (n1 === 'し' && n2 === 'ます') {
-        result.push(cur + 'します');
-        i += 2;
-        continue;
+      // Only merge if cur is single-kanji stem (length 1)
+      // Multi-kanji compound nouns (e.g. 勉強, 練習, 散歩) must remain separate lexical units!
+      if (cur.length === 1) {
+        if (n1 === 'し' && n2 === 'まし' && n3 === 'た') {
+          result.push(cur + 'しました');
+          i += 3;
+          continue;
+        }
+        if (n1 === 'し' && n2 === 'ました') {
+          result.push(cur + 'しました');
+          i += 2;
+          continue;
+        }
+        if (n1 === 'し' && n2 === 'ます') {
+          result.push(cur + 'します');
+          i += 2;
+          continue;
+        }
       }
 
       // cur + ち + ました / ます (待ちました / 立ちました)
@@ -378,21 +418,26 @@ function regroupTokens(rawSegments: string[]): string[] {
         continue;
       }
 
-      // cur + い + ました / ます (買いました / 会いました)
-      if (n1 === 'い' && n2 === 'まし' && n3 === 'た') {
-        result.push(cur + 'いました');
-        i += 3;
-        continue;
-      }
-      if (n1 === 'い' && n2 === 'ました') {
-        result.push(cur + 'いました');
-        i += 2;
-        continue;
-      }
-      if (n1 === 'い' && n2 === 'ます') {
-        result.push(cur + 'います');
-        i += 2;
-        continue;
+      // Exclude counters (三人, 一人, etc.) from verb stem suffix merging
+      const isCounterNoun = /^[一二三四五六七八九十何]+[人つ日月年回本匹枚個着冊杯歳]$/.test(cur);
+
+      // cur + い + ました / ます (買いました / 会いました - but NOT 三人 + います)
+      if (!isCounterNoun) {
+        if (n1 === 'い' && n2 === 'まし' && n3 === 'た') {
+          result.push(cur + 'いました');
+          i += 3;
+          continue;
+        }
+        if (n1 === 'い' && n2 === 'ました') {
+          result.push(cur + 'いました');
+          i += 2;
+          continue;
+        }
+        if (n1 === 'い' && n2 === 'ます') {
+          result.push(cur + 'います');
+          i += 2;
+          continue;
+        }
       }
 
       // cur + て + いる / います / いた (寝ている, 生きている)
@@ -455,6 +500,67 @@ function regroupTokens(rawSegments: string[]): string[] {
       if (n1 === 'いて' && n2 === 'い' && n3 === 'ます') {
         result.push(cur + 'いています');
         i += 3;
+        continue;
+      }
+
+      // cur + られ + なかっ + た -> 寝られなかった / 食べられなかった
+      if (n1 === 'られ' && n2 === 'なかっ' && n3 === 'た') {
+        result.push(cur + 'られなかった');
+        i += 3;
+        continue;
+      }
+      if (n1 === 'られ' && n2 === 'なかった') {
+        result.push(cur + 'られなかった');
+        i += 2;
+        continue;
+      }
+      if (n1 === 'られ' && (n2 === 'ない' || n2 === 'る' || n2 === 'た')) {
+        result.push(cur + 'られ' + n2);
+        i += 2;
+        continue;
+      }
+      if (n1 === 'られ' && n2 === 'まし' && n3 === 'た') {
+        result.push(cur + 'られました');
+        i += 3;
+        continue;
+      }
+      if (n1 === 'られ' && (n2 === 'ました' || n2 === 'ます' || n2 === 'ません')) {
+        result.push(cur + 'られ' + n2);
+        i += 2;
+        continue;
+      }
+
+      // cur + れ + なかっ + た -> 寝れなかった / 食べれなかった / 行けなかった
+      if (n1 === 'れ' && n2 === 'なかっ' && n3 === 'た') {
+        result.push(cur + 'れなかった');
+        i += 3;
+        continue;
+      }
+      if (n1 === 'れ' && n2 === 'なかった') {
+        result.push(cur + 'れなかった');
+        i += 2;
+        continue;
+      }
+      if (n1 === 'れ' && (n2 === 'ない' || n2 === 'る' || n2 === 'た' || n2 === 'ます' || n2 === 'ました')) {
+        result.push(cur + 'れ' + n2);
+        i += 2;
+        continue;
+      }
+
+      // cur + なかっ + た -> 行かなかった / 降らなかった / 食べなかった
+      if (n1 === 'なかっ' && n2 === 'た') {
+        result.push(cur + 'なかった');
+        i += 2;
+        continue;
+      }
+      if (n1 === 'なく' && n2 === 'て') {
+        result.push(cur + 'なくて');
+        i += 2;
+        continue;
+      }
+      if (n1 === 'ない' && n2 === 'で') {
+        result.push(cur + 'ないで');
+        i += 2;
         continue;
       }
 
@@ -545,9 +651,44 @@ function regroupTokens(rawSegments: string[]): string[] {
       i++;
       continue;
     }
-    if (cur === 'し' && n1 === 'ない' && n2 === 'де') {
+    if (cur === 'し' && n1 === 'まし' && n2 === 'た') {
+      result.push('しました');
+      i += 2;
+      continue;
+    }
+    if (cur === 'し' && n1 === 'ました') {
+      result.push('しました');
+      i++;
+      continue;
+    }
+    if (cur === 'し' && n1 === 'ます') {
+      result.push('します');
+      i++;
+      continue;
+    }
+    if (cur === 'し' && n1 === 'ませ' && n2 === 'ん') {
+      result.push('しません');
+      i += 2;
+      continue;
+    }
+    if (cur === 'し' && n1 === 'ません') {
+      result.push('しません');
+      i++;
+      continue;
+    }
+    if (cur === 'し' && n1 === 'た') {
+      result.push('した');
+      i++;
+      continue;
+    }
+    if (cur === 'し' && n1 === 'ない' && n2 === 'で') {
       result.push('しないで');
       i += 2;
+      continue;
+    }
+    if (cur === 'し' && n1 === 'ない') {
+      result.push('しない');
+      i++;
       continue;
     }
     if (cur === 'じゃ' && n1 === 'ない') {
@@ -587,6 +728,69 @@ function regroupTokens(rawSegments: string[]): string[] {
  * @param allKanji Optional array of KanjiItems from app context.
  * @param sentenceReading Optional authoritative, space-delimited reading from curriculum data.
  */
+/**
+ * Accurately aligns authoritative curriculum sentence readings with segmented word tokens
+ * using okurigana and particle anchoring.
+ */
+function alignTokensWithSentenceReading(
+  segments: string[],
+  sentenceReading: string
+): Record<string, string> {
+  if (!sentenceReading || !sentenceReading.trim()) return {};
+
+  let r = sentenceReading.replace(/[。\s、！？!?…・「」『』（）()[\]【】]/g, '');
+  const readings: Record<string, string> = {};
+
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
+    if (PUNCTUATION_REGEX.test(seg)) continue;
+
+    // If seg is pure kana, match and advance reading stream
+    if (/^[ぁ-んァ-ヶー]+$/.test(seg)) {
+      if (r.startsWith(seg)) {
+        r = r.slice(seg.length);
+      }
+      continue;
+    }
+
+    // seg contains Kanji: locate reading boundary using next kana anchor or trailing okurigana
+    const trailingKanaMatch = seg.match(/[ぁ-んァ-ヶー]+$/);
+    const trailingKana = trailingKanaMatch ? trailingKanaMatch[0] : '';
+    const nextKanaSeg = segments.slice(i + 1).find(s => /^[ぁ-んァ-ヶー]+$/.test(s) && !PUNCTUATION_REGEX.test(s));
+
+    if (nextKanaSeg) {
+      const idx = r.indexOf(nextKanaSeg);
+      if (idx > 0) {
+        readings[seg] = r.slice(0, idx);
+        r = r.slice(idx);
+      }
+    } else if (trailingKana) {
+      const idx = r.indexOf(trailingKana);
+      if (idx >= 0) {
+        readings[seg] = r.slice(0, idx + trailingKana.length);
+        r = r.slice(idx + trailingKana.length);
+      }
+    } else {
+      if (r.length > 0) {
+        readings[seg] = r;
+        r = '';
+      }
+    }
+  }
+
+  return readings;
+}
+
+/**
+ * Tokenizes a Japanese sentence into morphological words and enriches each word
+ * with context-aware readings, script-aware Furigana ruby markup, Mongolian definitions, JLPT levels,
+ * and Kanji breakdowns.
+ *
+ * @param sentence Raw Japanese sentence string.
+ * @param allVocab Optional array of VocabularyItems from app context.
+ * @param allKanji Optional array of KanjiItems from app context.
+ * @param sentenceReading Optional authoritative, space-delimited reading from curriculum data.
+ */
 export function tokenizeJapaneseSentence(
   sentence: string,
   allVocab: VocabularyItem[] = [],
@@ -595,10 +799,32 @@ export function tokenizeJapaneseSentence(
 ): DetailedWordInfo[] {
   if (!sentence || !sentence.trim()) return [];
 
+  // Extract explicit readings if present in source text (e.g. 漢字（ふりがな） or <ruby>base<rt>reading</rt></ruby>)
+  const explicitReadings: Record<string, string> = {};
+  const bracketRegex = /([^\s（\(\[【<]+)\s*[（\(\[【]\s*([ぁ-んァ-ヶー・]+)\s*[）\)\]】]/g;
+  let bMatch: RegExpExecArray | null;
+  while ((bMatch = bracketRegex.exec(sentence)) !== null) {
+    if (bMatch[1] && bMatch[2]) {
+      explicitReadings[bMatch[1]] = bMatch[2];
+    }
+  }
+  const rubyRegex = /<ruby[^>]*>([\s\S]*?)<rt[^>]*>([\s\S]*?)<\/rt>[\s\S]*?<\/ruby>/gi;
+  let rMatch: RegExpExecArray | null;
+  while ((rMatch = rubyRegex.exec(sentence)) !== null) {
+    if (rMatch[1] && rMatch[2]) {
+      explicitReadings[rMatch[1]] = rMatch[2];
+    }
+  }
+
   const clean = cleanSentenceForTokenization(sentence);
   const segmenter = getSegmenter();
   const rawSegments: string[] = segmenter.segment(clean);
   const segments = regroupTokens(rawSegments);
+
+  // Align authoritative sentenceReading if provided
+  const sentenceReadingsMap = sentenceReading
+    ? alignTokensWithSentenceReading(segments, sentenceReading)
+    : {};
 
   const result: DetailedWordInfo[] = [];
 
@@ -627,6 +853,7 @@ export function tokenizeJapaneseSentence(
     // Contextual tokens before and after
     const prevToken = segments[i - 1];
     const nextToken = segments[i + 1];
+    const explicitReading = explicitReadings[rawWord] || sentenceReadingsMap[rawWord];
 
     // Enrich with dictionary, context lexicon, and de-conjugator
     const enriched = lookupWordDetail(
@@ -635,7 +862,8 @@ export function tokenizeJapaneseSentence(
       allKanji,
       prevToken,
       nextToken,
-      sentenceReading
+      sentenceReading,
+      explicitReading
     );
     result.push(enriched);
   }
@@ -653,7 +881,8 @@ export function lookupWordDetail(
   allKanji: KanjiItem[] = [],
   prevToken?: string,
   nextToken?: string,
-  sentenceReading?: string
+  sentenceReading?: string,
+  explicitReading?: string
 ): DetailedWordInfo {
   const isSurfaceHasKanji = hasKanji(surface);
   const grammarInfo = COMMON_GRAMMAR_MAP[surface];
@@ -751,6 +980,14 @@ export function lookupWordDetail(
           surface + 'る',
           surface + 'する',
           surface.replace(/し$/, 'する'),
+          surface.replace(/します$/, 'する'),
+          surface.replace(/しました$/, 'する'),
+          surface.replace(/している$/, 'する'),
+          surface.replace(/しています$/, 'する'),
+          surface.replace(/します$/, ''),
+          surface.replace(/しました$/, ''),
+          surface.replace(/している$/, ''),
+          surface.replace(/しています$/, ''),
           surface.replace(/て$/, 'る'),
           surface.replace(/た$/, 'る'),
           surface.replace(/きました$/, 'く'),
@@ -787,11 +1024,9 @@ export function lookupWordDetail(
         partOfSpeech = vocabMatch.partOfSpeech || 'Үг';
         jlptLevel = vocabMatch.jlptLevel || 'N5';
         explanation = vocabMatch.explanation;
-      } else if (grammarInfo) {
-        reading = grammarInfo.reading;
-        mongolian = grammarInfo.mongolian;
-        partOfSpeech = grammarInfo.partOfSpeech;
-        jlptLevel = grammarInfo.jlptLevel;
+      } else if (explicitReading) {
+        reading = explicitReading;
+        mongolian = 'Үгийн дуудлага';
       } else {
         // Fallback for kana-only words
         if (/^[ぁ-ん]+$/.test(surface)) {
@@ -803,40 +1038,25 @@ export function lookupWordDetail(
           mongolian = 'Катакана гадаад үг';
           partOfSpeech = 'Катакана нэр үг';
         } else if (isSurfaceHasKanji) {
-          // If surface has kanji, prefer verb stem kun'yomi or kanji dictionary kun'yomi over on'yomi!
-          const synthesizedParts: string[] = [];
-          let allFound = true;
-
-          for (const ch of surface) {
-            if (/[\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]/.test(ch)) {
-              if (ch in VERB_STEM_KUNYOMI) {
-                synthesizedParts.push(VERB_STEM_KUNYOMI[ch]);
-              } else {
-                const kInfo = kanjiList.find(k => k.kanji === ch);
-                // If single kanji word or word with okurigana, KUN'YOMI is preferred over on'yomi!
-                if (kInfo && kInfo.kunyomi && kInfo.kunyomi !== '—' && (surface.length === 1 || /[ぁ-ん]/.test(surface))) {
-                  const primaryKun = kInfo.kunyomi.split(/[,、\s]+/)[0].replace(/[\(\)（）\.\-]/g, '').trim();
-                  synthesizedParts.push(primaryKun);
-                } else if (kInfo && kInfo.onyomi && kInfo.onyomi !== '—') {
-                  const primaryOn = kInfo.onyomi.split(/[,、\s]+/)[0].trim();
-                  const hira = primaryOn.replace(/[\u30A1-\u30F6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60));
-                  synthesizedParts.push(hira);
-                } else {
-                  allFound = false;
-                  break;
-                }
+          // If single kanji word (e.g. 本, 犬), look up single kanji kun'yomi / on'yomi
+          if (surface.length === 1) {
+            const kInfo = kanjiList.find(k => k.kanji === surface);
+            if (kInfo && kInfo.kunyomi && kInfo.kunyomi !== '—') {
+              const primaryKun = kInfo.kunyomi.split(/[,、\s]+/)[0].replace(/[\(\)（）\.\-]/g, '').trim();
+              if (primaryKun) {
+                reading = primaryKun;
               }
-            } else {
-              synthesizedParts.push(ch);
+            } else if (kInfo && kInfo.onyomi && kInfo.onyomi !== '—') {
+              const primaryOn = kInfo.onyomi.split(/[,、\s]+/)[0].trim();
+              reading = primaryOn.replace(/[\u30A1-\u30F6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60));
             }
           }
-
-          if (allFound && synthesizedParts.length > 0) {
-            reading = synthesizedParts.join('');
-          }
+          // CRITICAL: NEVER synthesize multi-kanji compound readings by stitching character-by-character kun'yomi!
+          // Compound words (e.g. 勉強, 学校, 友達) MUST NEVER be guessed as kun'yomi concatenations (勉=つとめる, 強=つよい).
+          // If a multi-kanji compound is not in CONTEXT_LEXICON or allVocab, retain reading = surface so NO FALSE RUBY is emitted.
 
           const kanjiMeanings = kanjiList
-            .map(k => k.mongolian.split(/[,;]/)[0].trim())
+            .map(k => (k.mongolian ? k.mongolian.split(/[,;]/)[0].trim() : ''))
             .filter(m => m && m !== 'Ханз үсэг');
           if (kanjiMeanings.length > 0) {
             mongolian = kanjiMeanings.join(' ') + ' (нийлмэл ханз үг)';

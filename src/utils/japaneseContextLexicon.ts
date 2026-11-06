@@ -270,7 +270,79 @@ export const CONTEXT_LEXICON: Record<string, WordLexiconEntry> = {
   '終わらせる': { reading: 'おわらせる', mongolian: 'Дуусгах', partOfSpeech: 'Үйл үг (2-р бүлэг)', jlptLevel: 'N3' },
   '集まりました': { reading: 'あつまりました', mongolian: 'Цугласан, цугларав', partOfSpeech: 'Үйл үг (1-р бүлэг)', jlptLevel: 'N4' },
   '集まります': { reading: 'あつまります', mongolian: 'Цуглана', partOfSpeech: 'Үйл үг (1-р бүлэг)', jlptLevel: 'N4' },
-  '集まる': { reading: 'あつまる', mongolian: 'Цуглах', partOfSpeech: 'Үйл үг (1-р бүлэг)', jlptLevel: 'N4' }
+  '集まる': { reading: 'あつまる', mongolian: 'Цуглах', partOfSpeech: 'Үйл үг (1-р бүлэг)', jlptLevel: 'N4' },
+
+  // --- People Counters (一人〜十人, 何人) ---
+  '一人': { reading: 'ひとり', mongolian: 'Нэг хүн', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '二人': { reading: 'ふたり', mongolian: 'Хоёр хүн', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '三人': { reading: 'さんにん', mongolian: 'Гурван хүн', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '四人': { reading: 'よにん', mongolian: 'Дөрвөн хүн', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '五人': { reading: 'ごにん', mongolian: 'Таван хүн', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '六人': { reading: 'ろくにん', mongolian: 'Зургаан хүн', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '七人': { reading: 'しちにん', mongolian: 'Долоон хүн', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '八人': { reading: 'はちにん', mongolian: 'Найман хүн', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '九人': { reading: 'きゅうにん', mongolian: 'Есөн хүн', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '十人': { reading: 'じゅうにん', mongolian: 'Арван хүн', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '何人': { reading: 'なんにん', mongolian: 'Хэдэн хүн', partOfSpeech: 'Асуух үг', jlptLevel: 'N5' },
+
+  // --- Things Counters (一つ〜十) ---
+  '一つ': { reading: 'ひとつ', mongolian: 'Нэг ширхэг', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '二つ': { reading: 'ふたつ', mongolian: 'Хоёр ширхэг', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '三つ': { reading: 'みっつ', mongolian: 'Гурван ширхэг', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '四つ': { reading: 'よっつ', mongolian: 'Дөрвөн ширхэг', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '五つ': { reading: 'いつつ', mongolian: 'Таван ширхэг', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '六つ': { reading: 'むっつ', mongolian: 'Зургаан ширхэг', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '七つ': { reading: 'ななつ', mongolian: 'Долоон ширхэг', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '八つ': { reading: 'やっつ', mongolian: 'Найман ширхэг', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '九つ': { reading: 'ここのつ', mongolian: 'Есөн ширхэг', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+  '十': { reading: 'とお', mongolian: 'Арав', partOfSpeech: 'Тоо ширхэг', jlptLevel: 'N5' },
+
+  // --- Common Conversational Adjectives & Idiomatic Phrases ---
+  '大丈夫': { reading: 'だいじょうぶ', mongolian: 'Зүгээр, асуудалгүй', partOfSpeech: 'Тэмдэг нэр (な)', jlptLevel: 'N5' },
+  '大丈夫です': { reading: 'だいじょうぶです', mongolian: 'Зүгээр ээ', partOfSpeech: 'Тэмдэг нэр (な)', jlptLevel: 'N5' },
+  '大丈夫だ': { reading: 'だいじょうぶだ', mongolian: 'Зүгээр', partOfSpeech: 'Тэмдэг нэр (な)', jlptLevel: 'N5' },
+  '大丈夫だよ': { reading: 'だいじょうぶだよ', mongolian: 'Зүгээр дээ', partOfSpeech: 'Тэмдэг нэр (な)', jlptLevel: 'N5' },
+  '大丈夫かな': { reading: 'だいじょうぶかな', mongolian: 'Зүгээр болов уу', partOfSpeech: 'Тэмдэг нэр (な)', jlptLevel: 'N5' },
+  '大丈夫そう': { reading: 'だいじょうぶそう', mongolian: 'Зүгээр шинжтэй', partOfSpeech: 'Тэмдэг нэр (な)', jlptLevel: 'N4' },
+  '本当': { reading: 'ほんとう', mongolian: 'Үнэн, үнэхээр', partOfSpeech: 'Нэр үг', jlptLevel: 'N5' },
+  '本当に': { reading: 'ほんとうに', mongolian: 'Үнэхээр', partOfSpeech: 'Дайвар үг', jlptLevel: 'N5' },
+  '元気': { reading: 'げんき', mongolian: 'Эрүүл энх, цовоо сэргэлэн', partOfSpeech: 'Тэмдэг нэр (な)', jlptLevel: 'N5' },
+  '天気': { reading: 'てんき', mongolian: 'Цаг агаар', partOfSpeech: 'Нэр үг', jlptLevel: 'N5' },
+  '最近': { reading: 'さいきん', mongolian: 'Сүүлийн үед', partOfSpeech: 'Дайвар үг', jlptLevel: 'N5' },
+  '今度': { reading: 'こんど', mongolian: 'Дараагийн удаа', partOfSpeech: 'Нэр үг', jlptLevel: 'N5' },
+  '最初': { reading: 'さいしょ', mongolian: 'Эхлээд, анх', partOfSpeech: 'Нэр үг', jlptLevel: 'N5' },
+  '最後': { reading: 'さいご', mongolian: 'Хамгийн сүүлд', partOfSpeech: 'Нэр үг', jlptLevel: 'N5' },
+  '一番': { reading: 'いちばん', mongolian: 'Хамгийн, нэгдүгээрт', partOfSpeech: 'Дайвар үг', jlptLevel: 'N5' },
+  '一緒': { reading: 'いっしょ', mongolian: 'Хамт, адил', partOfSpeech: 'Нэр үг', jlptLevel: 'N5' },
+  '一緒に': { reading: 'いっしょに', mongolian: 'Хамтдаа', partOfSpeech: 'Дайвар үг', jlptLevel: 'N5' },
+  '自分': { reading: 'じぶん', mongolian: 'Өөрөө, би өөрөө', partOfSpeech: 'Төлөөний үг', jlptLevel: 'N5' },
+
+  // --- 寝る Potential & Conversational Inflections ---
+  '寝られなかった': { reading: 'ねられなかった', mongolian: 'Унтаж чадаагүй (боломжгүйн өнгөрсөн)', partOfSpeech: 'Үйл үг', jlptLevel: 'N4' },
+  '寝られない': { reading: 'ねられない', mongolian: 'Унтаж чадахгүй', partOfSpeech: 'Үйл үг', jlptLevel: 'N4' },
+  '寝られる': { reading: 'ねられる', mongolian: 'Унтаж чадах', partOfSpeech: 'Үйл үг', jlptLevel: 'N4' },
+  '寝られた': { reading: 'ねられた', mongolian: 'Унтаж чадсан', partOfSpeech: 'Үйл үг', jlptLevel: 'N4' },
+  '寝れなかった': { reading: 'ねれなかった', mongolian: 'Унтаж чадаагүй (ярианы хэлбэр)', partOfSpeech: 'Үйл үг', jlptLevel: 'N4' },
+  '寝れない': { reading: 'ねれない', mongolian: 'Унтаж чадахгүй (ярианы хэлбэр)', partOfSpeech: 'Үйл үг', jlptLevel: 'N4' },
+
+  // --- ご飯, 後, 勉強 & Specific High-Frequency Compounds ---
+  'ご飯': { reading: 'ごはん', mongolian: 'Хоол, агшаасан будаа', partOfSpeech: 'Нэр үг', jlptLevel: 'N5' },
+  '飯': { reading: 'はん', mongolian: 'Хоол, будаа', partOfSpeech: 'Нэр үг', jlptLevel: 'N5' },
+  '後': { reading: 'あと', mongolian: 'Дараа, хойно', partOfSpeech: 'Нэр үг', jlptLevel: 'N5' },
+  '後で': { reading: 'あとで', mongolian: 'Дараа нь', partOfSpeech: 'Холбоо үг (дүрэм)', jlptLevel: 'N5' },
+  '勉強する': { reading: 'べんきょうする', mongolian: 'Хичээл хийх, сурах', partOfSpeech: 'Үйл үг (3-р бүлэг)', jlptLevel: 'N5' },
+  '勉強します': { reading: 'べんきょうします', mongolian: 'Хичээл хийнэ', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' },
+  '勉強しました': { reading: 'べんきょうしました', mongolian: 'Хичээл хийсэн', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' },
+  '勉強している': { reading: 'べんきょうしている', mongolian: 'Хичээл хийж байгаа', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' },
+  '勉強しています': { reading: 'べんきょうしています', mongolian: 'Хичээл хийж байна', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' },
+  '勉強しない': { reading: 'べんきょうしない', mongolian: 'Хичээл хийхгүй', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' },
+  '勉強した': { reading: 'べんきょうした', mongolian: 'Хичээл хийсэн', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' },
+  '遊ぶ': { reading: 'あそぶ', mongolian: 'Тоглох, зугаалах', partOfSpeech: 'Үйл үг (1-р бүлэг)', jlptLevel: 'N5' },
+  '遊びます': { reading: 'あそびます', mongolian: 'Тоглоно, зугаална', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' },
+  '遊びました': { reading: 'あそびました', mongolian: 'Тоглосон', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' },
+  '遊んだ': { reading: 'あそんだ', mongolian: 'Тоглосон', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' },
+  '遊んで': { reading: 'あそんで', mongolian: 'Тоглоод', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' },
+  '遊ばない': { reading: 'あそばない', mongolian: 'Тоглохгүй', partOfSpeech: 'Үйл үг', jlptLevel: 'N5' }
 };
 
 /**
@@ -278,6 +350,7 @@ export const CONTEXT_LEXICON: Record<string, WordLexiconEntry> = {
  * Used when an inflected verb or word stem is deconstructed.
  */
 export const VERB_STEM_KUNYOMI: Record<string, string> = {
+  '遊': 'あそ',  // 遊ぶ -> あそぶ, 遊びます -> あそびます
   '降': 'ふ',    // 降る -> ふる, 降ります -> ふります
   '寝': 'ね',    // 寝る -> ねる, 寝ている -> ねている
   '食': 'た',    // 食べる -> たべる, 食べました -> たべました
@@ -403,6 +476,11 @@ export function disambiguateContextualKanji(
     return 'ほう';
   }
 
+  // 6. Contextual Disambiguation for '後'
+  if (surface === '後') {
+    return 'あと';
+  }
+
   return null;
 }
 
@@ -413,11 +491,48 @@ export function disambiguateContextualKanji(
 export function deconjugateAndInferReading(surface: string): { reading: string; baseStem?: string } | null {
   if (!surface || surface.length < 2) return null;
 
+  // Check suru-verb inflections (e.g. 勉強します -> 勉強, 練習している -> 練習)
+  const suruEndings = ['しています', 'している', 'しました', 'します', 'しない', 'した', 'する'];
+  for (const sEnding of suruEndings) {
+    if (surface.endsWith(sEnding) && surface.length > sEnding.length) {
+      const stem = surface.slice(0, surface.length - sEnding.length);
+      if (CONTEXT_LEXICON[stem]) {
+        return {
+          reading: CONTEXT_LEXICON[stem].reading + sEnding,
+          baseStem: stem
+        };
+      }
+    }
+  }
+
   // Verb inflection endings to strip and identify base verb stem
   const inflectionEndings: Array<{ suffix: string; okurigana: string }> = [
     { suffix: '始めました', okurigana: 'りはじめました' },
     { suffix: '始めました', okurigana: 'はじめました' },
     { suffix: '続いている', okurigana: 'りつづいている' },
+    { suffix: 'られなかった', okurigana: 'られなかった' },
+    { suffix: 'られませんでした', okurigana: 'られませんでした' },
+    { suffix: 'られない', okurigana: 'られない' },
+    { suffix: 'られません', okurigana: 'られません' },
+    { suffix: 'られました', okurigana: 'られました' },
+    { suffix: 'られます', okurigana: 'られます' },
+    { suffix: 'られる', okurigana: 'られる' },
+    { suffix: 'られた', okurigana: 'られた' },
+    { suffix: 'れなかった', okurigana: 'れなかった' },
+    { suffix: 'れました', okurigana: 'れました' },
+    { suffix: 'れません', okurigana: 'れません' },
+    { suffix: 'れない', okurigana: 'れない' },
+    { suffix: 'れる', okurigana: 'れる' },
+    { suffix: 'れた', okurigana: 'れた' },
+    { suffix: 'なかった', okurigana: 'なかった' },
+    { suffix: 'なかった', okurigana: 'らなかった' },
+    { suffix: 'なかった', okurigana: 'かなかった' },
+    { suffix: 'なかった', okurigana: 'ぎなかった' },
+    { suffix: 'なかった', okurigana: 'さなかった' },
+    { suffix: 'なかった', okurigana: 'たなかった' },
+    { suffix: 'なかった', okurigana: 'ばなかった' },
+    { suffix: 'なかった', okurigana: 'まなかった' },
+    { suffix: 'なかった', okurigana: 'わなかった' },
     { suffix: 'ませんでした', okurigana: 'ませんでした' },
     { suffix: 'ませんでした', okurigana: 'りませんでした' },
     { suffix: 'ませんでした', okurigana: 'きませんでした' },

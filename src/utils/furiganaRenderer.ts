@@ -74,6 +74,13 @@ export function alignRubyParts(surface: string, reading?: string): RubyChunk[] {
 
   const cleanReading = reading.replace(/\s+/g, '');
 
+  // Special lexical compounds / honorific fused words where the full token takes the reading:
+  // e.g. ご飯 (ごはん), お腹 (おなか), お土産 (おみやげ), お菓子 (おかし)
+  const FULL_TOKEN_RUBY_WORDS = new Set(['ご飯', 'お腹', 'お土産', 'お菓子', 'お酒', 'お湯']);
+  if (FULL_TOKEN_RUBY_WORDS.has(surface)) {
+    return [{ kanji: surface, ruby: cleanReading }];
+  }
+
   // 1. Match leading kana prefix (e.g. お茶 with reading おちゃ -> prefix "お")
   let prefixLen = 0;
   while (

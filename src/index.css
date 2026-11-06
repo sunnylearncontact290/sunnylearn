@@ -218,28 +218,52 @@ img, svg, video, canvas, audio, iframe, embed, object {
   font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-ruby, .ruby-unit {
+ruby,
+.ruby-unit {
   display: ruby;
   ruby-position: over;
   -webkit-ruby-position: over;
   ruby-align: center;
   white-space: nowrap;
+  break-inside: avoid;
   margin: 0;
   padding: 0;
 }
 
-rt, .ruby-reading {
+rt,
+.ruby-reading {
   display: ruby-text;
   font-size: 0.52em;
-  line-height: 1;
+  line-height: 1.1;
   text-align: center;
   ruby-align: center;
   user-select: none;
   -webkit-user-select: none;
   font-weight: 400;
-  opacity: 0.85;
+  color: #71717a;
   margin: 0;
   padding: 0;
+}
+
+.dark rt,
+.dark .ruby-reading {
+  color: #a1a1aa;
+}
+
+/* User Message Bubble High-Contrast Protection */
+.user-bubble {
+  color: #ffffff !important;
+}
+
+.user-bubble * {
+  color: #ffffff;
+}
+
+.user-bubble rt,
+.user-bubble .ruby-reading {
+  color: rgba(255, 255, 255, 0.95) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  font-weight: 500 !important;
 }
 
 /* ==========================================================================
@@ -560,32 +584,6 @@ select:focus {
   }
 }
 
-/* ==========================================================================
-   Japanese Furigana / Ruby Typography (JLPT N5-N1) & Conversational Layout
-   Clean, proportional, centered Furigana strictly over Kanji with zero overflow
-   ========================================================================== */
-ruby.ruby-unit {
-  ruby-align: center;
-  ruby-position: over;
-  display: inline-ruby;
-  break-inside: avoid;
-  max-width: 100%;
-  white-space: normal;
-}
-
-rt.ruby-reading {
-  font-size: 0.58em;
-  line-height: 1.1;
-  text-align: center;
-  user-select: none;
-  font-weight: 500;
-  color: #71717a;
-  letter-spacing: -0.02em;
-}
-
-.dark rt.ruby-reading {
-  color: #a1a1aa;
-}
 
 /* AI Free Conversation Anti-Overflow Layout Guards */
 .ai-conversation-container {

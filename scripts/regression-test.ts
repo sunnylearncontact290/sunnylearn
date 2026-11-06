@@ -56,6 +56,8 @@ interface TestCase {
   expectedNonInteractiveWords: string[];
   expectedReadings?: Record<string, string>;
   expectedRubyParts?: Record<string, string>;
+  forbiddenReadings?: Array<{ surface: string; forbidden: string }>;
+  expectedFullRubyHtml?: string;
 }
 
 const testCases: TestCase[] = [
@@ -70,7 +72,12 @@ const testCases: TestCase[] = [
     },
     expectedRubyParts: {
       '降りました': '<ruby>降<rt>ふ</rt></ruby>りました'
-    }
+    },
+    forbiddenReadings: [
+      { surface: '降りました', forbidden: 'こう' },
+      { surface: '降りました', forbidden: 'こうりました' }
+    ],
+    expectedFullRubyHtml: '<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>りました。'
   },
   {
     name: 'Test 2 — Contextualの間 in dependent clause (寝ている間に雨が降りました。)',
@@ -163,6 +170,99 @@ const testCases: TestCase[] = [
     expectedRubyParts: {
       '手続き': '<ruby>手続<rt>てつづ</rt></ruby>き'
     }
+  },
+  {
+    name: 'Test 11 — Word-level Counter Compound (三人います。)',
+    sentence: '三人います。',
+    expectedInteractiveWords: ['三人'],
+    expectedNonInteractiveWords: ['います', '。'],
+    expectedReadings: {
+      '三人': 'さんにん',
+      'います': 'います'
+    },
+    expectedRubyParts: {
+      '三人': '<ruby>三人<rt>さんにん</rt></ruby>'
+    }
+  },
+  {
+    name: 'Test 12 — Potential Verb Okurigana Separation (昨日あまり寝られなかったの？)',
+    sentence: '昨日あまり寝られなかったの？',
+    expectedInteractiveWords: ['昨日', '寝られなかった'],
+    expectedNonInteractiveWords: ['あまり', 'の', '？'],
+    expectedReadings: {
+      '昨日': 'きのう',
+      '寝られなかった': 'ねられなかった'
+    },
+    expectedRubyParts: {
+      '昨日': '<ruby>昨日<rt>きのう</rt></ruby>',
+      '寝られなかった': '<ruby>寝<rt>ね</rt></ruby>られなかった'
+    }
+  },
+  {
+    name: 'Test 13 — Conversational Compound Word (大丈夫？)',
+    sentence: '大丈夫？',
+    expectedInteractiveWords: ['大丈夫'],
+    expectedNonInteractiveWords: ['？'],
+    expectedReadings: {
+      '大丈夫': 'だいじょうぶ'
+    },
+    expectedRubyParts: {
+      '大丈夫': '<ruby>大丈夫<rt>だいじょうぶ</rt></ruby>'
+    }
+  },
+  {
+    name: 'Test 14 — Destination & Motion Verb (明日は学校に行きます。)',
+    sentence: '明日は学校に行きます。',
+    expectedInteractiveWords: ['明日', '学校', '行きます'],
+    expectedNonInteractiveWords: ['は', 'に', '。'],
+    expectedReadings: {
+      '明日': 'あした',
+      '学校': 'がっこう',
+      '行きます': 'いきます'
+    },
+    expectedRubyParts: {
+      '明日': '<ruby>明日<rt>あした</rt></ruby>',
+      '学校': '<ruby>学校<rt>がっこう</rt></ruby>',
+      '行きます': '<ruby>行<rt>い</rt></ruby>きます'
+    }
+  },
+  {
+    name: 'Test 15 — Bug from screenshot (ご飯の後で勉強します。)',
+    sentence: 'ご飯の後で勉強します。',
+    expectedInteractiveWords: ['ご飯', '後', '勉強'],
+    expectedNonInteractiveWords: ['の', 'で', 'します', '。'],
+    expectedReadings: {
+      'ご飯': 'ごはん',
+      '後': 'あと',
+      '勉強': 'べんきょう'
+    },
+    expectedRubyParts: {
+      'ご飯': '<ruby>ご飯<rt>ごはん</rt></ruby>',
+      '後': '<ruby>後<rt>あと</rt></ruby>',
+      '勉強': '<ruby>勉強<rt>べんきょう</rt></ruby>'
+    },
+    forbiddenReadings: [
+      { surface: '勉強', forbidden: 'つとめる' },
+      { surface: '勉強', forbidden: 'つよい' }
+    ],
+    expectedFullRubyHtml: '<ruby>ご飯<rt>ごはん</rt></ruby>の<ruby>後<rt>あと</rt></ruby>で<ruby>勉強<rt>べんきょう</rt></ruby>します。'
+  },
+  {
+    name: 'Test 16 — Friend and Play verb (明日は友達と遊びます。)',
+    sentence: '明日は友達と遊びます。',
+    expectedInteractiveWords: ['明日', '友達', '遊びます'],
+    expectedNonInteractiveWords: ['は', 'と', '。'],
+    expectedReadings: {
+      '明日': 'あした',
+      '友達': 'ともだち',
+      '遊びます': 'あそびます'
+    },
+    expectedRubyParts: {
+      '明日': '<ruby>明日<rt>あした</rt></ruby>',
+      '友達': '<ruby>友達<rt>ともだち</rt></ruby>',
+      '遊びます': '<ruby>遊<rt>あそ</rt></ruby>びます'
+    },
+    expectedFullRubyHtml: '<ruby>明日<rt>あした</rt></ruby>は<ruby>友達<rt>ともだち</rt></ruby>と<ruby>遊<rt>あそ</rt></ruby>びます。'
   }
 ];
 
@@ -258,6 +358,34 @@ for (const tc of testCases) {
       } else {
         console.log(`  [PASS] Token "${surf}" ruby verified: "${match.rubyHtml}"`);
       }
+    }
+  }
+
+  // 7. Strictly enforce FORBIDDEN readings (e.g. 勉強 must NEVER contain つとめる or つよい; 降りました must NEVER contain こう)
+  if (tc.forbiddenReadings) {
+    for (const { surface: surf, forbidden } of tc.forbiddenReadings) {
+      const match = tokens.find(t => t.surface === surf);
+      if (match) {
+        if (match.reading.includes(forbidden) || match.rubyHtml.includes(forbidden)) {
+          console.error(`  [CRITICAL FAIL] Token "${surf}" contains FORBIDDEN reading "${forbidden}"! Reading: "${match.reading}", Ruby: "${match.rubyHtml}"`);
+          testPassed = false;
+          totalFailed++;
+        } else {
+          console.log(`  [PASS] Negative assertion verified: "${surf}" does NOT contain forbidden reading "${forbidden}".`);
+        }
+      }
+    }
+  }
+
+  // 8. Expected full ruby HTML output verification
+  if (tc.expectedFullRubyHtml) {
+    const fullHtml = tokens.map(t => t.rubyHtml).join('');
+    if (fullHtml !== tc.expectedFullRubyHtml) {
+      console.error(`  [FAIL] Full sentence ruby HTML mismatch:\n    Expected: "${tc.expectedFullRubyHtml}"\n    Got:      "${fullHtml}"`);
+      testPassed = false;
+      totalFailed++;
+    } else {
+      console.log(`  [PASS] Full sentence ruby HTML verified: "${fullHtml}"`);
     }
   }
 
