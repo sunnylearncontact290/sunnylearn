@@ -12,7 +12,9 @@ import {
   BookA,
   CheckCircle2,
   X,
-  Volume2
+  Volume2,
+  Lock,
+  Play
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { JLPTLevel, CurriculumLesson, CurriculumUnit } from '../../types';
@@ -39,6 +41,7 @@ export const LearningPathView: React.FC = () => {
   const levels: JLPTLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
   const [activeLessonSession, setActiveLessonSession] = useState<CurriculumLesson | null>(null);
+  const [selectedPathLesson, setSelectedPathLesson] = useState<{ lesson: CurriculumLesson; status: any } | null>(null);
   const [guidebookUnit, setGuidebookUnit] = useState<CurriculumUnit | null>(null);
 
   // Generate deterministic units & lessons for selected JLPT level
@@ -295,7 +298,7 @@ export const LearningPathView: React.FC = () => {
                         index={lessonIdx}
                         totalInUnit={unit.lessons.length}
                         unitThemeColor={unit.themeColor}
-                        onSelectLesson={l => setActiveLessonSession(l)}
+                        onSelectLesson={(l, s) => setSelectedPathLesson({ lesson: l, status: s })}
                       />
                     );
                   })}
@@ -389,6 +392,91 @@ export const LearningPathView: React.FC = () => {
           </div>
         </aside>
       </div>
+
+      {/* ========================================================= */}
+      {/* 2.5 LESSON DETAILS BOTTOM SHEET / MODAL                   */}
+      {/* ========================================================= */}
+      {selectedPathLesson && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs p-0 sm:p-4 animate-fade-in">
+          <div
+            className="fixed inset-0"
+            onClick={() => setSelectedPathLesson(null)}
+          />
+          <div className="relative w-full sm:max-w-md bg-white dark:bg-[#181114] rounded-t-3xl sm:rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl p-5 sm:p-6 space-y-4 z-10 animate-slide-up sm:animate-scale-up">
+            <div className="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-stone-800">
+              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300">
+                {selectedPathLesson.lesson.type === 'boss_challenge'
+                  ? '🏆 Бүлгийн Сорил'
+                  : selectedPathLesson.lesson.type === 'review'
+                  ? '🔄 Нэгдсэн Давтлага'
+                  : `Хичээл ${selectedPathLesson.lesson.lessonNumber}`}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-amber-500 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  +{selectedPathLesson.lesson.xpReward} XP
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPathLesson(null)}
+                  className="p-1 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-lg font-black text-stone-900 dark:text-stone-100">
+                {selectedPathLesson.lesson.title}
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
+                {selectedPathLesson.lesson.description}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 text-xs text-stone-600 dark:text-stone-400 py-1.5 px-3 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-100 dark:border-stone-800">
+              <span className="flex items-center gap-1 font-semibold">
+                <BookOpen className="w-3.5 h-3.5 text-[#CC0000]" />
+                {selectedPathLesson.lesson.totalExercises} дасгал
+              </span>
+              <span>•</span>
+              <span>JLPT {selectedPathLesson.lesson.jlptLevel}</span>
+              <span>•</span>
+              <span className="text-amber-500 font-bold">Урамшуулал: +{selectedPathLesson.lesson.xpReward} XP</span>
+            </div>
+
+            {selectedPathLesson.status === 'locked' ? (
+              <div className="p-3.5 rounded-2xl bg-stone-100 dark:bg-stone-800/80 text-center text-xs font-bold text-stone-500 dark:text-stone-400 flex items-center justify-center gap-2">
+                <Lock className="w-4 h-4 shrink-0 text-stone-400" />
+                <span>Өмнөх хичээлийг амжилттай дуусгаж энэхүү хичээлийг нээнэ үү.</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  const lesson = selectedPathLesson.lesson;
+                  setSelectedPathLesson(null);
+                  setActiveLessonSession(lesson);
+                }}
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] text-white font-black text-sm sm:text-base shadow-lg shadow-red-500/25 hover:opacity-95 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {selectedPathLesson.status === 'completed' ? (
+                  <>
+                    <RotateCcw className="w-4 h-4" />
+                    <span>Дахин давтах (+{Math.floor(selectedPathLesson.lesson.xpReward / 2)} XP)</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 fill-current" />
+                    <span>Хичээл эхлүүлэх</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ========================================================= */}
       {/* 3. INTERACTIVE LESSON PLAYER MODAL                        */}

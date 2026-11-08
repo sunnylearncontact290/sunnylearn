@@ -989,6 +989,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const alreadyCompleted = (prev.completedLessonIds || []).includes(lessonId);
       const completedIds = alreadyCompleted ? prev.completedLessonIds : [...(prev.completedLessonIds || []), lessonId];
 
+      // Anti-farming protection: award full XP only once upon genuine completion
+      const effectiveXP = alreadyCompleted ? 0 : earnedXP;
+
       const currentGamification = prev.gamification || {
         totalXP: 0,
         level: 1,
@@ -1005,8 +1008,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         unlockedBadgeIds: []
       };
 
-      const newDailyXP = (currentGamification.dailyXP || 0) + earnedXP;
-      const newTotalXP = (currentGamification.totalXP || 0) + earnedXP;
+      const newDailyXP = (currentGamification.dailyXP || 0) + effectiveXP;
+      const newTotalXP = (currentGamification.totalXP || 0) + effectiveXP;
       const newlyReached = !currentGamification.dailyGoalCompleted && newDailyXP >= (currentGamification.dailyGoalXP || 20);
       const updatedStreak = newlyReached ? (currentGamification.currentStreak || 0) + 1 : currentGamification.currentStreak;
 
@@ -1031,7 +1034,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
       storageService.saveProgress(updated);
 
-      if (newlyReached) {
+      if (alreadyCompleted) {
+        showToast('Хичээлийг амжилттай давтлаа! (Өмнө нь суралцсан тул давтан XP олгогдохгүй)', 'info');
+      } else if (newlyReached) {
         showToast('🎉 Өнөөдрийн 20 XP зорилго биеллээ! 🔥 Streak нэмэгдлээ!', 'success');
       } else {
         showToast(`+${earnedXP} XP • Хичээл амжилттай дууслаа!`, 'success');

@@ -5,7 +5,7 @@ export type MainTab = 'home' | 'learn' | 'dictionary' | 'practice' | 'quiz' | 'r
 export const PREMIUM_PRICE_YEN = 480;
 export const PREMIUM_DURATION_DAYS = 30;
 
-export type LearnSubTab = 'path' | 'vocab' | 'kanji' | 'grammar';
+export type LearnSubTab = 'path' | 'vocab' | 'kanji' | 'grammar' | 'flashcards';
 
 export type AdminSubTab = 'stats' | 'vocab' | 'kanji' | 'grammar' | 'examples' | 'lessons' | 'reading' | 'listening' | 'quizzes' | 'categories' | 'feedback' | 'payments';
 

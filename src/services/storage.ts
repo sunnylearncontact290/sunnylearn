@@ -10,6 +10,7 @@ const PROGRESS_STORAGE_KEY = 'nihongo_mongol_progress_v1';
 const THEME_STORAGE_KEY = 'nihongo_mongol_theme_v1';
 const SELECTED_LEVEL_STORAGE_KEY = 'nihongo_mongol_selected_level_v1';
 const BANNER_DISMISSED_KEY = 'nihongo_mongol_sync_banner_dismissed_v1';
+const ONBOARDING_COMPLETED_KEY = 'nihongo_mongol_onboarding_completed_v1';
 
 let activeUserId: string | null = null;
 
@@ -105,6 +106,29 @@ export const storageService = {
       }
     } catch (e) {
       console.error('Failed to save banner dismissed state:', e);
+    }
+  },
+
+  isOnboardingCompleted(): boolean {
+    if (typeof window === 'undefined') return true;
+    try {
+      if (this.getSelectedLevel()) return true;
+      return localStorage.getItem(ONBOARDING_COMPLETED_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  },
+
+  setOnboardingCompleted(completed: boolean) {
+    if (typeof window === 'undefined') return;
+    try {
+      if (completed) {
+        localStorage.setItem(ONBOARDING_COMPLETED_KEY, 'true');
+      } else {
+        localStorage.removeItem(ONBOARDING_COMPLETED_KEY);
+      }
+    } catch (e) {
+      console.error('Failed to save onboarding completed state:', e);
     }
   },
 

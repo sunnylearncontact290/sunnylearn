@@ -14,7 +14,8 @@ import {
   ShieldCheck,
   Sparkles,
   CreditCard,
-  Clock
+  Clock,
+  Compass
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { storageService } from '../../services/storage';
@@ -24,6 +25,8 @@ import { PremiumView } from '../premium/PremiumView';
 export const ProfileView: React.FC = () => {
   const {
     userProgress,
+    selectedLevel,
+    setSelectedLevel,
     showToast,
     isDarkMode,
     setDarkMode,
@@ -282,6 +285,44 @@ export const ProfileView: React.FC = () => {
 
           {/* Settings Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* JLPT Target Level Selection */}
+        <div className="p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-4 md:col-span-2">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <Compass className="w-5 h-5 text-[#CC0000]" />
+              <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
+                Суралцах JLPT түвшин
+              </h2>
+            </div>
+            <span className="text-xs font-black px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-[#CC0000] dark:text-[#FF6699]">
+              Идэвхтэй: {selectedLevel || 'N5'}
+            </span>
+          </div>
+          <p className="text-xs text-stone-500">
+            Та түвшнээ хэдийд ч сольж болох бөгөөд өмнөх түвшний сурсан үг, ханз, XP, streak хэзээ ч устахгүй найдвартай хадгалагдана.
+          </p>
+
+          <div className="grid grid-cols-5 gap-2">
+            {(['N5', 'N4', 'N3', 'N2', 'N1'] as const).map(lvl => (
+              <button
+                key={lvl}
+                type="button"
+                onClick={() => {
+                  setSelectedLevel(lvl);
+                  showToast(`JLPT ${lvl} түвшин рүү амжилттай шилжлээ.`, 'success');
+                }}
+                className={`py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all border cursor-pointer ${
+                  (selectedLevel || 'N5') === lvl
+                    ? 'bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white border-transparent shadow-md shadow-red-500/25 scale-[1.02]'
+                    : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700'
+                }`}
+              >
+                {lvl}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Daily Goal */}
         <div className="p-6 rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm space-y-4">
           <div className="flex items-center gap-2">

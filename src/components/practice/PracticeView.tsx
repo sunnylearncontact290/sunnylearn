@@ -35,6 +35,7 @@ export const PracticeView: React.FC = () => {
     recordAnswer,
     recordPracticeCompleted,
     setActiveTab,
+    setLearnSubTab,
     practiceMissedItems,
     setPracticeMissedItems,
     isPremium,
@@ -665,6 +666,38 @@ export const PracticeView: React.FC = () => {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Smart Flashcard Banner */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-[#990000] via-[#CC0000] to-[#FF3366] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-red-500/20">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/20 border border-white/10">
+              Шинэ • SRS
+            </span>
+            <span className="text-xs font-bold text-amber-200">
+              ✨ Ухаалаг Флаш карт
+            </span>
+          </div>
+          <h3 className="text-lg sm:text-xl font-black">
+            Үг ба Ханзны 3D Флаш карт
+          </h3>
+          <p className="text-xs sm:text-sm text-white/80 max-w-xl">
+            Картыг эргүүлэн утга, дуудлага, ханзны зурах хөдөлгөөнт дараалал болон Sunny AI тайлбарыг үзэж "Дахин үзэх" / "Мэдэж байна" үйлдлээр ой тогтоолтоо баталгаажуулаарай.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setLearnSubTab('flashcards');
+            setActiveTab('learn');
+          }}
+          className="px-5 py-3 rounded-2xl bg-white text-[#990000] hover:bg-stone-50 active:scale-95 text-xs sm:text-sm font-black transition-all cursor-pointer shadow-md flex items-center justify-center gap-2 shrink-0"
+        >
+          <span>Флаш карт нээх</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Category Grid */}

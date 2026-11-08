@@ -3,7 +3,8 @@ import {
   BookOpen,
   Sparkles,
   BookA,
-  Compass
+  Compass,
+  Layers
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { JLPTLevel, LearnSubTab } from '../../types';
@@ -11,6 +12,7 @@ import { VocabList } from './VocabList';
 import { KanjiList } from './KanjiList';
 import { GrammarList } from './GrammarList';
 import { LearningPathView } from '../path/LearningPathView';
+import { FlashcardView } from '../flashcards/FlashcardView';
 
 export const LearnHub: React.FC = () => {
   const {
@@ -31,6 +33,12 @@ export const LearnHub: React.FC = () => {
       label: 'Сургалтын Зам',
       icon: Compass,
       badge: '2.0'
+    },
+    {
+      id: 'flashcards',
+      label: 'Флаш карт',
+      icon: Layers,
+      badge: 'SRS'
     },
     {
       id: 'vocab',
@@ -129,6 +137,7 @@ export const LearnHub: React.FC = () => {
       {/* Main Sub-view Content */}
       <div className="min-h-[500px]">
         {effectiveSubTab === 'path' && <LearningPathView />}
+        {effectiveSubTab === 'flashcards' && <FlashcardView />}
         {effectiveSubTab === 'vocab' && <VocabList />}
         {effectiveSubTab === 'kanji' && <KanjiList />}
         {effectiveSubTab === 'grammar' && <GrammarList />}

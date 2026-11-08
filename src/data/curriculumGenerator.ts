@@ -171,6 +171,38 @@ const UNIT_BLUEPRINTS: Record<JLPTLevel, UnitMetadata[]> = {
 };
 
 /**
+ * Pedagogical priority scoring for Japanese vocabulary (N5–N1).
+ * Foundational concepts (greetings, numbers, pronouns, basic verbs) appear first.
+ */
+function getVocabPedagogicalScore(item: VocabularyItem): number {
+  const text = `${item.japanese} ${item.reading || ''} ${item.mongolian || ''}`;
+  
+  if (/(こんにちは|おはよう|ありがとう|すみません|はい|いいえ|はじめまして|どうぞ|さようなら|よろしく)/.test(text)) return 100;
+  if (/(わたし|私|あなた|だれ|何|これ|それ|あれ|どれ|ここ|そこ|どこ)/.test(text)) return 90;
+  if (/(一|二|三|四|五|六|七|八|九|十|百|千|万|ひとつ|ふたつ|みっつ|円|歳)/.test(text)) return 85;
+  if (/(今日|明日|昨日|今|毎日|朝|昼|晩|夜|月|火|水|木|金|土|日|年|時|分|週)/.test(text)) return 80;
+  if (/(父|母|兄|弟|姉|妹|家族|友だち|友達|先生|学生|人)/.test(text)) return 75;
+  if (/(食べる|飲む|行く|来る|帰る|見る|聞く|読む|書く|話す|する|寝る|起きる|買う|会う)/.test(text)) return 70;
+  if (/(大きい|小さい|いい|良い|悪い|高い|安い|新しい|古い|暑い|寒い|近い|遠い|おいしい)/.test(text)) return 65;
+  if (/(家|学校|駅|店|レストラン|部屋|ご飯|水|お茶|パン|肉|魚)/.test(text)) return 60;
+  
+  return 50;
+}
+
+/**
+ * Pedagogical priority scoring for Kanji.
+ */
+function getKanjiPedagogicalScore(item: KanjiItem): number {
+  const char = item.kanji;
+  if (/[一二三四五六七八九十百千万]/.test(char)) return 100;
+  if (/[日月火水木金土]/.test(char)) return 90;
+  if (/[人男女子上中下左右大小]/.test(char)) return 80;
+  if (/[年時分今先生学校]/.test(char)) return 70;
+  if (/[見行来食飲書読話買]/.test(char)) return 60;
+  return 50;
+}
+
+/**
  * Deterministically synthesizes curated units and lessons from the existing N5–N1 database.
  * Guarantees zero data loss: uses existing vocabulary, kanji, and grammar datasets directly.
  */
@@ -180,8 +212,15 @@ export function generateCurriculumForLevel(
   allKanji: KanjiItem[],
   allGrammar: GrammarItem[]
 ): CurriculumUnit[] {
-  const levelVocab = allVocab.filter(v => v.jlptLevel === level);
-  const levelKanji = allKanji.filter(k => k.jlptLevel === level);
+  // Pedagogically sort vocabulary and kanji within the chosen level
+  const levelVocab = allVocab
+    .filter(v => v.jlptLevel === level)
+    .sort((a, b) => getVocabPedagogicalScore(b) - getVocabPedagogicalScore(a));
+
+  const levelKanji = allKanji
+    .filter(k => k.jlptLevel === level)
+    .sort((a, b) => getKanjiPedagogicalScore(b) - getKanjiPedagogicalScore(a));
+
   const levelGrammar = allGrammar.filter(g => g.jlptLevel === level);
 
   const blueprints = UNIT_BLUEPRINTS[level] || UNIT_BLUEPRINTS.N5;

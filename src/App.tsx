@@ -21,11 +21,20 @@ import { RoleplayView } from './components/roleplay/RoleplayView';
 import { QuizExplanationModal } from './components/quiz/QuizExplanationModal';
 import { FeedbackModal } from './components/common/FeedbackModal';
 import { MobileTabBar } from './components/common/MobileTabBar';
+import { OnboardingModal } from './components/common/OnboardingModal';
+import { storageService } from './services/storage';
 import { Analytics } from '@vercel/analytics/react';
 import { configureNativeSystemUI, hideNativeSplashScreen } from './services/nativePlatform';
 
 const MainContent: React.FC = () => {
-  const { activeTab, setActiveTab, isAdmin, inAppNotification, dismissInAppNotification, isDarkMode } = useApp();
+  const { activeTab, setActiveTab, selectedLevel, isAdmin, inAppNotification, dismissInAppNotification, isDarkMode } = useApp();
+  const [isOnboardingOpen, setIsOnboardingOpen] = React.useState(false);
+
+  useEffect(() => {
+    if (!selectedLevel && !storageService.isOnboardingCompleted()) {
+      setIsOnboardingOpen(true);
+    }
+  }, [selectedLevel]);
 
   // Native iOS / mobile system UI setup
   useEffect(() => {
@@ -92,6 +101,7 @@ const MainContent: React.FC = () => {
       <AuthModal />
       <FeedbackModal />
       <QuizExplanationModal />
+      <OnboardingModal isOpen={isOnboardingOpen} onClose={() => setIsOnboardingOpen(false)} />
       <ToastContainer />
     </div>
   );
