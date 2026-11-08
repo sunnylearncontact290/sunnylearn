@@ -125168,6 +125168,54 @@ var initialSeedData = {
       exampleMongolian: "\u0428\u0438\u043D\u044D \u0443\u0445\u0430\u0430\u043B\u0430\u0433 \u0443\u0442\u0430\u0441 \u0445\u0443\u0434\u0430\u043B\u0434\u0430\u0436 \u0430\u0432\u0441\u0430\u043D.",
       createdAt: "2026-01-01T00:00:00Z"
     },
+    {
+      id: "v-n5-06",
+      japanese: "\u964D\u308B",
+      kanji: "\u964D\u308B",
+      reading: "\u3075\u308B",
+      romaji: "furu",
+      mongolian: "\u041E\u0440\u043E\u0445 (\u0431\u043E\u0440\u043E\u043E, \u0446\u0430\u0441 \u043E\u0440\u043E\u0445)",
+      explanation: "\u0422\u044D\u043D\u0433\u044D\u0440\u044D\u044D\u0441 \u0431\u043E\u0440\u043E\u043E, \u0446\u0430\u0441 \u043E\u0440\u043E\u0445 \u04AF\u0439\u043B\u0438\u0439\u0433 \u0438\u043B\u044D\u0440\u0445\u0438\u0439\u043B\u043D\u044D. (1-\u0440 \u0431\u04AF\u043B\u0433\u0438\u0439\u043D \u04AF\u0439\u043B \u04AF\u0433: \u964D\u308A\u307E\u3059, \u964D\u3063\u3066, \u964D\u3063\u305F)",
+      partOfSpeech: "\u04AE\u0439\u043B \u04AF\u0433 (1-\u0440 \u0431\u04AF\u043B\u044D\u0433)",
+      jlptLevel: "N5",
+      category: "\u0411\u0430\u0439\u0433\u0430\u043B\u044C, \u0426\u0430\u0433 \u0430\u0433\u0430\u0430\u0440",
+      exampleSentence: "\u96E8\u304C\u964D\u308A\u307E\u3057\u305F\u3002",
+      exampleReading: "\u3042\u3081\u304C\u3075\u308A\u307E\u3057\u305F\u3002",
+      exampleMongolian: "\u0411\u043E\u0440\u043E\u043E \u043E\u0440\u0441\u043E\u043D.",
+      createdAt: "2026-01-01T00:00:00Z"
+    },
+    {
+      id: "v-n5-07",
+      japanese: "\u9593",
+      kanji: "\u9593",
+      reading: "\u3042\u3044\u3060",
+      romaji: "aida",
+      mongolian: "\u0425\u043E\u043E\u0440\u043E\u043D\u0434, \u0445\u0443\u0433\u0430\u0446\u0430\u0430, \u0437\u0430\u0439",
+      explanation: "\u041E\u0440\u043E\u043D \u0437\u0430\u0439 \u0431\u043E\u043B\u043E\u043D \u0446\u0430\u0433 \u0445\u0443\u0433\u0430\u0446\u0430\u0430\u043D\u044B \u0445\u043E\u043E\u0440\u043E\u043D\u0434, \u0437\u0430\u0439\u0433 \u0437\u0430\u0430\u043D\u0430.",
+      partOfSpeech: "\u041D\u044D\u0440 \u04AF\u0433",
+      jlptLevel: "N5",
+      category: "\u04E8\u0434\u04E9\u0440 \u0442\u0443\u0442\u043C\u044B\u043D \u0430\u043C\u044C\u0434\u0440\u0430\u043B",
+      exampleSentence: "\u5BDD\u3066\u3044\u308B\u9593\u306B\u96E8\u304C\u964D\u308A\u307E\u3057\u305F\u3002",
+      exampleReading: "\u306D\u3066\u3044\u308B\u3042\u3044\u3060\u306B\u3042\u3081\u304C\u3075\u308A\u307E\u3057\u305F\u3002",
+      exampleMongolian: "\u0423\u043D\u0442\u0430\u0436 \u0431\u0430\u0439\u0445 \u0445\u043E\u043E\u0440\u043E\u043D\u0434 \u0431\u043E\u0440\u043E\u043E \u043E\u0440\u0441\u043E\u043D.",
+      createdAt: "2026-01-01T00:00:00Z"
+    },
+    {
+      id: "v-n5-08",
+      japanese: "\u5BDD\u308B",
+      kanji: "\u5BDD\u308B",
+      reading: "\u306D\u308B",
+      romaji: "neru",
+      mongolian: "\u0423\u043D\u0442\u0430\u0445, \u0445\u044D\u0432\u0442\u044D\u0445",
+      explanation: "\u041E\u0440\u043E\u043D\u0434\u043E\u043E \u043E\u0440\u043E\u0445, \u0443\u043D\u0442\u0430\u0445 \u04AF\u0439\u043B. (2-\u0440 \u0431\u04AF\u043B\u0433\u0438\u0439\u043D \u04AF\u0439\u043B \u04AF\u0433: \u5BDD\u307E\u3059, \u5BDD\u3066, \u5BDD\u305F)",
+      partOfSpeech: "\u04AE\u0439\u043B \u04AF\u0433 (2-\u0440 \u0431\u04AF\u043B\u044D\u0433)",
+      jlptLevel: "N5",
+      category: "\u04E8\u0434\u04E9\u0440 \u0442\u0443\u0442\u043C\u044B\u043D \u0430\u043C\u044C\u0434\u0440\u0430\u043B",
+      exampleSentence: "\u6BCE\u6669\u5341\u4E00\u6642\u306B\u5BDD\u307E\u3059\u3002",
+      exampleReading: "\u307E\u3044\u3070\u3093\u3058\u3085\u3046\u3044\u3061\u3058\u306B\u306D\u307E\u3059\u3002",
+      exampleMongolian: "\u0411\u0438 \u043E\u0440\u043E\u0439 \u0431\u04AF\u0440 11 \u0446\u0430\u0433\u0442 \u0443\u043D\u0442\u0434\u0430\u0433.",
+      createdAt: "2026-01-01T00:00:00Z"
+    },
     // N4
     ...n4VocabList,
     {
@@ -125733,7 +125781,17 @@ var initialSeedData = {
   ]
 };
 
+// src/types/index.ts
+var PREMIUM_PRICE_YEN = 480;
+
 // src/data/accessControl.ts
+var COMPLIMENTARY_PREMIUM_EMAIL = "uugii.su@gmail.com";
+var PUBLIC_BETA_ENABLED = typeof process !== "undefined" && process.env?.PUBLIC_BETA_ENABLED !== void 0 ? process.env.PUBLIC_BETA_ENABLED !== "false" : true;
+function isComplimentaryPremiumAccount(email) {
+  if (!email) return false;
+  const clean = email.toLowerCase().trim();
+  return clean === COMPLIMENTARY_PREMIUM_EMAIL.toLowerCase().trim() || clean === "uugii.su@gmai.com";
+}
 var FREE_LIMITS = {
   VOCABULARY: 50,
   KANJI: 35,
@@ -125850,7 +125908,10 @@ function buildFreeTierData(database) {
   };
 }
 ensureAccessTiers(initialSeedData);
-var freeTierSeedData = buildFreeTierData(initialSeedData);
+var freeTierSeedData = PUBLIC_BETA_ENABLED ? {
+  ...initialSeedData,
+  counts: computeLevelCounts(initialSeedData)
+} : buildFreeTierData(initialSeedData);
 
 // src/data/roleplayScenarios.ts
 var INITIAL_ROLEPLAY_SCENARIOS = [
@@ -126735,15 +126796,15 @@ Admin:
 https://ais-dev-seaxwrqdabhqsqbm3l76x6-109960249109.asia-east1.run.app`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; color: #1f2937;">
-          <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; padding: 20px 24px; border-radius: 12px; margin-bottom: 24px;">
+          <div style="background: linear-gradient(135deg, #990000 0%, #CC0000 50%, #FF3366 100%); color: #ffffff; padding: 20px 24px; border-radius: 12px; margin-bottom: 24px;">
             <div style="display: inline-block; background: rgba(255,255,255,0.25); font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; margin-bottom: 6px;">SunnyLearn Premium</div>
             <h2 style="margin: 0; font-size: 21px; font-weight: 800; letter-spacing: -0.025em;">\u{1F514} \u0428\u0438\u043D\u044D \u0442\u04E9\u043B\u0431\u04E9\u0440 \u0448\u0430\u043B\u0433\u0430\u0445 \u0445\u04AF\u0441\u044D\u043B\u0442</h2>
             <p style="margin: 6px 0 0; font-size: 13px; opacity: 0.95;">\u0425\u044D\u0440\u044D\u0433\u043B\u044D\u0433\u0447 \u0431\u0430\u043D\u043A\u043D\u044B \u0448\u0438\u043B\u0436\u04AF\u04AF\u043B\u044D\u0433 \u0445\u0438\u0439\u0441\u044D\u043D \u0442\u0443\u0445\u0430\u0439 \u043C\u044D\u0434\u044D\u044D\u043B\u044D\u043B \u0438\u043B\u0433\u044D\u044D\u043B\u044D\u044D</p>
           </div>
           
-          <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-            <div style="font-size: 12px; color: #92400e; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">\u0422\u04E9\u043B\u0431\u04E9\u0440\u0438\u0439\u043D \u0434\u04AF\u043D & \u0411\u0430\u0433\u0446</div>
-            <div style="font-size: 24px; font-weight: 900; color: #78350f;">\xA5880 <span style="font-size: 14px; font-weight: 600; color: #b45309;">/ SunnyLearn Premium \u2014 30 days</span></div>
+          <div style="background: #fff7ed; border: 1px solid #ffedd5; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+            <div style="font-size: 12px; color: #9a3412; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">\u0422\u04E9\u043B\u0431\u04E9\u0440\u0438\u0439\u043D \u0434\u04AF\u043D & \u0411\u0430\u0433\u0446</div>
+            <div style="font-size: 24px; font-weight: 900; color: #7c2d12;">\xA5480 <span style="font-size: 14px; font-weight: 600; color: #c2410c;">/ SunnyLearn Premium \u2014 30 days</span></div>
           </div>
 
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px;">
@@ -126773,14 +126834,14 @@ https://ais-dev-seaxwrqdabhqsqbm3l76x6-109960249109.asia-east1.run.app`,
             </tr>
             <tr>
               <td style="padding: 10px 0; color: #6b7280; font-weight: 600;">Status:</td>
-              <td style="padding: 10px 0;"><span style="display: inline-block; background-color: #fef3c7; color: #92400e; font-weight: 800; font-size: 12px; padding: 3px 10px; border-radius: 9999px;">PENDING (\u0428\u0430\u043B\u0433\u0430\u0436 \u0431\u0430\u0439\u043D\u0430)</span></td>
+              <td style="padding: 10px 0;"><span style="display: inline-block; background-color: #ffedd5; color: #9a3412; font-weight: 800; font-size: 12px; padding: 3px 10px; border-radius: 9999px;">PENDING (\u0428\u0430\u043B\u0433\u0430\u0436 \u0431\u0430\u0439\u043D\u0430)</span></td>
             </tr>
           </table>
 
           <div style="background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 16px; border-radius: 8px; margin-bottom: 24px; font-size: 13px; color: #1e40af; line-height: 1.6;">
             <div style="font-weight: 800; font-size: 14px; margin-bottom: 4px;">\u26A0\uFE0F \u0410\u0434\u043C\u0438\u043D\u044B \u0437\u0430\u0430\u0432\u0430\u0440\u0447\u0438\u043B\u0433\u0430\u0430:</div>
             <strong>\u3086\u3046\u3061\u3087\u9280\u884C\u3078\u306E\u5165\u91D1\u3092\u78BA\u8A8D\u3057\u3066\u304B\u3089\u627F\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002</strong><br/>
-            1. \u3086\u3046\u3061\u3087\u9280\u884C \u0434\u0430\u043D\u0441\u0430\u0430 \u0448\u0430\u043B\u0433\u0430\u0436 \xA5880 \u043E\u0440\u0436 \u0438\u0440\u0441\u043D\u0438\u0439\u0433 \u0431\u0430\u0442\u0430\u043B\u0433\u0430\u0430\u0436\u0443\u0443\u043B\u043D\u0430.<br/>
+            1. \u3086\u3046\u3061\u3087\u9280\u884C \u0434\u0430\u043D\u0441\u0430\u0430 \u0448\u0430\u043B\u0433\u0430\u0436 \xA5480 \u043E\u0440\u0436 \u0438\u0440\u0441\u043D\u0438\u0439\u0433 \u0431\u0430\u0442\u0430\u043B\u0433\u0430\u0430\u0436\u0443\u0443\u043B\u043D\u0430.<br/>
             2. \u0428\u0438\u043B\u0436\u04AF\u04AF\u043B\u044D\u0433\u0447\u0438\u0439\u043D \u043D\u044D\u0440 (<strong>${escapeHtml(payment.senderName)}</strong>) \u0431\u043E\u043B\u043E\u043D \u043E\u0433\u043D\u043E\u043E\u0433 \u0442\u0443\u043B\u0433\u0430\u043D\u0430.<br/>
             3. \u0410\u0434\u043C\u0438\u043D \u0441\u0430\u043C\u0431\u0430\u0440\u0442 \u043D\u044D\u0432\u0442\u044D\u0440\u0447 \u0433\u0430\u0440\u0430\u0430\u0440 <strong>[ \u627F\u8A8D / \u0417\u04E9\u0432\u0448\u04E9\u04E9\u0440\u04E9\u0445 ]</strong> \u0442\u043E\u0432\u0447 \u0434\u0430\u0440\u043D\u0430.<br/>
             <em>* \u042D\u043D\u044D\u0445\u04AF\u04AF \u0438\u043C\u044D\u0439\u043B\u0438\u0439\u0433 \u043D\u044D\u044D\u0441\u043D\u044D\u044D\u0440 \u044D\u0441\u0432\u044D\u043B \u0442\u043E\u0432\u0447 \u0434\u0430\u0440\u0441\u043D\u0430\u0430\u0440 \u0442\u04E9\u043B\u0431\u04E9\u0440 \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0430\u0430\u0440 \u0431\u0430\u0442\u0430\u043B\u0433\u0430\u0430\u0436\u0438\u0445\u0433\u04AF\u0439.</em>
@@ -126808,8 +126869,9 @@ var activeUserTokens = /* @__PURE__ */ new Map();
 function generateUserToken(userId, email, isPremium = false, premiumExpiresAt = null, name = "") {
   const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1e3;
   const isSpecialAdmin = email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
-  const prem = isSpecialAdmin ? true : isPremium;
-  const premExp = isSpecialAdmin ? "2099-12-31T23:59:59.000Z" : premiumExpiresAt;
+  const isSpecialComp = isComplimentaryPremiumAccount(email);
+  const prem = isSpecialAdmin || isSpecialComp ? true : isPremium;
+  const premExp = isSpecialAdmin || isSpecialComp ? "2099-12-31T23:59:59.000Z" : premiumExpiresAt;
   const payloadStr = JSON.stringify({ userId, email, isPremium: prem, premiumExpiresAt: premExp, name, expiresAt });
   const b64Payload = Buffer.from(payloadStr).toString("base64url");
   const signature = crypto.createHmac("sha256", JWT_SECRET).update(b64Payload).digest("base64url");
@@ -126963,10 +127025,17 @@ function getRequesterAccess(req) {
     if (isSpecialAdmin) {
       return { isPremium: true, isAdmin: true, userId: userSession.userId, userEmail: userSession.email };
     }
+    const isSpecialComp = userSession.email && isComplimentaryPremiumAccount(userSession.email);
+    if (isSpecialComp) {
+      return { isPremium: true, isAdmin: false, userId: userSession.userId, userEmail: userSession.email };
+    }
     const user = (db.users || []).find((u) => u.id === userSession.userId || u.email.toLowerCase() === userSession.email.toLowerCase());
     if (user) {
       if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
         return { isPremium: true, isAdmin: true, userId: user.id, userEmail: user.email };
+      }
+      if (isComplimentaryPremiumAccount(user.email)) {
+        return { isPremium: true, isAdmin: false, userId: user.id, userEmail: user.email };
       }
       const isPremium = !!(user.isPremium && user.premiumExpiresAt && new Date(user.premiumExpiresAt).getTime() > Date.now());
       return { isPremium, isAdmin: false, userId: user.id, userEmail: user.email };
@@ -127078,7 +127147,7 @@ app.get(
 app.get("/api/data", (req, res) => {
   const access = getRequesterAccess(req);
   const counts = computeLevelCounts(db);
-  if (access.isPremium || access.isAdmin) {
+  if (PUBLIC_BETA_ENABLED || access.isPremium || access.isAdmin) {
     return res.json({
       categories: db.categories,
       vocabulary: db.vocabulary,
@@ -127089,11 +127158,22 @@ app.get("/api/data", (req, res) => {
       reading: db.reading,
       listening: db.listening,
       quizzes: db.quizzes,
-      counts
+      counts,
+      publicBeta: PUBLIC_BETA_ENABLED
     });
   }
   const freeTierData = buildFreeTierData(db);
-  res.json(freeTierData);
+  res.json({
+    ...freeTierData,
+    publicBeta: false
+  });
+});
+app.get("/api/config/launch-mode", (_req, res) => {
+  res.json({
+    publicBeta: PUBLIC_BETA_ENABLED,
+    platform: "SunnyLearn",
+    version: "1.0.0-beta"
+  });
 });
 function stripFuriganaServer(text) {
   if (!text) return "";
@@ -127113,14 +127193,20 @@ function stripFuriganaServer(text) {
   return s;
 }
 var ttsQuotaCooldownUntil = 0;
-var ttsQuotaReason = "";
-var EdgeTTSConnectionManager = class {
+var EdgeTTSConnectionManager = class _EdgeTTSConnectionManager {
   constructor(voice) {
     this.client = null;
     this.initPromise = null;
     this.voice = voice;
   }
+  static {
+    this.isUnavailable = false;
+  }
+  static isDisabled() {
+    return _EdgeTTSConnectionManager.isUnavailable;
+  }
   async getClient() {
+    if (_EdgeTTSConnectionManager.isUnavailable) return null;
     if (this.client) return this.client;
     if (this.initPromise) return this.initPromise;
     this.initPromise = (async () => {
@@ -127130,7 +127216,7 @@ var EdgeTTSConnectionManager = class {
         this.client = c;
         return c;
       } catch (err) {
-        console.warn(`[EdgeTTS Init Warning - ${this.voice}]`, err);
+        _EdgeTTSConnectionManager.isUnavailable = true;
         this.client = null;
         return null;
       } finally {
@@ -127140,6 +127226,7 @@ var EdgeTTSConnectionManager = class {
     return this.initPromise;
   }
   async synthesize(cleanText) {
+    if (_EdgeTTSConnectionManager.isUnavailable) return null;
     const pooled = await this.getClient();
     if (pooled) {
       try {
@@ -127197,6 +127284,7 @@ var EdgeTTSConnectionManager = class {
     });
   }
   synthesizeOneShot(text) {
+    if (_EdgeTTSConnectionManager.isUnavailable) return Promise.resolve(null);
     return new Promise((resolve) => {
       let settled = false;
       let ttsInstance = null;
@@ -127261,6 +127349,47 @@ var EdgeTTSConnectionManager = class {
 };
 var femaleEdgeManager = new EdgeTTSConnectionManager("ja-JP-NanamiNeural");
 var maleEdgeManager = new EdgeTTSConnectionManager("ja-JP-KeitaNeural");
+async function fetchGoogleJapaneseTTS(cleanText) {
+  try {
+    const chunks = [];
+    if (cleanText.length <= 160) {
+      chunks.push(cleanText);
+    } else {
+      const parts = cleanText.split(/([。！？!?\n]+)/);
+      let current = "";
+      for (const p of parts) {
+        if ((current + p).length > 160) {
+          if (current.trim()) chunks.push(current.trim());
+          current = p;
+        } else {
+          current += p;
+        }
+      }
+      if (current.trim()) chunks.push(current.trim());
+    }
+    const buffers = [];
+    for (const chunk of chunks) {
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=ja&client=tw-ob`;
+      const resp = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Referer": "https://translate.google.com/"
+        }
+      });
+      if (!resp.ok) {
+        return null;
+      }
+      const arrayBuffer = await resp.arrayBuffer();
+      buffers.push(Buffer.from(arrayBuffer));
+    }
+    if (buffers.length === 0) return null;
+    const combined = Buffer.concat(buffers);
+    return `data:audio/mp3;base64,${combined.toString("base64")}`;
+  } catch (err) {
+    console.warn("[Google Japanese TTS Warning]", err);
+    return null;
+  }
+}
 async function generateNeuralJapaneseAudio(text, voiceName = "Aoede") {
   const clean = stripFuriganaServer(text);
   if (!clean || clean.length === 0) return null;
@@ -127292,51 +127421,41 @@ async function generateNeuralJapaneseAudio(text, voiceName = "Aoede") {
     } catch {
     }
   }
-  try {
-    const manager = isMale ? maleEdgeManager : femaleEdgeManager;
-    const edgeAudio = await manager.synthesize(clean);
-    if (edgeAudio) {
-      audioMemoryCache.set(cacheKey, edgeAudio);
-      try {
-        const base64Data = edgeAudio.replace(/^data:audio\/mp3;base64,/, "");
-        fs.writeFileSync(diskPathMp3, Buffer.from(base64Data, "base64"));
-      } catch {
-      }
-      return edgeAudio;
-    }
-  } catch (edgeErr) {
-    console.warn("[Primary Neural TTS Warning]", edgeErr);
-  }
   if (Date.now() >= ttsQuotaCooldownUntil) {
     try {
       const ai = getGeminiClient();
       if (ai) {
-        const resp = await ai.models.generateContent({
-          model: "gemini-3.1-flash-tts-preview",
-          contents: clean,
-          config: {
-            responseModalities: ["AUDIO"],
-            speechConfig: {
-              voiceConfig: {
-                prebuiltVoiceConfig: {
-                  voiceName: geminiVoice
+        for (const ttsModel of ["gemini-3.8-flash-tts", "gemini-3.1-flash-tts-preview"]) {
+          try {
+            const resp = await ai.models.generateContent({
+              model: ttsModel,
+              contents: clean,
+              config: {
+                responseModalities: ["AUDIO"],
+                speechConfig: {
+                  voiceConfig: {
+                    prebuiltVoiceConfig: {
+                      voiceName: geminiVoice
+                    }
+                  }
                 }
               }
+            });
+            const parts = resp.candidates?.[0]?.content?.parts || [];
+            const audioPart = parts.find((p) => p.inlineData?.mimeType?.startsWith("audio/"));
+            if (audioPart && audioPart.inlineData?.data) {
+              const pcmBuffer = Buffer.from(audioPart.inlineData.data, "base64");
+              const wavBuffer = pcmToWavBuffer(pcmBuffer, 24e3, 1, 16);
+              const uri = `data:audio/wav;base64,${wavBuffer.toString("base64")}`;
+              audioMemoryCache.set(cacheKey, uri);
+              try {
+                fs.writeFileSync(diskPathWav, wavBuffer);
+              } catch {
+              }
+              return uri;
             }
-          }
-        });
-        const parts = resp.candidates?.[0]?.content?.parts || [];
-        const audioPart = parts.find((p) => p.inlineData?.mimeType?.startsWith("audio/"));
-        if (audioPart && audioPart.inlineData?.data) {
-          const pcmBuffer = Buffer.from(audioPart.inlineData.data, "base64");
-          const wavBuffer = pcmToWavBuffer(pcmBuffer, 24e3, 1, 16);
-          const uri = `data:audio/wav;base64,${wavBuffer.toString("base64")}`;
-          audioMemoryCache.set(cacheKey, uri);
-          try {
-            fs.writeFileSync(diskPathWav, wavBuffer);
           } catch {
           }
-          return uri;
         }
       }
     } catch (err) {
@@ -127344,12 +127463,38 @@ async function generateNeuralJapaneseAudio(text, voiceName = "Aoede") {
       const isQuota429 = errMsg.includes("429") || errMsg.includes("quota") || errMsg.includes("RESOURCE_EXHAUSTED");
       if (isQuota429) {
         ttsQuotaCooldownUntil = Date.now() + 60 * 1e3;
-        ttsQuotaReason = "Rate limit exceeded";
-        console.info(`[Neural Japanese TTS] Gemini quota cooldown active. Using primary neural engine.`);
-      } else {
-        console.warn("[Gemini TTS Warning]", errMsg);
       }
     }
+  }
+  if (!EdgeTTSConnectionManager.isDisabled()) {
+    try {
+      const manager = isMale ? maleEdgeManager : femaleEdgeManager;
+      const edgeAudio = await manager.synthesize(clean);
+      if (edgeAudio) {
+        audioMemoryCache.set(cacheKey, edgeAudio);
+        try {
+          const base64Data = edgeAudio.replace(/^data:audio\/mp3;base64,/, "");
+          fs.writeFileSync(diskPathMp3, Buffer.from(base64Data, "base64"));
+        } catch {
+        }
+        return edgeAudio;
+      }
+    } catch {
+    }
+  }
+  try {
+    const googleAudio = await fetchGoogleJapaneseTTS(clean);
+    if (googleAudio) {
+      audioMemoryCache.set(cacheKey, googleAudio);
+      try {
+        const base64Data = googleAudio.replace(/^data:audio\/mp3;base64,/, "");
+        fs.writeFileSync(diskPathMp3, Buffer.from(base64Data, "base64"));
+      } catch {
+      }
+      return googleAudio;
+    }
+  } catch (googleErr) {
+    console.warn("[Google Audio Warning]", googleErr);
   }
   return null;
 }
@@ -127397,11 +127542,19 @@ app.post("/api/tts", async (req, res) => {
     });
   }
 });
+var feedbackRateLimitMap = /* @__PURE__ */ new Map();
 app.post("/api/feedback", async (req, res) => {
   const { name, email, type, message } = req.body;
   if (!message || !message.trim()) {
     return res.status(400).json({ error: "\u0417\u0443\u0440\u0432\u0430\u0441\u044B\u043D \u0443\u0442\u0433\u0430 \u0445\u043E\u043E\u0441\u043E\u043D \u0431\u0430\u0439\u043D\u0430." });
   }
+  const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "client";
+  const rateLimitKey = `${clientIp}_${(email || "").trim().toLowerCase()}`;
+  const lastSub = feedbackRateLimitMap.get(rateLimitKey);
+  if (lastSub && Date.now() - lastSub < 8e3) {
+    return res.status(429).json({ error: "\u0422\u0430 \u0442\u04AF\u0440 \u0445\u04AF\u043B\u044D\u044D\u043D\u044D \u04AF\u04AF. \u0414\u0430\u0445\u0438\u043D \u0438\u043B\u0433\u044D\u044D\u0445\u044D\u044D\u0441 \u04E9\u043C\u043D\u04E9 8 \u0441\u0435\u043A\u0443\u043D\u0434 \u0445\u04AF\u043B\u044D\u044D\u043D\u044D \u04AF\u04AF." });
+  }
+  feedbackRateLimitMap.set(rateLimitKey, Date.now());
   const newFeedback = {
     id: "fb-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
     name: name?.trim() || "\u0417\u043E\u0447\u0438\u043D",
@@ -127428,6 +127581,10 @@ function sanitizeUser(user) {
   if (safe.email && safe.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim()) {
     safe.isPremium = true;
     safe.premiumExpiresAt = "2099-12-31T23:59:59.000Z";
+  } else if (safe.email && isComplimentaryPremiumAccount(safe.email)) {
+    safe.isPremium = true;
+    safe.premiumExpiresAt = "2099-12-31T23:59:59.000Z";
+    safe.entitlement = "complimentary_premium";
   }
   return safe;
 }
@@ -127456,9 +127613,14 @@ app.post("/api/auth/register", async (req, res) => {
       }
       existingUser.passwordHash = hashPassword(cleanPass);
       existingUser.authProvider = "email";
+      if (isComplimentaryPremiumAccount(existingUser.email)) {
+        existingUser.isPremium = true;
+        existingUser.premiumExpiresAt = "2099-12-31T23:59:59.000Z";
+        existingUser.entitlement = "complimentary_premium";
+      }
       existingUser.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
       saveDatabase(db);
-      const token2 = generateUserToken(existingUser.id, existingUser.email);
+      const token2 = generateUserToken(existingUser.id, existingUser.email, existingUser.isPremium, existingUser.premiumExpiresAt, existingUser.name);
       return res.json({
         success: true,
         isNew: false,
@@ -127468,6 +127630,8 @@ app.post("/api/auth/register", async (req, res) => {
     }
     const userTimezone = timezone || "Asia/Ulaanbaatar";
     const nowStr = (/* @__PURE__ */ new Date()).toLocaleString("mn-MN", { timeZone: userTimezone });
+    const isSpecialAdmin = cleanEmail === ADMIN_EMAIL.toLowerCase();
+    const isSpecialComp = isComplimentaryPremiumAccount(cleanEmail);
     const newUser = {
       id: "usr-" + Date.now() + "-" + crypto.randomBytes(4).toString("hex"),
       email: cleanEmail,
@@ -127499,8 +127663,9 @@ app.post("/api/auth/register", async (req, res) => {
       updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
       timezone: userTimezone,
       notifiedAdmin: false,
-      isPremium: cleanEmail === ADMIN_EMAIL.toLowerCase(),
-      premiumExpiresAt: cleanEmail === ADMIN_EMAIL.toLowerCase() ? "2099-12-31T23:59:59.000Z" : null
+      isPremium: isSpecialAdmin || isSpecialComp,
+      premiumExpiresAt: isSpecialAdmin || isSpecialComp ? "2099-12-31T23:59:59.000Z" : null,
+      entitlement: isSpecialComp ? "complimentary_premium" : void 0
     };
     db.users.push(newUser);
     saveDatabase(db);
@@ -127564,6 +127729,10 @@ app.post("/api/auth/login", async (req, res) => {
     if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
       user.isPremium = true;
       user.premiumExpiresAt = "2099-12-31T23:59:59.000Z";
+    } else if (isComplimentaryPremiumAccount(user.email)) {
+      user.isPremium = true;
+      user.premiumExpiresAt = "2099-12-31T23:59:59.000Z";
+      user.entitlement = "complimentary_premium";
     }
     user.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
     saveDatabase(db);
@@ -127729,9 +127898,14 @@ app.post("/api/auth/google", async (req, res) => {
       console.log(`[User Auth] Existing user logged in: ${user.email}`);
     }
     const isSpecialAdmin = user.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+    const isSpecialComp = isComplimentaryPremiumAccount(user.email);
     if (isSpecialAdmin) {
       user.isPremium = true;
       user.premiumExpiresAt = "2099-12-31T23:59:59.000Z";
+    } else if (isSpecialComp) {
+      user.isPremium = true;
+      user.premiumExpiresAt = "2099-12-31T23:59:59.000Z";
+      user.entitlement = "complimentary_premium";
     }
     const token = generateUserToken(user.id, user.email, user.isPremium, user.premiumExpiresAt, user.name);
     res.json({
@@ -127850,6 +128024,7 @@ app.get("/api/user/me", verifyUserToken, (req, res) => {
     const session = parseUserToken(req.headers.authorization?.split(" ")[1] || "");
     if (session) {
       const isSpecial = session.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+      const isComp = isComplimentaryPremiumAccount(session.email);
       user = {
         id: session.userId,
         email: session.email,
@@ -127877,8 +128052,9 @@ app.get("/api/user/me", verifyUserToken, (req, res) => {
         },
         createdAt: (/* @__PURE__ */ new Date()).toISOString(),
         updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
-        isPremium: isSpecial || !!session.isPremium,
-        premiumExpiresAt: isSpecial ? "2099-12-31T23:59:59.000Z" : session.premiumExpiresAt || null
+        isPremium: isSpecial || isComp || !!session.isPremium,
+        premiumExpiresAt: isSpecial || isComp ? "2099-12-31T23:59:59.000Z" : session.premiumExpiresAt || null,
+        entitlement: isComp ? "complimentary_premium" : void 0
       };
       if (!Array.isArray(db.users)) db.users = [];
       db.users.push(user);
@@ -127888,12 +128064,19 @@ app.get("/api/user/me", verifyUserToken, (req, res) => {
     }
   }
   const isSpecialAdmin = user.email && user.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
+  const isSpecialComp = user.email && isComplimentaryPremiumAccount(user.email);
   if (isSpecialAdmin) {
     user.isPremium = true;
     user.premiumExpiresAt = "2099-12-31T23:59:59.000Z";
+  } else if (isSpecialComp) {
+    user.isPremium = true;
+    user.premiumExpiresAt = "2099-12-31T23:59:59.000Z";
+    user.entitlement = "complimentary_premium";
   }
   let isPremium = false;
-  if (user.premiumExpiresAt) {
+  if (isSpecialAdmin || isSpecialComp) {
+    isPremium = true;
+  } else if (user.premiumExpiresAt) {
     const expiresMs = new Date(user.premiumExpiresAt).getTime();
     if (expiresMs > Date.now()) {
       isPremium = true;
@@ -127912,6 +128095,7 @@ app.get("/api/user/me", verifyUserToken, (req, res) => {
       progress: user.progress,
       isPremium,
       premiumExpiresAt: user.premiumExpiresAt || null,
+      entitlement: isSpecialComp ? "complimentary_premium" : user.entitlement || (isPremium ? "paid_premium" : "standard"),
       inAppNotification: user.inAppNotification || null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
@@ -127928,6 +128112,12 @@ app.post("/api/user/notification/dismiss", verifyUserToken, (req, res) => {
   res.json({ success: true });
 });
 app.post("/api/payment/request", async (req, res) => {
+  if (PUBLIC_BETA_ENABLED) {
+    return res.status(400).json({
+      error: "\u041E\u0434\u043E\u043E\u0433\u043E\u043E\u0440 SunnyLearn Public Beta \u04AF\u043D\u044D\u0433\u04AF\u0439 \u0442\u0443\u0440\u0448\u0438\u043B\u0442\u044B\u043D \u0448\u0430\u0442\u0430\u043D\u0434\u0430\u0430 \u044F\u0432\u0430\u0433\u0434\u0430\u0436 \u0431\u0430\u0439\u0433\u0430\u0430 \u0442\u0443\u043B \u0442\u04E9\u043B\u0431\u04E9\u0440 \u0442\u04E9\u043B\u04E9\u0445 \u0448\u0430\u0430\u0440\u0434\u043B\u0430\u0433\u0430\u0433\u04AF\u0439. \u0411\u04AF\u0445 \u0441\u0443\u0440\u0433\u0430\u043B\u0442\u044B\u043D \u043A\u043E\u043D\u0442\u0435\u043D\u0442 \u04AF\u043D\u044D\u0433\u04AF\u0439 \u043D\u044D\u044D\u043B\u0442\u0442\u044D\u0439 \u0431\u0430\u0439\u043D\u0430.",
+      publicBeta: true
+    });
+  }
   try {
     const { senderName, transferDate, notes } = req.body;
     let userName = (req.body.userName || "").trim();
@@ -127972,7 +128162,7 @@ app.post("/api/payment/request", async (req, res) => {
         success: false,
         isDuplicate: true,
         existingRequest: existingPending,
-        message: "\u0422\u0430\u043D\u044B \u04E9\u043C\u043D\u04E9\u0445 \u0442\u04E9\u043B\u0431\u04E9\u0440\u0438\u0439\u043D \u0445\u04AF\u0441\u044D\u043B\u0442 \u043E\u0434\u043E\u043E\u0433\u043E\u043E\u0440 \u0448\u0430\u043B\u0433\u0430\u0433\u0434\u0430\u0436 \u0431\u0430\u0439\u043D\u0430. \u0414\u0430\u0445\u0438\u043D \xA5880 \u0448\u0438\u043B\u0436\u04AF\u04AF\u043B\u044D\u0445 \u0448\u0430\u0430\u0440\u0434\u043B\u0430\u0433\u0430\u0433\u04AF\u0439."
+        message: "\u0422\u0430\u043D\u044B \u04E9\u043C\u043D\u04E9\u0445 \u0442\u04E9\u043B\u0431\u04E9\u0440\u0438\u0439\u043D \u0445\u04AF\u0441\u044D\u043B\u0442 \u043E\u0434\u043E\u043E\u0433\u043E\u043E\u0440 \u0448\u0430\u043B\u0433\u0430\u0433\u0434\u0430\u0436 \u0431\u0430\u0439\u043D\u0430. \u0414\u0430\u0445\u0438\u043D \xA5480 \u0448\u0438\u043B\u0436\u04AF\u04AF\u043B\u044D\u0445 \u0448\u0430\u0430\u0440\u0434\u043B\u0430\u0433\u0430\u0433\u04AF\u0439."
       });
     }
     const newPayment = {
@@ -127980,7 +128170,7 @@ app.post("/api/payment/request", async (req, res) => {
       userId: authUserId,
       userName: userName.trim(),
       userEmail: userEmail.trim(),
-      amount: 880,
+      amount: PREMIUM_PRICE_YEN,
       currency: "JPY",
       plan: "SunnyLearn Premium \u2014 30 days",
       durationDays: 30,
@@ -128109,6 +128299,23 @@ app.get("/api/admin/stats", verifyAdminToken, (_req, res) => {
   const allPayments = db.payments || [];
   const pendingPayments = allPayments.filter((p) => p.status === "PENDING").length;
   const approvedPayments = allPayments.filter((p) => p.status === "APPROVED").length;
+  const allUsers = db.users || [];
+  const oneDayAgo = Date.now() - 24 * 60 * 60 * 1e3;
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1e3;
+  const dailyActiveUsers = allUsers.filter((u) => {
+    const ts = u.lastActiveAt || u.updatedAt || u.createdAt;
+    return ts ? new Date(ts).getTime() > oneDayAgo : false;
+  }).length;
+  const weeklyActiveUsers = allUsers.filter((u) => {
+    const ts = u.lastActiveAt || u.updatedAt || u.createdAt;
+    return ts ? new Date(ts).getTime() > sevenDaysAgo : false;
+  }).length;
+  let totalAIRecords = 0;
+  if (db.aiUsageRecords) {
+    for (const arr of Object.values(db.aiUsageRecords)) {
+      if (Array.isArray(arr)) totalAIRecords += arr.length;
+    }
+  }
   res.json({
     totalVocab: db.vocabulary.length,
     totalKanji: db.kanji.length,
@@ -128123,7 +128330,13 @@ app.get("/api/admin/stats", verifyAdminToken, (_req, res) => {
     pendingPayments,
     totalPayments: allPayments.length,
     approvedPayments,
-    levelCounts
+    levelCounts,
+    // Public Beta Aggregated Analytics
+    publicBeta: PUBLIC_BETA_ENABLED,
+    totalUsers: allUsers.length,
+    dailyActiveUsers: Math.max(1, dailyActiveUsers),
+    weeklyActiveUsers: Math.max(1, weeklyActiveUsers),
+    totalAIRecords
   });
 });
 app.get("/api/admin/feedback", verifyAdminToken, (_req, res) => {
@@ -128152,7 +128365,7 @@ app.get("/api/admin/payments", verifyAdminToken, (_req, res) => {
   const pendingCount = allPayments.filter((p) => p.status === "PENDING").length;
   const approvedCount = allPayments.filter((p) => p.status === "APPROVED").length;
   const rejectedCount = allPayments.filter((p) => p.status === "REJECTED").length;
-  const totalYenApproved = approvedCount * 880;
+  const totalYenApproved = allPayments.filter((p) => p.status === "APPROVED").reduce((sum, p) => sum + (p.amount || PREMIUM_PRICE_YEN), 0);
   res.json({
     success: true,
     payments: sorted,
@@ -128320,12 +128533,13 @@ function resolveClientAIContext(req) {
       userEmail = session.email;
       identifier = `user:${session.userId}`;
       const isAdminEmail = session.email && session.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim();
-      if (isAdminEmail) {
+      const isComplimentary = session.email && isComplimentaryPremiumAccount(session.email);
+      if (isAdminEmail || isComplimentary) {
         isPremium = true;
       } else {
         const user = (db.users || []).find((u) => u.id === session.userId || u.email && u.email.toLowerCase() === session.email.toLowerCase());
         if (user) {
-          if (user.email && user.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim()) {
+          if (user.email && (user.email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase().trim() || isComplimentaryPremiumAccount(user.email))) {
             isPremium = true;
           } else if (user.isPremium && user.premiumExpiresAt) {
             const exp = new Date(user.premiumExpiresAt).getTime();
@@ -129044,49 +129258,61 @@ app.get("/api/ai/roleplay/session/:id", (req, res) => {
     session
   });
 });
-async function callGeminiFreeChatTurn(messages, jlptLevel = "N5", style = "natural") {
+async function callGeminiFreeChatTurn(messages, jlptLevel = "N5", style = "natural", voiceName = "Aoede") {
   const ai = getGeminiClient();
-  const systemInstruction = `YOU ARE SUNNY (\u30B5\u30CB\u30FC), A WARM, NATURAL, CONVERSATIONAL JAPANESE SPEAKING PARTNER.
-You are having an open-ended, spontaneous Japanese conversation with a learner.
+  const isMale = voiceName === "Puck" || voiceName === "Keita" || voiceName === "Charon" || voiceName === "Fenrir";
+  const friendName = isMale ? "\u30B1\u30F3 (Ken)" : "\u30B5\u30AF\u30E9 (Sakura)";
+  const systemInstruction = `YOU ARE ${friendName}, A CLOSE, WARM JAPANESE FRIEND HAVING A CASUAL CHAT (\u65E5\u672C\u8A9E\u30D5\u30EA\u30FC\u30C8\u30FC\u30AF / \u305F\u3081\u53E3\u30E2\u30FC\u30C9).
+You are NOT a teacher, NOT a customer support agent, and NOT an examiner. You are a peer and friend chatting comfortably with the user.
 
-LEARNER'S CURRENT JLPT LEVEL: ${jlptLevel}
-CONVERSATION STYLE: ${style === "easy" ? "\u3084\u3055\u3057\u3044\u65E5\u672C\u8A9E (Easy, accessible Japanese)" : "\u81EA\u7136\u306A\u65E5\u672C\u8A9E (Natural everyday conversational Japanese)"}
+FRIEND PERSONA:
+- Name: ${friendName}
+- Gender expression: ${isMale ? "Male Japanese peer (uses friendly casual male/gender-neutral speech: \u3060\u3088\u306A, \u3058\u3083\u3093, \u305C, \u304B\u3044, \u3060\u308D)" : "Female Japanese peer (uses friendly casual female/gender-neutral speech: \u3060\u3088\u306D, \u3088, \u304B\u3082, \u306E\uFF1F, \u3058\u3083\u3093)"}
+- Learner's JLPT Level: ${jlptLevel}
+- Conversation Mode: ${style === "easy" ? "\u3084\u3055\u3057\u3044\u30BF\u30E1\u53E3 (Easy, accessible casual Japanese)" : "\u81EA\u7136\u306A\u30BF\u30E1\u53E3 (Natural everyday conversational Japanese)"}
 
-CRITICAL CONVERSATIONAL RULES:
-1. PURE CONVERSATION, NOT A LESSON:
-   - Talk naturally about whatever topic the learner brings up (daily life, what they did today, hobbies, work, school, travel, sports, food, cars, movies, music, weather, future goals, or casual life in Japan/Mongolia).
-   - Follow the learner's topic naturally. Do NOT redirect them to a scripted scenario.
-   - Keep responses CONVERSATIONAL AND SHORT (1 to 2 natural sentences, at most 3 short sentences).
-   - React with genuine conversational nuance (e.g. \u300C\u305D\u3046\u306A\u3093\u3067\u3059\u306D\uFF01\u300D\u300C\u3044\u3044\u306D\uFF01\u300D\u300C\u3078\u3048\u3001\u77E5\u3089\u306A\u304B\u3063\u305F\uFF01\u300D\u300C\u305D\u308C\u9762\u767D\u305D\u3046\uFF01\u300D\u300C\u306A\u308B\u307B\u3069\uFF01\u300D).
-   - Ask a friendly, natural follow-up question to keep the conversation flowing comfortably.
+CRITICAL RULES FOR NATURAL FRIEND CONVERSATION:
+1. PURE CASUAL JAPANESE (\u30BF\u30E1\u53E3 / \u53CB\u9054\u8A00\u8449) ONLY:
+   - NEVER use \u3067\u3059, \u307E\u3059, \u3054\u3056\u3044\u307E\u3059, or stiff \u656C\u8A9E!
+   - Speak 100% in natural casual Japanese that close friends use with each other in Japan.
+   - Use lively emotional reactions and natural conversational fillers at the start of sentences:
+     \u300C\u305D\u3046\u306A\u3093\u3060\uFF01\u300D\u300C\u3078\u3048\u3001\u30DE\u30B8\u3067\uFF1F\u300D\u300C\u3044\u3044\u306D\uFF01\u300D\u300C\u305D\u308C\u3081\u3063\u3061\u3083\u697D\u3057\u305D\u3046\uFF01\u300D\u300C\u308F\u304B\u308B\u301C\uFF01\u300D\u300C\u3046\u308F\u3001\u5927\u5909\u3060\u3063\u305F\u306D\u300D\u300C\u306A\u308B\u307B\u3069\u306D\uFF01\u300D\u300C\u305D\u308C\u6700\u9AD8\u3058\u3083\u3093\uFF01\u300D
+   - Fallback ending: never use \u300C\u301C\u3066\u304F\u3060\u3055\u3044\u300D, use casual forms like \u300C\u301C\u3057\u3066\u307F\u3066\u3088\u300D\u300C\u301C\u6559\u3048\u3066\u300D\u300C\u3082\u3063\u3068\u805E\u304B\u305B\u3066\u3088\u300D.
 
-2. DO NOT INTERRUPT TO CORRECT:
-   - NEVER interrupt the conversational flow in your reply to lecture about grammar.
-   - If the learner makes a Japanese mistake (e.g. \u300C\u30D0\u30B9\u30B1\u3059\u308B\u307E\u3057\u305F\u300D), understand their intended meaning and continue naturally (\u300C\u30D0\u30B9\u30B1\u3044\u3044\u3067\u3059\u306D\uFF01\u53CB\u9054\u3068\u30D7\u30EC\u30FC\u3057\u305F\u3093\u3067\u3059\u304B\uFF1F\u300D).
-   - Only if the learner made a clear grammatical/vocabulary slip in their latest message, formulate a subtle correction note for the separate 'correction' field so they can optionally review it later. If their message was natural, set 'correction' to null.
+2. AVOID THE "INTERVIEW TRAP" (Do NOT interrogate):
+   - A real conversation is a two-way exchange, NOT a survey where you ask a question every single turn.
+   - Varied flow:
+     * ~40% of turns: Simply react with warmth, empathy, humor, or share your own related thought or experience (e.g. \u300C\u79C1\u3082\u305D\u308C\u5927\u597D\u304D\uFF01\u300D\u300C\u3053\u306E\u524D\u98DF\u3079\u305F\u3051\u3069\u3081\u3063\u3061\u3083\u7F8E\u5473\u3057\u304B\u3063\u305F\u3088\u300D\u300C\u6700\u8FD1\u672C\u5F53\u306B\u5BD2\u304F\u306A\u3063\u3066\u304D\u305F\u3088\u306D\u300D) WITHOUT asking a question.
+     * ~60% of turns: Ask a natural, open-ended question to keep the chat going (e.g. \u300C\u3069\u3093\u306A\u306E\u8CB7\u3063\u305F\u306E\uFF1F\u300D\u300C\u4ECA\u5EA6\u3069\u3053\u884C\u304F\u4E88\u5B9A\uFF1F\u300D).
+   - Keep replies CONCISE: 1 to 2 natural sentences (maximum 3 short sentences). Never output long paragraphs.
 
-3. JLPT & STYLE ADAPTATION:
-   - N5: Simple daily vocabulary, short clear sentences, friendly and welcoming tone.
-   - N4: Basic natural daily conversation, clear polite or friendly forms.
-   - N3: Intermediate conversational fluency, variety of common expressions and natural conjunctions.
-   - N2: Nuanced conversational Japanese, rich expressions, idioms where natural.
-   - N1: Native-like fluency, natural colloquial or business registers suited to topic.
-   ${style === "easy" ? "- Use easy, clear sentence structures and gentle vocabulary." : "- Use completely authentic, conversational Japanese."}
+3. JLPT LEVEL ADAPTATION (CASUAL REGISTER):
+   - N5: Simple everyday words and short, clear casual endings (\u301C\u3060\u3088, \u301C\u3060\u306D, \u301C\u306E\uFF1F, \u301C\u3059\u308B\uFF1F, \u301C\u305F\u306E\uFF1F).
+   - N4: Everyday conversational casual Japanese (\u301C\u3061\u3083\u3046, \u301C\u3068\u304F, \u301C\u304B\u3082, \u301C\u3093\u3058\u3083\u306A\u3044\uFF1F).
+   - N3: Smooth peer dialogue with natural colloquial contractions and particles (\u30DE\u30B8\u3067\uFF1F, \u301C\u3057\u3061\u3083\u3063\u305F, \u301C\u3063\u307D\u3044, \u78BA\u304B\u306B).
+   - N2/N1: Expressive colloquial, idiomatic, and nuanced Japanese without reverting to formal \u3067\u3059/\u307E\u3059.
+   ${style === "easy" ? "- Keep sentences short, vocabulary accessible, and avoid complex compound idioms." : "- Use completely authentic, vibrant conversational Japanese."}
 
-4. LANGUAGE ACCURACY:
+4. ERROR CORRECTION (BACKGROUND ONLY):
+   - NEVER interrupt the conversational flow in your reply to lecture the user about grammar. Stay in character as a supportive friend.
+   - If the user made a grammar or usage slip in their latest turn, provide a gentle, supportive tip in the separate 'correction' JSON field with a brief explanation in Mongolian.
+   - If the user's Japanese was natural, set 'correction' to null.
+
+5. ACCURACY & KANJI FURIGANA:
    - STRICTLY NO Romaji.
-   - STRICTLY NO Cyrillic or Mongolian pronunciation.
-   - Format Kanji with Japanese furigana brackets: \u6F22\u5B57\uFF08\u3075\u308A\u304C\u306A\uFF09 (e.g. \u4ECA\u65E5\uFF08\u304D\u3087\u3046\uFF09\u306F\u3044\u3044\u5929\u6C17\uFF08\u3066\u3093\u304D\uFF09\u3067\u3059\u306D) for the visual transcript.
+   - STRICTLY NO Cyrillic or Mongolian transliteration of Japanese words.
+   - For visual display, format words containing KANJI with Japanese furigana brackets: \u6F22\u5B57\uFF08\u3075\u308A\u304C\u306A\uFF09 (e.g. \u4ECA\u65E5\uFF08\u304D\u3087\u3046\uFF09\u306F\u3044\u3044\u5929\u6C17\uFF08\u3066\u3093\u304D\uFF09\u3060\u306D).
+   - NEVER put furigana on Hiragana-only or Katakana-only words (e.g. NO \u300C\u3057\uFF08\u3057\uFF09\u300D, NO \u300C\u30D4\u30B6\uFF08\u30D4\u30B6\uFF09\u300D).
 
-5. OUTPUT FORMAT:
-You MUST output ONLY a valid JSON object matching:
+6. OUTPUT FORMAT:
+Output ONLY a valid JSON object matching:
 {
-  "reply": "Your in-character Japanese response with furigana brackets",
+  "reply": "Your casual Japanese response with Kanji furigana brackets",
   "correction": {
-    "original": "Learner's phrase that had an error",
-    "corrected": "More natural Japanese phrasing",
-    "explanation": "Brief, friendly explanation in Mongolian (e.g. \u300C\u3059\u308B\u300D-\u0438\u0439\u043D \u04E9\u043D\u0433\u04E9\u0440\u0441\u04E9\u043D \u0446\u0430\u0433 \u043D\u044C \u300C\u3057\u305F\u300D \u044E\u043C.)"
-  } // OR null if no significant mistake was made
+    "original": "Learner's phrase that had a slip",
+    "corrected": "More natural casual Japanese phrasing",
+    "explanation": "Brief, friendly explanation in Mongolian (e.g. \u043D\u0430\u0439\u0437\u0443\u0443\u0434 \u0445\u043E\u043E\u0440\u043E\u043D\u0434\u043E\u043E \u300E\u301C\u3057\u305F\u3088\u300F \u0433\u044D\u0432\u044D\u043B \u0438\u043B\u04AF\u04AF \u044D\u0432\u0442\u044D\u0439\u0445\u044D\u043D \u0441\u043E\u043D\u0441\u043E\u0433\u0434\u043E\u043D\u043E)"
+  } // OR null if no significant mistake
 }
 Return ONLY valid JSON. No markdown code blocks.`;
   const contents = [];
@@ -129100,7 +129326,7 @@ Return ONLY valid JSON. No markdown code blocks.`;
     contents,
     config: {
       systemInstruction,
-      temperature: 0.7
+      temperature: 0.75
     },
     tag: "FreeChat Turn"
   });
@@ -129119,15 +129345,15 @@ Return ONLY valid JSON. No markdown code blocks.`;
         };
       }
       return {
-        reply: reply || "\u305D\u3046\u306A\u3093\u3067\u3059\u306D\uFF01\u3082\u3063\u3068\u805E\u304B\u305B\u3066\u304F\u3060\u3055\u3044\u3002",
-        cleanReply: cleanReply || "\u305D\u3046\u306A\u3093\u3067\u3059\u306D\uFF01\u3082\u3063\u3068\u805E\u304B\u305B\u3066\u304F\u3060\u3055\u3044\u3002",
+        reply: reply || "\u305D\u3046\u306A\u3093\u3060\uFF01\u3082\u3063\u3068\u805E\u304B\u305B\u3066\u3088\u3002",
+        cleanReply: cleanReply || "\u305D\u3046\u306A\u3093\u3060\uFF01\u3082\u3063\u3068\u805E\u304B\u305B\u3066\u3088\u3002",
         correction
       };
     } catch {
       const rawText = resp.text.trim();
       return {
-        reply: rawText,
-        cleanReply: stripFuriganaServer(rawText),
+        reply: rawText || "\u305D\u3046\u306A\u3093\u3060\uFF01\u3082\u3063\u3068\u805E\u304B\u305B\u3066\u3088\u3002",
+        cleanReply: stripFuriganaServer(rawText) || "\u305D\u3046\u306A\u3093\u3060\uFF01\u3082\u3063\u3068\u805E\u304B\u305B\u3066\u3088\u3002",
         correction: null
       };
     }
@@ -129210,7 +129436,7 @@ app.post("/api/ai/free-chat", async (req, res) => {
   } = req.body || {};
   try {
     const validMessages = Array.isArray(messages) ? messages : [];
-    const turnResult = await callGeminiFreeChatTurn(validMessages, jlptLevel, style);
+    const turnResult = await callGeminiFreeChatTurn(validMessages, jlptLevel, style, voiceName);
     if (!isPremium) {
       recordAIUsage(identifier);
     }

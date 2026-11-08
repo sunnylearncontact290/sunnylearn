@@ -20,10 +20,18 @@ import { SunnyAIView } from './components/ai/SunnyAIView';
 import { RoleplayView } from './components/roleplay/RoleplayView';
 import { QuizExplanationModal } from './components/quiz/QuizExplanationModal';
 import { FeedbackModal } from './components/common/FeedbackModal';
+import { MobileTabBar } from './components/common/MobileTabBar';
 import { Analytics } from '@vercel/analytics/react';
+import { configureNativeSystemUI, hideNativeSplashScreen } from './services/nativePlatform';
 
 const MainContent: React.FC = () => {
-  const { activeTab, setActiveTab, isAdmin, inAppNotification, dismissInAppNotification } = useApp();
+  const { activeTab, setActiveTab, isAdmin, inAppNotification, dismissInAppNotification, isDarkMode } = useApp();
+
+  // Native iOS / mobile system UI setup
+  useEffect(() => {
+    configureNativeSystemUI(isDarkMode);
+    hideNativeSplashScreen();
+  }, [isDarkMode]);
 
   // Route security: If activeTab is 'admin' but the user is NOT authenticated as sanaa0419z@gmail.com,
   // deny access immediately and redirect back to the home page.
@@ -64,7 +72,7 @@ const MainContent: React.FC = () => {
       )}
 
       <Navbar />
-      <main className="w-full max-w-full flex-1 pb-16">
+      <main className="w-full max-w-full flex-1 pb-20 md:pb-16">
         {(activeTab === 'home' || activeTab === 'admin') && <HomePage />}
         {activeTab === 'learn' && <LearnHub />}
         {activeTab === 'dictionary' && <DictionaryView />}
@@ -79,6 +87,7 @@ const MainContent: React.FC = () => {
         {activeTab === 'tokushoho' && <TokushohoView />}
       </main>
       <Footer />
+      <MobileTabBar />
       <SearchModal />
       <AuthModal />
       <FeedbackModal />

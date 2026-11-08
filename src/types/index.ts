@@ -5,7 +5,7 @@ export type MainTab = 'home' | 'learn' | 'dictionary' | 'practice' | 'quiz' | 'r
 export const PREMIUM_PRICE_YEN = 480;
 export const PREMIUM_DURATION_DAYS = 30;
 
-export type LearnSubTab = 'vocab' | 'kanji' | 'grammar';
+export type LearnSubTab = 'path' | 'vocab' | 'kanji' | 'grammar';
 
 export type AdminSubTab = 'stats' | 'vocab' | 'kanji' | 'grammar' | 'examples' | 'lessons' | 'reading' | 'listening' | 'quizzes' | 'categories' | 'feedback' | 'payments';
 
@@ -611,3 +611,49 @@ export interface UserProgress {
     showFurigana: boolean;
   };
 }
+
+// ============================================================================
+// SUNNYLEARN 2.0 GAMIFIED LEARNING PATH & CURRICULUM ARCHITECTURE
+// ============================================================================
+export type PathNodeType = 'lesson' | 'review' | 'quiz' | 'boss_challenge';
+export type PathNodeStatus = 'completed' | 'active' | 'locked';
+
+export interface CurriculumExercise {
+  id: string;
+  type: 'vocab_intro' | 'multiple_choice' | 'sentence_scramble' | 'word_matching' | 'listening';
+  prompt: string;
+  targetJapanese: string;
+  targetReading?: string;
+  targetMongolian: string;
+  options?: string[];
+  correctAnswer: string;
+  explanation?: string;
+  wordTiles?: { id: string; text: string; reading?: string }[];
+}
+
+export interface CurriculumLesson {
+  id: string;
+  unitId: string;
+  lessonNumber: number;
+  title: string;
+  description: string;
+  type: PathNodeType;
+  jlptLevel: JLPTLevel;
+  vocabIds: string[];
+  kanjiIds: string[];
+  grammarIds: string[];
+  xpReward: number;
+  totalExercises: number;
+}
+
+export interface CurriculumUnit {
+  id: string;
+  unitNumber: number;
+  title: string;
+  mongolianDescription: string;
+  jlptLevel: JLPTLevel;
+  themeColor: string;
+  iconName: string;
+  lessons: CurriculumLesson[];
+}
+

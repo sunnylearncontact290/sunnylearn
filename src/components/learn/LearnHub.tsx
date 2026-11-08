@@ -2,13 +2,15 @@ import React from 'react';
 import {
   BookOpen,
   Sparkles,
-  BookA
+  BookA,
+  Compass
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { JLPTLevel, LearnSubTab } from '../../types';
 import { VocabList } from './VocabList';
 import { KanjiList } from './KanjiList';
 import { GrammarList } from './GrammarList';
+import { LearningPathView } from '../path/LearningPathView';
 
 export const LearnHub: React.FC = () => {
   const {
@@ -21,8 +23,15 @@ export const LearnHub: React.FC = () => {
 
   const levels: JLPTLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
   const effectiveLevel = selectedLevel || 'N5';
+  const effectiveSubTab: LearnSubTab = learnSubTab || 'path';
 
-  const subTabs: { id: LearnSubTab; label: string; icon: React.ElementType; count?: number }[] = [
+  const subTabs: { id: LearnSubTab; label: string; icon: React.ElementType; count?: number; badge?: string }[] = [
+    {
+      id: 'path',
+      label: 'Сургалтын Зам',
+      icon: Compass,
+      badge: '2.0'
+    },
     {
       id: 'vocab',
       label: 'Үгийн сан',
@@ -82,19 +91,24 @@ export const LearnHub: React.FC = () => {
         <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-none border-t border-stone-100 dark:border-stone-800 pt-3 sm:pt-4 w-full">
           {subTabs.map(tab => {
             const Icon = tab.icon;
-            const isActive = learnSubTab === tab.id;
+            const isActive = effectiveSubTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setLearnSubTab(tab.id)}
-                className={`inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all shrink-0 ${
+                className={`inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-md shadow-[#FF0000]/20'
+                    ? 'bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] text-white shadow-md shadow-[#FF0000]/25'
                     : 'bg-stone-50 dark:bg-stone-800/50 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/60 dark:border-stone-700/60'
                 }`}
               >
                 <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-stone-400'}`} />
                 <span>{tab.label}</span>
+                {tab.badge && (
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full font-black bg-white/25 text-white">
+                    {tab.badge}
+                  </span>
+                )}
                 {tab.count !== undefined && (
                   <span
                     className={`text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-full font-mono ${
@@ -114,9 +128,10 @@ export const LearnHub: React.FC = () => {
 
       {/* Main Sub-view Content */}
       <div className="min-h-[500px]">
-        {learnSubTab === 'vocab' && <VocabList />}
-        {learnSubTab === 'kanji' && <KanjiList />}
-        {learnSubTab === 'grammar' && <GrammarList />}
+        {effectiveSubTab === 'path' && <LearningPathView />}
+        {effectiveSubTab === 'vocab' && <VocabList />}
+        {effectiveSubTab === 'kanji' && <KanjiList />}
+        {effectiveSubTab === 'grammar' && <GrammarList />}
       </div>
     </div>
   );

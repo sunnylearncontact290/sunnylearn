@@ -117,6 +117,7 @@ interface AppContextType {
   updateSettings: (settings: Partial<UserProgress['settings']>) => void;
   resetProgress: () => void;
   markDailyCelebrationSeen: () => void;
+  completeCurriculumLesson: (lessonId: string, earnedXP: number) => void;
 
   // Audio Speech
   playAudio: (text: string, onStart?: () => void) => Promise<void> | void;
@@ -983,6 +984,63 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('Таны сургалтын явц амжилттай шинэчлэгдлээ.', 'info');
   }, [showToast]);
 
+  const completeCurriculumLesson = useCallback((lessonId: string, earnedXP: number) => {
+    setUserProgress(prev => {
+      const alreadyCompleted = (prev.completedLessonIds || []).includes(lessonId);
+      const completedIds = alreadyCompleted ? prev.completedLessonIds : [...(prev.completedLessonIds || []), lessonId];
+
+      const currentGamification = prev.gamification || {
+        totalXP: 0,
+        level: 1,
+        dailyDate: new Date().toISOString().split('T')[0],
+        dailyXP: 0,
+        dailyGoalXP: 20,
+        dailyGoalCompleted: false,
+        dailyTaskProgress: {} as any,
+        awardedItemIds: [],
+        awardedQuizIds: [],
+        completedGoalDates: [],
+        currentStreak: prev.streak?.current || 0,
+        longestStreak: prev.streak?.longest || prev.streak?.current || 0,
+        unlockedBadgeIds: []
+      };
+
+      const newDailyXP = (currentGamification.dailyXP || 0) + earnedXP;
+      const newTotalXP = (currentGamification.totalXP || 0) + earnedXP;
+      const newlyReached = !currentGamification.dailyGoalCompleted && newDailyXP >= (currentGamification.dailyGoalXP || 20);
+      const updatedStreak = newlyReached ? (currentGamification.currentStreak || 0) + 1 : currentGamification.currentStreak;
+
+      const updated: UserProgress = {
+        ...prev,
+        completedLessonIds: completedIds,
+        streak: {
+          ...prev.streak,
+          current: updatedStreak,
+          longest: Math.max(prev.streak?.longest || 0, updatedStreak),
+          lastActiveDate: new Date().toISOString().split('T')[0]
+        },
+        gamification: {
+          ...currentGamification,
+          dailyXP: newDailyXP,
+          totalXP: newTotalXP,
+          dailyGoalCompleted: currentGamification.dailyGoalCompleted || newlyReached,
+          currentStreak: updatedStreak,
+          longestStreak: Math.max(currentGamification.longestStreak || 0, updatedStreak)
+        }
+      };
+
+      storageService.saveProgress(updated);
+
+      if (newlyReached) {
+        showToast('🎉 Өнөөдрийн 20 XP зорилго биеллээ! 🔥 Streak нэмэгдлээ!', 'success');
+      } else {
+        showToast(`+${earnedXP} XP • Хичээл амжилттай дууслаа!`, 'success');
+      }
+
+      return updated;
+    });
+  }, [showToast]);
+
   const adminLogin = useCallback(async (email: string, password: string): Promise<boolean> => {
     try {
       const res = await apiService.adminLogin(email, password);
@@ -1399,6 +1457,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         updateSettings,
         resetProgress,
         markDailyCelebrationSeen,
+        completeCurriculumLesson,
         playAudio,
         stopAudio,
         isAdmin,

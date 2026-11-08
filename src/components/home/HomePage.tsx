@@ -57,7 +57,7 @@ export const HomePage: React.FC = () => {
 
   const handleStartLearning = (level: JLPTLevel) => {
     setSelectedLevel(level);
-    setLearnSubTab('vocab');
+    setLearnSubTab('path');
     setActiveTab('learn');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -238,13 +238,13 @@ export const HomePage: React.FC = () => {
       if (userProgress.lastStudied.level) {
         setSelectedLevel(userProgress.lastStudied.level);
       }
-      setLearnSubTab(userProgress.lastStudied.subTab || 'vocab');
+      setLearnSubTab(userProgress.lastStudied.subTab || 'path');
     } else {
       if (selectedLevel) {
-        setLearnSubTab('vocab');
+        setLearnSubTab('path');
       } else {
         setSelectedLevel('N5');
-        setLearnSubTab('vocab');
+        setLearnSubTab('path');
       }
     }
     setActiveTab('learn');
@@ -294,27 +294,28 @@ export const HomePage: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span>Монгол тайлбартай JLPT N5–N1 сургалт</span>
+              <span>SunnyLearn 2.0 • Интерактив Сургалтын Зам & JLPT N5–N1</span>
             </div>
           </div>
 
           <div className="space-y-2 sm:space-y-3">
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight break-words">
-              SunnyLearn — Япон хэлийг Монголоор сурах платформ
+              SunnyLearn 2.0 — Япон хэлийг тоглоомжуулан сурах
             </h1>
             <p className="text-stone-300 text-xs sm:text-base leading-relaxed max-w-2xl">
-              JLPT N5–N1 түвшний үгийн сан, ханз, дүрмийг монгол тайлбартай суралцаарай.
+              Өдөр бүр сонирхолтой богино хичээлүүдээр алхам алхмаар ахиж, JLPT N5–N1 түвшний үгийн сан, ханз, дүрмээ бодит дасгалаар эзэмшээрэй.
             </p>
           </div>
 
           {/* Action buttons inside Hero */}
           <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <button
-              onClick={scrollToLevelSelection}
+              onClick={() => handleStartLearning(selectedLevel || 'N5')}
               id="hero-start-btn"
-              className="w-full sm:w-auto px-6 py-3 rounded-2xl btn-primary font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-red-500/25 active:scale-98 transition-all"
             >
-              <span>Суралцаж эхлэх</span>
+              <Compass className="w-4 h-4 shrink-0" />
+              <span>Сургалтын Замаар эхлэх</span>
               <ArrowRight className="w-4 h-4 shrink-0" />
             </button>
 

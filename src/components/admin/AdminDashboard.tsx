@@ -282,7 +282,7 @@ export const AdminDashboard: React.FC = () => {
       id: 'payments',
       label: (adminPaymentStats?.pendingCount || 0) > 0
         ? `🔔 Шалгах төлбөр (${adminPaymentStats.pendingCount})`
-        : 'Төлбөр (¥880)',
+        : 'Төлбөр (¥480)',
       icon: CreditCard,
       count: adminPaymentStats?.pendingCount || 0
     },
