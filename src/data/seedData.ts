@@ -1,4 +1,5 @@
 import { DatabaseSchema } from '../types';
+import { n5GreetingsList } from './n5Greetings';
 import { n5VocabList } from './n5VocabAdditions';
 import { n4VocabList } from './n4VocabAdditions';
 import { n3VocabList } from './n3VocabAdditions';
@@ -29,6 +30,7 @@ export const initialSeedData: DatabaseSchema = {
   ],
   vocabulary: [
     // N5
+    ...n5GreetingsList,
     ...n5VocabList,
     {
       id: 'v-n5-01',
