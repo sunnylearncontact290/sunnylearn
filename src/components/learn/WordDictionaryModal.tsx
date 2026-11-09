@@ -64,7 +64,7 @@ export const WordDictionaryModal: React.FC<WordDictionaryModalProps> = ({
       <div
         role="dialog"
         aria-modal="true"
-        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm overflow-y-auto animate-fade-in"
+        className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm overflow-y-auto animate-fade-in"
         onClick={e => {
           if (e.target === e.currentTarget) {
             onClose();

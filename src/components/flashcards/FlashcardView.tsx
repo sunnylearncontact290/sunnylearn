@@ -1,20 +1,16 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   RotateCcw,
   Volume2,
   Check,
-  X,
-  Sparkles,
-  Layers,
   BookA,
   ArrowRight,
-  ArrowLeft,
   Flame,
   ChevronLeft,
   ChevronRight,
-  Play,
+  Sparkles,
+  Layers,
   Loader2,
-  HelpCircle,
   Hash,
   Clock,
   Users,
@@ -29,7 +25,9 @@ import {
   Building2,
   Newspaper,
   Award,
-  GraduationCap
+  GraduationCap,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { JLPTLevel, VocabularyItem, KanjiItem, ItemStudyRecord } from '../../types';
@@ -38,11 +36,21 @@ import { speechService } from '../../services/speech';
 import { triggerHapticFeedback } from '../../services/nativePlatform';
 import { apiService } from '../../services/api';
 import { SunnyLogo } from '../common/SunnyLogo';
+import { JapaneseText } from '../common/JapaneseText';
 import {
   CurriculumTopic,
   getTopicsForLevel,
-  getOrderedItemsForTopic
+  getOrderedItemsForTopic,
+  getTopicStats,
+  TopicStats
 } from '../../data/curriculumTopics';
+
+export interface FlashcardViewProps {
+  initialContentKind?: 'kanji' | 'vocab';
+  initialTopicId?: string;
+  onBack?: () => void;
+  lockContentKind?: boolean;
+}
 
 type ContentKind = 'kanji' | 'vocab';
 type StudyMode = 'topics' | 'review';
@@ -67,7 +75,12 @@ const TOPIC_ICONS: Record<string, React.ElementType> = {
   Layers
 };
 
-export const FlashcardView: React.FC = () => {
+export const FlashcardView: React.FC<FlashcardViewProps> = ({
+  initialContentKind = 'kanji',
+  initialTopicId,
+  onBack,
+  lockContentKind = false
+}) => {
   const {
     data,
     selectedLevel,
@@ -81,7 +94,7 @@ export const FlashcardView: React.FC = () => {
   const levels: JLPTLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
   // Main UI States
-  const [contentKind, setContentKind] = useState<ContentKind>('kanji');
+  const [contentKind, setContentKind] = useState<ContentKind>(initialContentKind);
   const [studyMode, setStudyMode] = useState<StudyMode>('topics');
   const [selectedTopic, setSelectedTopic] = useState<CurriculumTopic | null>(null);
 
@@ -89,6 +102,7 @@ export const FlashcardView: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isFlipped, setIsFlipped] = useState<boolean>(false);
   const [replayStrokeKey, setReplayStrokeKey] = useState<number>(0);
+  const [showFurigana, setShowFurigana] = useState<boolean>(true);
 
   // Sunny AI Explanation State
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
@@ -98,23 +112,53 @@ export const FlashcardView: React.FC = () => {
   const [sessionResults, setSessionResults] = useState<Record<string, 'know' | 'again'>>({});
   const [isDeckFinished, setIsDeckFinished] = useState<boolean>(false);
 
+  // Update contentKind if prop changes
+  useEffect(() => {
+    if (initialContentKind) {
+      setContentKind(initialContentKind);
+    }
+  }, [initialContentKind]);
+
   // Available topics for current level and content type
   const availableTopics = useMemo(() => {
     const pool = contentKind === 'kanji' ? data.kanji || [] : data.vocabulary || [];
     return getTopicsForLevel(currentLevel, contentKind, pool);
   }, [currentLevel, contentKind, data.kanji, data.vocabulary]);
 
+  // Precomputed stats for each topic (total, mastered, progressPercent)
+  const topicStatsMap = useMemo(() => {
+    const map = new Map<string, TopicStats>();
+    const studyRecords = (userProgress.itemStudyRecords || {}) as Record<string, ItemStudyRecord>;
+    const pool = contentKind === 'kanji' ? data.kanji || [] : data.vocabulary || [];
+    for (const topic of availableTopics) {
+      map.set(topic.id, getTopicStats(topic, pool, studyRecords));
+    }
+    return map;
+  }, [availableTopics, contentKind, data.kanji, data.vocabulary, userProgress.itemStudyRecords]);
+
+  // If initialTopicId provided, auto-select that topic on mount / change
+  useEffect(() => {
+    if (initialTopicId && availableTopics.length > 0) {
+      const found = availableTopics.find(t => t.id === initialTopicId);
+      if (found) {
+        setSelectedTopic(found);
+        setCurrentIndex(0);
+        setIsFlipped(false);
+        setIsDeckFinished(false);
+        setSessionResults({});
+      }
+    }
+  }, [initialTopicId, availableTopics]);
+
   // Active Deck Queue
   const activeDeck = useMemo(() => {
     if (studyMode === 'topics' && selectedTopic) {
-      // STRICT DETERMINISTIC CURRICULUM ORDER
       if (selectedTopic.type === 'kanji') {
         return getOrderedItemsForTopic(selectedTopic, data.kanji || []);
       } else {
         return getOrderedItemsForTopic(selectedTopic, data.vocabulary || []);
       }
     } else if (studyMode === 'review') {
-      // SMART REVIEW (SRS) QUEUE
       const studyRecords = (userProgress.itemStudyRecords || {}) as Record<string, ItemStudyRecord>;
       if (contentKind === 'kanji') {
         const kanjiPool = (data.kanji || []).filter(k => k.jlptLevel === currentLevel);
@@ -177,8 +221,13 @@ export const FlashcardView: React.FC = () => {
 
   const handleBackToTopics = () => {
     triggerHapticFeedback('light');
-    setSelectedTopic(null);
-    setIsDeckFinished(false);
+    if (selectedTopic || studyMode === 'review') {
+      setSelectedTopic(null);
+      setIsDeckFinished(false);
+      setStudyMode('topics');
+    } else if (onBack) {
+      onBack();
+    }
   };
 
   const handleFlipCard = () => {
@@ -194,7 +243,6 @@ export const FlashcardView: React.FC = () => {
     });
   };
 
-  // Navigation: Previous Card (Backward without altering SRS score)
   const handlePrevCard = () => {
     if (currentIndex > 0) {
       triggerHapticFeedback('light');
@@ -202,7 +250,6 @@ export const FlashcardView: React.FC = () => {
     }
   };
 
-  // Navigation: Next Card (Forward)
   const handleNextCard = () => {
     if (currentIndex + 1 < activeDeck.length) {
       triggerHapticFeedback('light');
@@ -212,7 +259,6 @@ export const FlashcardView: React.FC = () => {
     }
   };
 
-  // SRS Actions
   const handleAgain = () => {
     if (!currentItem) return;
     triggerHapticFeedback('error');
@@ -262,21 +308,19 @@ export const FlashcardView: React.FC = () => {
       if (res && res.reply) {
         setAiExplanation(res.reply);
       }
-    } catch (err) {
+    } catch {
       showToast('Sunny AI-аас хариу авахад алдаа гарлаа.', 'error');
     } finally {
       setIsAiLoading(false);
     }
   };
 
-  // Helper to fetch/derive example words for a kanji
   const getKanjiExamples = (kanjiItem: KanjiItem) => {
     if (kanjiItem.exampleWords && kanjiItem.exampleWords.length > 0) {
       return kanjiItem.exampleWords.slice(0, 2);
     }
-    // Dynamically match from vocabulary dataset
     const char = kanjiItem.kanji;
-    const matches = (data.vocabulary || [])
+    return (data.vocabulary || [])
       .filter(v => v.japanese.includes(char))
       .slice(0, 2)
       .map(v => ({
@@ -284,11 +328,9 @@ export const FlashcardView: React.FC = () => {
         reading: v.reading,
         mongolian: v.mongolian
       }));
-    return matches;
   };
 
   const isPlayerOpen = selectedTopic !== null || (studyMode === 'review' && activeDeck.length > 0 && !isDeckFinished);
-
   const knownCount = Object.values(sessionResults).filter(v => v === 'know').length;
   const againCount = Object.values(sessionResults).filter(v => v === 'again').length;
 
@@ -296,49 +338,64 @@ export const FlashcardView: React.FC = () => {
     <div className="w-full max-w-5xl mx-auto space-y-6 animate-fade-in select-none">
       
       {/* ========================================================= */}
-      {/* 1. TOP HEADER: Level, Content Type, Study Mode             */}
+      {/* 1. TOP HEADER: Content Kind, Level, and Mode             */}
       {/* ========================================================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-sm">
         
-        {/* Content Type: Kanji vs Vocabulary */}
-        <div className="flex items-center gap-1.5 p-1 bg-stone-100 dark:bg-stone-800/80 rounded-2xl w-full sm:w-auto">
-          <button
-            type="button"
-            onClick={() => {
-              triggerHapticFeedback('light');
-              setContentKind('kanji');
-              setSelectedTopic(null);
-            }}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
-              contentKind === 'kanji'
-                ? 'bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white shadow-md shadow-red-500/25'
-                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
-            }`}
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>Ханз (Kanji)</span>
-          </button>
+        {/* Left side: Back to Hub if onBack provided, or Content Kind Switcher */}
+        <div className="flex items-center gap-2">
+          {onBack && !isPlayerOpen && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 text-stone-700 dark:text-stone-300 text-xs font-bold transition-colors cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Буцах</span>
+            </button>
+          )}
 
-          <button
-            type="button"
-            onClick={() => {
-              triggerHapticFeedback('light');
-              setContentKind('vocab');
-              setSelectedTopic(null);
-            }}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
-              contentKind === 'vocab'
-                ? 'bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white shadow-md shadow-red-500/25'
-                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
-            }`}
-          >
-            <BookA className="w-4 h-4" />
-            <span>Үгийн сан (Vocab)</span>
-          </button>
+          {!lockContentKind && (
+            <div className="flex items-center gap-1 p-1 bg-stone-100 dark:bg-stone-800/80 rounded-xl">
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHapticFeedback('light');
+                  setContentKind('kanji');
+                  setSelectedTopic(null);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                  contentKind === 'kanji'
+                    ? 'bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white shadow-xs'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Ханз</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  triggerHapticFeedback('light');
+                  setContentKind('vocab');
+                  setSelectedTopic(null);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                  contentKind === 'vocab'
+                    ? 'bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white shadow-xs'
+                    : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+                }`}
+              >
+                <BookA className="w-3.5 h-3.5" />
+                <span>Үгийн сан</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Level Selector Pills */}
-        <div className="flex items-center justify-between sm:justify-start gap-1 p-1 bg-stone-100 dark:bg-stone-800/80 rounded-2xl w-full sm:w-auto">
+        <div className="flex items-center justify-between sm:justify-start gap-1 p-1 bg-stone-100 dark:bg-stone-800/80 rounded-xl w-full sm:w-auto">
           {levels.map(lvl => (
             <button
               key={lvl}
@@ -348,7 +405,7 @@ export const FlashcardView: React.FC = () => {
                 setSelectedLevel(lvl);
                 setSelectedTopic(null);
               }}
-              className={`flex-1 sm:flex-initial px-3 sm:px-4 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-initial px-3 sm:px-4 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
                 currentLevel === lvl
                   ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-2xs'
                   : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
@@ -371,23 +428,20 @@ export const FlashcardView: React.FC = () => {
               triggerHapticFeedback('light');
               setStudyMode('topics');
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
               studyMode === 'topics'
                 ? 'bg-[#CC0000] text-white shadow-md shadow-red-500/20'
                 : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
             <BookOpen className="w-4 h-4" />
-            <span>Сэдэвчилсэн сургалт (Шинэ карт)</span>
+            <span>Сэдэвчилсэн сургалт</span>
           </button>
 
           <button
             type="button"
-            onClick={() => {
-              triggerHapticFeedback('light');
-              handleStartReview();
-            }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
+            onClick={handleStartReview}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
               studyMode === 'review'
                 ? 'bg-[#CC0000] text-white shadow-md shadow-red-500/20'
                 : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
@@ -406,7 +460,7 @@ export const FlashcardView: React.FC = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg sm:text-xl font-black text-stone-900 dark:text-stone-100">
+              <h2 className="text-base sm:text-lg font-black text-stone-900 dark:text-stone-100">
                 {currentLevel} Түвшний {contentKind === 'kanji' ? 'Ханзны Сэдвүүд' : 'Үгийн Сангийн Сэдвүүд'}
               </h2>
               <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
@@ -418,34 +472,23 @@ export const FlashcardView: React.FC = () => {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
             {availableTopics.map((topic, idx) => {
               const IconComponent = TOPIC_ICONS[topic.iconName] || Layers;
-              const studyRecords = (userProgress.itemStudyRecords || {}) as Record<string, ItemStudyRecord>;
-              
-              // Calculate progress for this topic
-              const totalInTopic = topic.orderedKeys.length;
-              const masteredInTopic = topic.orderedKeys.filter(key => {
-                const item = (contentKind === 'kanji' ? data.kanji : data.vocabulary)?.find(i => 
-                  contentKind === 'kanji' ? (i as KanjiItem).kanji === key : (i as VocabularyItem).japanese === key
-                );
-                if (!item) return false;
-                const rec = studyRecords[item.id];
-                return rec && (rec.masteryStatus === 'mastered' || rec.consecutiveCorrect >= 2);
-              }).length;
-
-              const progressPercent = Math.min(100, Math.round((masteredInTopic / (totalInTopic || 1)) * 100));
+              const stats = topicStatsMap.get(topic.id) || { total: 0, mastered: 0, progressPercent: 0 };
+              const totalInTopic = stats.total;
+              const progressPercent = stats.progressPercent;
 
               return (
                 <div
                   key={topic.id}
                   onClick={() => handleStartTopic(topic)}
-                  className="p-5 rounded-3xl bg-white dark:bg-[#181114] border border-stone-200 dark:border-stone-800 hover:border-[#CC0000] dark:hover:border-[#FF3366] transition-all shadow-sm hover:shadow-md cursor-pointer flex flex-col justify-between space-y-4 group"
+                  className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#181114] border border-stone-200 dark:border-stone-800 hover:border-[#CC0000] dark:hover:border-[#FF3366] transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between space-y-3.5 group"
                 >
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div
-                        className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shadow-sm"
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-xs"
                         style={{ backgroundColor: topic.themeColor }}
                       >
                         <IconComponent className="w-5 h-5" />
@@ -489,7 +532,7 @@ export const FlashcardView: React.FC = () => {
 
                     <button
                       type="button"
-                      className="w-full mt-2 py-2.5 px-3 rounded-xl bg-stone-50 dark:bg-stone-800/80 group-hover:bg-[#CC0000] text-stone-700 dark:text-stone-300 group-hover:text-white text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full mt-1.5 py-2 px-3 rounded-xl bg-stone-50 dark:bg-stone-800/80 group-hover:bg-[#CC0000] text-stone-700 dark:text-stone-300 group-hover:text-white text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <span>Флаш карт эхлүүлэх</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -506,20 +549,20 @@ export const FlashcardView: React.FC = () => {
       {/* 4. ACTIVE FLASHCARD PLAYER (Minimalist Hero Focus)        */}
       {/* ========================================================= */}
       {isPlayerOpen && (
-        <div className="space-y-5">
+        <div className="space-y-4 sm:space-y-5">
           {/* Top Player Navigation Bar */}
-          <div className="flex items-center justify-between gap-4 p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800">
+          <div className="flex items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-xs">
             <button
               type="button"
               onClick={handleBackToTopics}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-black transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
-              <span>Сэдвүүд</span>
+              <span>{onBack && !selectedTopic ? 'Буцах' : 'Сэдвүүд'}</span>
             </button>
 
-            <div className="text-center">
-              <span className="text-xs font-black text-stone-900 dark:text-stone-100 block">
+            <div className="text-center min-w-0 px-2">
+              <span className="text-xs sm:text-sm font-black text-stone-900 dark:text-stone-100 block truncate">
                 {selectedTopic ? `${selectedTopic.titleMongolian} • ${selectedTopic.titleJapanese}` : 'Ухаалаг давтлага (SRS)'}
               </span>
               <span className="text-[11px] font-bold text-stone-400">
@@ -527,10 +570,25 @@ export const FlashcardView: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 text-xs font-mono text-stone-500">
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓ {knownCount}</span>
-              <span>/</span>
-              <span className="text-rose-600 dark:text-rose-400 font-bold">✕ {againCount}</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowFurigana(prev => !prev)}
+                className={`p-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  showFurigana
+                    ? 'bg-red-50 dark:bg-red-950/50 border-red-200 dark:border-red-900/60 text-[#CC0000] dark:text-[#FF6699]'
+                    : 'bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-500'
+                }`}
+                title={showFurigana ? 'Фуригана нуух' : 'Фуригана харуулах'}
+              >
+                {showFurigana ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              </button>
+
+              <div className="flex items-center gap-1 text-xs font-mono text-stone-500 shrink-0">
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">✓ {knownCount}</span>
+                <span>/</span>
+                <span className="text-rose-600 dark:text-rose-400 font-bold">✕ {againCount}</span>
+              </div>
             </div>
           </div>
 
@@ -545,15 +603,15 @@ export const FlashcardView: React.FC = () => {
           {/* ======================================================= */}
           {/* 3D FLIPPABLE CARD CANVAS (Hero Focus)                   */}
           {/* ======================================================= */}
-          <div className="w-full max-w-xl mx-auto perspective-1000 min-h-[420px] sm:min-h-[470px]">
+          <div className="w-full max-w-xl mx-auto perspective-1000 min-h-[410px] sm:min-h-[460px]">
             <div
               onClick={handleFlipCard}
-              className={`relative w-full h-full min-h-[420px] sm:min-h-[470px] rounded-3xl transition-transform duration-500 transform-style-3d cursor-pointer shadow-xl border border-stone-200/90 dark:border-stone-800/90 select-none ${
+              className={`relative w-full h-full min-h-[410px] sm:min-h-[460px] rounded-3xl transition-transform duration-500 transform-style-3d cursor-pointer shadow-xl border border-stone-200/90 dark:border-stone-800/90 select-none ${
                 isFlipped ? 'rotate-y-180' : ''
               }`}
             >
               {/* --------------------------------------------------- */}
-              {/* CARD FRONT FACE (Minimalist Focus)                  */}
+              {/* CARD FRONT FACE (Minimalist Clean Focus)            */}
               {/* --------------------------------------------------- */}
               <div className="absolute inset-0 w-full h-full backface-hidden rounded-3xl p-6 sm:p-8 flex flex-col justify-between bg-gradient-to-br from-white via-[#FFFDFD] to-[#FFF6F7] dark:from-[#181114] dark:via-[#150F12] dark:to-[#1C1417]">
                 
@@ -581,7 +639,7 @@ export const FlashcardView: React.FC = () => {
                 </div>
 
                 {/* Center Hero Kanji or Word */}
-                <div className="text-center my-auto py-8">
+                <div className="text-center my-auto py-6">
                   {contentKind === 'kanji' ? (
                     <div className="text-8xl sm:text-9xl font-black text-stone-900 dark:text-stone-100 font-jp tracking-wider drop-shadow-xs">
                       {(currentItem as KanjiItem).kanji}
@@ -589,10 +647,14 @@ export const FlashcardView: React.FC = () => {
                   ) : (
                     <div className="space-y-3">
                       <div className="text-4xl sm:text-5xl lg:text-6xl font-black text-stone-900 dark:text-stone-100 font-jp tracking-tight">
-                        {(currentItem as VocabularyItem).japanese}
+                        <JapaneseText
+                          text={(currentItem as VocabularyItem).japanese}
+                          reading={(currentItem as VocabularyItem).reading}
+                          showFurigana={showFurigana}
+                        />
                       </div>
                       {(currentItem as VocabularyItem).reading && (
-                        <div className="text-base sm:text-lg font-mono text-stone-400 dark:text-stone-500">
+                        <div className="text-sm sm:text-base font-mono text-stone-400 dark:text-stone-500 font-jp">
                           【 {(currentItem as VocabularyItem).reading} 】
                         </div>
                       )}
@@ -612,7 +674,7 @@ export const FlashcardView: React.FC = () => {
               {/* --------------------------------------------------- */}
               {/* CARD BACK FACE (Detailed, Clean, Minimalist)        */}
               {/* --------------------------------------------------- */}
-              <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-3xl p-6 sm:p-7 flex flex-col justify-between bg-white dark:bg-[#181114] overflow-y-auto">
+              <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-3xl p-5 sm:p-7 flex flex-col justify-between bg-white dark:bg-[#181114] overflow-y-auto">
                 
                 {/* Top header */}
                 <div className="flex items-center justify-between pb-2.5 border-b border-stone-100 dark:border-stone-800">
@@ -657,17 +719,17 @@ export const FlashcardView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* KANJI: Minimalist Stroke-Order Animation (Auto-plays once, no clutter) */}
+                  {/* KANJI: Minimalist Stroke-Order Animation */}
                   {contentKind === 'kanji' && (
                     <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 flex items-center justify-between gap-4">
                       <div className="space-y-1">
                         <div className="text-[11px] font-extrabold text-stone-700 dark:text-stone-300">
                           Зурах дараалал:
                         </div>
-                        <div className="text-xs text-stone-500 dark:text-stone-400">
+                        <div className="text-xs text-stone-500 dark:text-stone-400 font-jp">
                           Оньёми: <strong className="text-stone-900 dark:text-stone-100">{(currentItem as KanjiItem).onyomi || '—'}</strong>
                         </div>
-                        <div className="text-xs text-stone-500 dark:text-stone-400">
+                        <div className="text-xs text-stone-500 dark:text-stone-400 font-jp">
                           Күньёми: <strong className="text-stone-900 dark:text-stone-100">{(currentItem as KanjiItem).kunyomi || '—'}</strong>
                         </div>
                         <button
@@ -723,9 +785,9 @@ export const FlashcardView: React.FC = () => {
                     </div>
                   )}
 
-                  {/* VOCAB: Natural Example Sentence */}
+                  {/* VOCAB: Natural Example Sentence with clean ruby furigana */}
                   {contentKind === 'vocab' && (currentItem as VocabularyItem).exampleSentence && (
-                    <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 space-y-1 text-left">
+                    <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 space-y-1.5 text-left">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-black uppercase text-stone-400">Жишээ өгүүлбэр:</span>
                         <button
@@ -734,13 +796,17 @@ export const FlashcardView: React.FC = () => {
                             e.stopPropagation();
                             handlePlayAudio((currentItem as VocabularyItem).exampleSentence!);
                           }}
-                          className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
+                          className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
                         >
                           <Volume2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                      <div className="text-sm font-bold text-stone-900 dark:text-stone-100 font-jp">
-                        {(currentItem as VocabularyItem).exampleSentence}
+                      <div className="text-sm font-bold text-stone-900 dark:text-stone-100 font-jp leading-relaxed">
+                        <JapaneseText
+                          text={(currentItem as VocabularyItem).exampleSentence!}
+                          reading={(currentItem as VocabularyItem).exampleReading}
+                          showFurigana={showFurigana}
+                        />
                       </div>
                       {(currentItem as VocabularyItem).exampleMongolian && (
                         <div className="text-xs text-stone-500 dark:text-stone-400">
@@ -805,7 +871,7 @@ export const FlashcardView: React.FC = () => {
           {/* ======================================================= */}
           {/* BOTTOM CONTROLS: Prev Card | SRS Actions | Next Card    */}
           {/* ======================================================= */}
-          <div className="flex items-center justify-between gap-3 max-w-xl mx-auto pt-2">
+          <div className="flex items-center justify-between gap-2.5 sm:gap-3 max-w-xl mx-auto pt-1">
             {/* Backward Navigation */}
             <button
               type="button"
@@ -819,11 +885,11 @@ export const FlashcardView: React.FC = () => {
             </button>
 
             {/* SRS Action Buttons */}
-            <div className="flex items-center gap-2.5 sm:gap-3 flex-1 justify-center">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-center">
               <button
                 type="button"
                 onClick={handleAgain}
-                className="flex-1 py-3 px-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 border-2 border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 font-black text-xs sm:text-sm shadow-xs active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="flex-1 py-3 px-3 sm:px-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 border-2 border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 font-black text-xs sm:text-sm shadow-xs active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>Дахин үзэх</span>
@@ -832,7 +898,7 @@ export const FlashcardView: React.FC = () => {
               <button
                 type="button"
                 onClick={handleKnow}
-                className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-xs sm:text-sm shadow-md shadow-emerald-600/25 active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                className="flex-1 py-3 px-3 sm:px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-xs sm:text-sm shadow-md shadow-emerald-600/25 active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Check className="w-4 h-4 stroke-[3]" />
                 <span>Мэдэж байна</span>
@@ -903,7 +969,7 @@ export const FlashcardView: React.FC = () => {
               onClick={handleBackToTopics}
               className="w-full sm:w-auto py-3 px-6 rounded-2xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] text-white font-black text-xs sm:text-sm shadow-md shadow-red-500/25 hover:opacity-95 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Бусад сэдвүүд рүү буцах</span>
+              <span>{onBack && !selectedTopic ? 'Буцах' : 'Бусад сэдвүүд рүү буцах'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

@@ -111,7 +111,7 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/75 backdrop-blur-md overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/75 backdrop-blur-md overflow-y-auto animate-fade-in"
       onClick={e => {
         if (e.target === e.currentTarget) {
           onClose();

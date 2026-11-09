@@ -228,6 +228,7 @@ ruby,
   break-inside: avoid;
   margin: 0;
   padding: 0;
+  line-height: inherit;
 }
 
 rt,
@@ -239,7 +240,7 @@ rt,
   ruby-align: center;
   user-select: none;
   -webkit-user-select: none;
-  font-weight: 400;
+  font-weight: 500;
   color: #71717a;
   margin: 0;
   padding: 0;
@@ -248,6 +249,23 @@ rt,
 .dark rt,
 .dark .ruby-reading {
   color: #a1a1aa;
+}
+
+/* Mobile Viewport & iOS Safe Area Inset Utilities */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 16px);
+}
+
+.mb-safe {
+  margin-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+}
+
+.modal-bottom-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);
 }
 
 /* User Message Bubble High-Contrast Protection */

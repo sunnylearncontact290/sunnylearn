@@ -690,7 +690,7 @@ export const PracticeView: React.FC = () => {
         <button
           type="button"
           onClick={() => {
-            setLearnSubTab('flashcards');
+            setLearnSubTab('vocab');
             setActiveTab('learn');
           }}
           className="px-5 py-3 rounded-2xl bg-white text-[#990000] hover:bg-stone-50 active:scale-95 text-xs sm:text-sm font-black transition-all cursor-pointer shadow-md flex items-center justify-center gap-2 shrink-0"

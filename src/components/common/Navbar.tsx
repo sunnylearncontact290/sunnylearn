@@ -363,7 +363,7 @@ export const Navbar: React.FC = () => {
           {/* ========================================================= */}
           {/* 3. RIGHT SECTION: Premium, Streak, Theme, User/Login     */}
           {/* ========================================================= */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 min-w-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0 min-w-0">
             
             {/* Quick Premium Pill Button */}
             <button
@@ -382,22 +382,23 @@ export const Navbar: React.FC = () => {
               </span>
             </button>
 
-            {/* Streak Counter Pill */}
+            {/* Streak Counter Pill: compact on small screens */}
             <div
               onClick={() => handleNavClick('progress')}
-              className="flex items-center gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-orange-700 dark:text-orange-300 text-[11px] sm:text-xs font-bold cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors select-none shrink-0 whitespace-nowrap shadow-2xs"
+              className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-orange-700 dark:text-orange-300 text-[11px] sm:text-xs font-bold cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/50 transition-colors select-none shrink-0 whitespace-nowrap shadow-2xs"
               title="Таны тасралтгүй суралцсан өдөр"
             >
               <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-orange-500 text-orange-500 shrink-0" />
-              <span className="font-extrabold">{userProgress.streak?.current || 1} өдөр</span>
+              <span className="font-extrabold">{userProgress.streak?.current || 1}</span>
+              <span className="hidden sm:inline font-bold">өдөр</span>
             </div>
 
-            {/* Search Trigger */}
+            {/* Search Trigger (Hidden on narrow screens < 480px, available in bottom nav & menu) */}
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
               title="Хайлт хийх"
-              className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-transparent hover:border-stone-200 dark:border-stone-700 transition-colors shrink-0 cursor-pointer"
+              className="hidden min-[480px]:inline-flex p-1.5 sm:p-2 rounded-lg sm:rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-transparent hover:border-stone-200 dark:border-stone-700 transition-colors shrink-0 cursor-pointer"
             >
               <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             </button>

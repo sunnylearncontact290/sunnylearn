@@ -16,6 +16,7 @@ import { useApp } from '../../context/AppContext';
 import { generateExercisesForLesson } from '../../data/curriculumGenerator';
 import { speechService } from '../../services/speech';
 import { triggerHapticFeedback } from '../../services/nativePlatform';
+import { JapaneseText } from '../common/JapaneseText';
 
 interface LessonPlayerModalProps {
   lesson: CurriculumLesson | null;
@@ -156,21 +157,11 @@ export const LessonPlayerModal: React.FC<LessonPlayerModalProps> = ({
 
   // Helper for displaying Japanese with ruby furigana (no romaji!)
   const renderJapaneseWithReading = (japanese: string, reading?: string) => {
-    if (!reading || reading === japanese) {
-      return <span>{japanese}</span>;
-    }
-    return (
-      <ruby className="inline-flex flex-col items-center">
-        <span>{japanese}</span>
-        <rt className="text-xs sm:text-sm font-medium text-stone-500 dark:text-stone-400 font-sans tracking-normal select-none">
-          {reading}
-        </rt>
-      </ruby>
-    );
+    return <JapaneseText text={japanese} reading={reading} showFurigana={true} />;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-0 sm:p-4 overflow-y-auto animate-fade-in select-none">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md p-0 sm:p-4 overflow-y-auto animate-fade-in select-none">
       <div className="w-full h-[100dvh] sm:h-auto sm:max-h-[88vh] sm:max-w-xl bg-white dark:bg-[#150F12] sm:rounded-3xl border-0 sm:border border-stone-200 dark:border-stone-800 shadow-2xl overflow-hidden flex flex-col justify-between my-auto">
         
         {/* ========================================================= */}
