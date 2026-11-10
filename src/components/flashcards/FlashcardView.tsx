@@ -393,28 +393,6 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
             </div>
           )}
         </div>
-
-        {/* Level Selector Pills */}
-        <div className="flex items-center justify-between sm:justify-start gap-1 p-1 bg-stone-100 dark:bg-stone-800/80 rounded-xl w-full sm:w-auto">
-          {levels.map(lvl => (
-            <button
-              key={lvl}
-              type="button"
-              onClick={() => {
-                triggerHapticFeedback('light');
-                setSelectedLevel(lvl);
-                setSelectedTopic(null);
-              }}
-              className={`flex-1 sm:flex-initial px-3 sm:px-4 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                currentLevel === lvl
-                  ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-2xs'
-                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
-              }`}
-            >
-              {lvl}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* ========================================================= */}
@@ -601,89 +579,24 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
           </div>
 
           {/* ======================================================= */}
-          {/* 3D FLIPPABLE CARD CANVAS (Hero Focus)                   */}
+          {/* CARD CANVAS (Natural height, NO internal scrollbars)    */}
           {/* ======================================================= */}
-          <div className="w-full max-w-xl mx-auto perspective-1000 min-h-[410px] sm:min-h-[460px]">
+          <div className="w-full max-w-xl mx-auto">
             <div
               onClick={handleFlipCard}
-              className={`relative w-full h-full min-h-[410px] sm:min-h-[460px] rounded-3xl transition-transform duration-500 transform-style-3d cursor-pointer shadow-xl border border-stone-200/90 dark:border-stone-800/90 select-none ${
-                isFlipped ? 'rotate-y-180' : ''
-              }`}
+              className="w-full rounded-3xl cursor-pointer shadow-xl border border-stone-200/90 dark:border-stone-800/90 select-none bg-white dark:bg-[#181114] transition-all hover:shadow-2xl overflow-hidden"
             >
               {/* --------------------------------------------------- */}
               {/* CARD FRONT FACE (Minimalist Clean Focus)            */}
               {/* --------------------------------------------------- */}
-              <div className="absolute inset-0 w-full h-full backface-hidden rounded-3xl p-6 sm:p-8 flex flex-col justify-between bg-gradient-to-br from-white via-[#FFFDFD] to-[#FFF6F7] dark:from-[#181114] dark:via-[#150F12] dark:to-[#1C1417]">
-                
-                {/* Top minimalist header */}
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-[#CC0000]/10 text-[#CC0000] dark:text-[#FF6699] border border-red-200 dark:border-red-900/60">
-                    JLPT {currentLevel} • #{currentIndex + 1}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (contentKind === 'kanji') {
-                        handlePlayAudio((currentItem as KanjiItem).kanji);
-                      } else {
-                        handlePlayAudio((currentItem as VocabularyItem).japanese, (currentItem as VocabularyItem).reading);
-                      }
-                    }}
-                    className="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-[#CC0000] dark:text-[#FF3366] transition-colors cursor-pointer"
-                    title="Дуудлага сонсох"
-                  >
-                    <Volume2 className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Center Hero Kanji or Word */}
-                <div className="text-center my-auto py-6">
-                  {contentKind === 'kanji' ? (
-                    <div className="text-8xl sm:text-9xl font-black text-stone-900 dark:text-stone-100 font-jp tracking-wider drop-shadow-xs">
-                      {(currentItem as KanjiItem).kanji}
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="text-4xl sm:text-5xl lg:text-6xl font-black text-stone-900 dark:text-stone-100 font-jp tracking-tight">
-                        <JapaneseText
-                          text={(currentItem as VocabularyItem).japanese}
-                          reading={(currentItem as VocabularyItem).reading}
-                          showFurigana={showFurigana}
-                        />
-                      </div>
-                      {(currentItem as VocabularyItem).reading && (
-                        <div className="text-sm sm:text-base font-mono text-stone-400 dark:text-stone-500 font-jp">
-                          【 {(currentItem as VocabularyItem).reading} 】
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Bottom flip hint */}
-                <div className="text-center pt-3 border-t border-stone-100 dark:border-stone-800/80">
-                  <span className="text-xs font-bold text-stone-400 dark:text-stone-500 flex items-center justify-center gap-1.5">
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Картыг товшиж эргүүлэх</span>
-                  </span>
-                </div>
-              </div>
-
-              {/* --------------------------------------------------- */}
-              {/* CARD BACK FACE (Detailed, Clean, Minimalist)        */}
-              {/* --------------------------------------------------- */}
-              <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 rounded-3xl p-5 sm:p-7 flex flex-col justify-between bg-white dark:bg-[#181114] overflow-y-auto">
-                
-                {/* Top header */}
-                <div className="flex items-center justify-between pb-2.5 border-b border-stone-100 dark:border-stone-800">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-black text-stone-900 dark:text-stone-100 font-jp">
-                      {contentKind === 'kanji'
-                        ? (currentItem as KanjiItem).kanji
-                        : (currentItem as VocabularyItem).japanese}
+              {!isFlipped ? (
+                <div className="w-full p-6 sm:p-8 flex flex-col justify-between min-h-[340px] sm:min-h-[380px] bg-gradient-to-br from-white via-[#FFFDFD] to-[#FFF6F7] dark:from-[#181114] dark:via-[#150F12] dark:to-[#1C1417] animate-fade-in">
+                  {/* Top minimalist header */}
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-[#CC0000]/10 text-[#CC0000] dark:text-[#FF6699] border border-red-200 dark:border-red-900/60">
+                      JLPT {currentLevel} • #{currentIndex + 1}
                     </span>
+
                     <button
                       type="button"
                       onClick={(e) => {
@@ -694,177 +607,240 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
                           handlePlayAudio((currentItem as VocabularyItem).japanese, (currentItem as VocabularyItem).reading);
                         }
                       }}
-                      className="p-1 rounded-lg bg-red-500/10 text-[#CC0000] dark:text-[#FF3366] cursor-pointer"
+                      className="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-[#CC0000] dark:text-[#FF3366] transition-colors cursor-pointer"
+                      title="Дуудлага сонсох"
                     >
-                      <Volume2 className="w-4 h-4" />
+                      <Volume2 className="w-5 h-5" />
                     </button>
                   </div>
 
-                  <span className="text-[11px] font-bold text-stone-400">
-                    {contentKind === 'kanji' ? 'Ханзны тайлбар' : (currentItem as VocabularyItem).partOfSpeech || 'Үг'}
-                  </span>
-                </div>
-
-                {/* Center Content */}
-                <div className="py-2.5 space-y-3.5">
-                  {/* Mongolian Meaning */}
-                  <div>
-                    <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">
-                      Монгол утга:
-                    </span>
-                    <div className="text-xl sm:text-2xl font-black text-[#CC0000] dark:text-[#FF6699] mt-0.5">
-                      {contentKind === 'kanji'
-                        ? (currentItem as KanjiItem).mongolian
-                        : (currentItem as VocabularyItem).mongolian}
-                    </div>
-                  </div>
-
-                  {/* KANJI: Minimalist Stroke-Order Animation */}
-                  {contentKind === 'kanji' && (
-                    <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 flex items-center justify-between gap-4">
-                      <div className="space-y-1">
-                        <div className="text-[11px] font-extrabold text-stone-700 dark:text-stone-300">
-                          Зурах дараалал:
-                        </div>
-                        <div className="text-xs text-stone-500 dark:text-stone-400 font-jp">
-                          Оньёми: <strong className="text-stone-900 dark:text-stone-100">{(currentItem as KanjiItem).onyomi || '—'}</strong>
-                        </div>
-                        <div className="text-xs text-stone-500 dark:text-stone-400 font-jp">
-                          Күньёми: <strong className="text-stone-900 dark:text-stone-100">{(currentItem as KanjiItem).kunyomi || '—'}</strong>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setReplayStrokeKey(k => k + 1);
-                          }}
-                          className="mt-1 px-2.5 py-1 rounded-lg bg-stone-200/80 dark:bg-stone-800 hover:bg-stone-300 text-stone-700 dark:text-stone-300 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                          <span>Дахин тоглуулах</span>
-                        </button>
-                      </div>
-
-                      <div
-                        key={replayStrokeKey}
-                        className="w-24 h-24 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center p-1 shrink-0 overflow-hidden"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <KanjiStrokeOrder
-                          kanji={(currentItem as KanjiItem).kanji}
-                          size={84}
-                          autoPlay={true}
-                          showNumbers={false}
-                          showGrid={false}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* KANJI: 1-2 Useful Example Words */}
-                  {contentKind === 'kanji' && (
-                    <div className="space-y-1.5 text-left">
-                      <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">
-                        Жишээ үгс:
-                      </span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {getKanjiExamples(currentItem as KanjiItem).map((ex, exIdx) => (
-                          <div
-                            key={exIdx}
-                            className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/60 dark:border-stone-800 text-xs"
-                          >
-                            <div className="font-bold text-stone-900 dark:text-stone-100 font-jp">
-                              {ex.word} <span className="font-normal text-stone-400">【{ex.reading}】</span>
-                            </div>
-                            <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
-                              {ex.mongolian}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* VOCAB: Natural Example Sentence with clean ruby furigana */}
-                  {contentKind === 'vocab' && (currentItem as VocabularyItem).exampleSentence && (
-                    <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 space-y-1.5 text-left">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase text-stone-400">Жишээ өгүүлбэр:</span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handlePlayAudio((currentItem as VocabularyItem).exampleSentence!);
-                          }}
-                          className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
-                        >
-                          <Volume2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <div className="text-sm font-bold text-stone-900 dark:text-stone-100 font-jp leading-relaxed">
-                        <JapaneseText
-                          text={(currentItem as VocabularyItem).exampleSentence!}
-                          reading={(currentItem as VocabularyItem).exampleReading}
-                          showFurigana={showFurigana}
-                        />
-                      </div>
-                      {(currentItem as VocabularyItem).exampleMongolian && (
-                        <div className="text-xs text-stone-500 dark:text-stone-400">
-                          {(currentItem as VocabularyItem).exampleMongolian}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* SUNNY AI 1-CLICK EXPLANATION BUTTON */}
-                  <div className="pt-1">
-                    {aiExplanation ? (
-                      <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200 dark:border-amber-900/40 text-left space-y-1.5 animate-fade-in">
-                        <div className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full overflow-hidden border border-amber-300 shrink-0">
-                            <SunnyLogo className="w-full h-full object-cover" />
-                          </div>
-                          <span className="text-[11px] font-black text-amber-700 dark:text-amber-300">
-                            Sunny багшийн цээжлэх зөвлөгөө:
-                          </span>
-                        </div>
-                        <p className="text-xs text-stone-700 dark:text-stone-300 leading-relaxed whitespace-pre-line">
-                          {aiExplanation}
-                        </p>
+                  {/* Center Hero Kanji or Word */}
+                  <div className="text-center my-auto py-6">
+                    {contentKind === 'kanji' ? (
+                      <div className="text-8xl sm:text-9xl font-black text-stone-900 dark:text-stone-100 font-jp tracking-wider drop-shadow-xs">
+                        {(currentItem as KanjiItem).kanji}
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        disabled={isAiLoading}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAskSunnyAI();
-                        }}
-                        className="w-full py-2 px-3 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 hover:bg-amber-100 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 font-extrabold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                      >
-                        {isAiLoading ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
-                            <span>Sunny AI тайлбар бэлдэж байна...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                            <span>Sunny AI цээжлэх зөвлөгөө авах</span>
-                          </>
+                      <div className="space-y-3">
+                        <div className="text-4xl sm:text-5xl lg:text-6xl font-black text-stone-900 dark:text-stone-100 font-jp tracking-tight">
+                          <JapaneseText
+                            text={(currentItem as VocabularyItem).japanese}
+                            reading={(currentItem as VocabularyItem).reading}
+                            showFurigana={showFurigana}
+                          />
+                        </div>
+                        {(currentItem as VocabularyItem).reading && (
+                          <div className="text-sm sm:text-base font-mono text-stone-400 dark:text-stone-500 font-jp">
+                            【 {(currentItem as VocabularyItem).reading} 】
+                          </div>
                         )}
-                      </button>
+                      </div>
                     )}
                   </div>
-                </div>
 
-                {/* Bottom flip hint */}
-                <div className="text-center pt-2 border-t border-stone-100 dark:border-stone-800/80">
-                  <span className="text-[11px] text-stone-400">
-                    Доорх товчлуураар цээжилсэн эсэхээ сонгоно уу
-                  </span>
+                  {/* Bottom flip hint */}
+                  <div className="text-center pt-3 border-t border-stone-100 dark:border-stone-800/80">
+                    <span className="text-xs font-bold text-stone-400 dark:text-stone-500 flex items-center justify-center gap-1.5">
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Картыг товшиж эргүүлэх</span>
+                    </span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /* --------------------------------------------------- */
+                /* CARD BACK FACE (Detailed, Clean, Minimalist)        */
+                /* --------------------------------------------------- */
+                <div className="w-full p-5 sm:p-7 flex flex-col justify-between bg-white dark:bg-[#181114] space-y-4 animate-fade-in">
+                  {/* Top header */}
+                  <div className="flex items-center justify-between pb-2.5 border-b border-stone-100 dark:border-stone-800">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-black text-stone-900 dark:text-stone-100 font-jp">
+                        {contentKind === 'kanji'
+                          ? (currentItem as KanjiItem).kanji
+                          : (currentItem as VocabularyItem).japanese}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (contentKind === 'kanji') {
+                            handlePlayAudio((currentItem as KanjiItem).kanji);
+                          } else {
+                            handlePlayAudio((currentItem as VocabularyItem).japanese, (currentItem as VocabularyItem).reading);
+                          }
+                        }}
+                        className="p-1 rounded-lg bg-red-500/10 text-[#CC0000] dark:text-[#FF3366] cursor-pointer"
+                      >
+                        <Volume2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <span className="text-[11px] font-bold text-stone-400">
+                      {contentKind === 'kanji' ? 'Ханзны тайлбар' : (currentItem as VocabularyItem).partOfSpeech || 'Үг'}
+                    </span>
+                  </div>
+
+                  {/* Center Content */}
+                  <div className="py-1 space-y-3.5">
+                    {/* Mongolian Meaning */}
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">
+                        Монгол утга:
+                      </span>
+                      <div className="text-xl sm:text-2xl font-black text-[#CC0000] dark:text-[#FF6699] mt-0.5">
+                        {contentKind === 'kanji'
+                          ? (currentItem as KanjiItem).mongolian
+                          : (currentItem as VocabularyItem).mongolian}
+                      </div>
+                    </div>
+
+                    {/* KANJI: Minimalist Stroke-Order Animation with visible numbers 1..N */}
+                    {contentKind === 'kanji' && (
+                      <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 flex items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="text-[11px] font-extrabold text-stone-700 dark:text-stone-300">
+                            Зурах дараалал:
+                          </div>
+                          <div className="text-xs text-stone-500 dark:text-stone-400 font-jp">
+                            Оньёми: <strong className="text-stone-900 dark:text-stone-100">{(currentItem as KanjiItem).onyomi || '—'}</strong>
+                          </div>
+                          <div className="text-xs text-stone-500 dark:text-stone-400 font-jp">
+                            Күньёми: <strong className="text-stone-900 dark:text-stone-100">{(currentItem as KanjiItem).kunyomi || '—'}</strong>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setReplayStrokeKey(k => k + 1);
+                            }}
+                            className="mt-1 px-2.5 py-1 rounded-lg bg-stone-200/80 dark:bg-stone-800 hover:bg-stone-300 text-stone-700 dark:text-stone-300 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>Дахин тоглуулах</span>
+                          </button>
+                        </div>
+
+                        <div
+                          key={replayStrokeKey}
+                          className="w-24 h-24 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center p-1 shrink-0 overflow-hidden"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <KanjiStrokeOrder
+                            kanji={(currentItem as KanjiItem).kanji}
+                            size={84}
+                            autoPlay={true}
+                            showNumbers={true}
+                            showGrid={false}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* KANJI: 1-2 Useful Example Words */}
+                    {contentKind === 'kanji' && (
+                      <div className="space-y-1.5 text-left">
+                        <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">
+                          Жишээ үгс:
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {getKanjiExamples(currentItem as KanjiItem).map((ex, exIdx) => (
+                            <div
+                              key={exIdx}
+                              className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/60 dark:border-stone-800 text-xs"
+                            >
+                              <div className="font-bold text-stone-900 dark:text-stone-100 font-jp">
+                                {ex.word} <span className="font-normal text-stone-400">【{ex.reading}】</span>
+                              </div>
+                              <div className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                                {ex.mongolian}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* VOCAB: Natural Example Sentence with clean ruby furigana */}
+                    {contentKind === 'vocab' && (currentItem as VocabularyItem).exampleSentence && (
+                      <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 space-y-1.5 text-left">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase text-stone-400">Жишээ өгүүлбэр:</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePlayAudio((currentItem as VocabularyItem).exampleSentence!);
+                            }}
+                            className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div className="text-sm font-bold text-stone-900 dark:text-stone-100 font-jp leading-relaxed">
+                          <JapaneseText
+                            text={(currentItem as VocabularyItem).exampleSentence!}
+                            reading={(currentItem as VocabularyItem).exampleReading}
+                            showFurigana={showFurigana}
+                          />
+                        </div>
+                        {(currentItem as VocabularyItem).exampleMongolian && (
+                          <div className="text-xs text-stone-500 dark:text-stone-400">
+                            {(currentItem as VocabularyItem).exampleMongolian}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* SUNNY AI 1-CLICK EXPLANATION BUTTON */}
+                    <div className="pt-1">
+                      {aiExplanation ? (
+                        <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200 dark:border-amber-900/40 text-left space-y-1.5 animate-fade-in">
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 rounded-full overflow-hidden border border-amber-300 shrink-0">
+                              <SunnyLogo className="w-full h-full object-cover" />
+                            </div>
+                            <span className="text-[11px] font-black text-amber-700 dark:text-amber-300">
+                              Sunny багшийн цээжлэх зөвлөгөө:
+                            </span>
+                          </div>
+                          <p className="text-xs text-stone-700 dark:text-stone-300 leading-relaxed whitespace-pre-line">
+                            {aiExplanation}
+                          </p>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled={isAiLoading}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAskSunnyAI();
+                          }}
+                          className="w-full py-2 px-3 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 hover:bg-amber-100 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 font-extrabold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                        >
+                          {isAiLoading ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600" />
+                              <span>Sunny AI тайлбар бэлдэж байна...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                              <span>Sunny AI цээжлэх зөвлөгөө авах</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bottom flip hint */}
+                  <div className="text-center pt-2 border-t border-stone-100 dark:border-stone-800/80">
+                    <span className="text-[11px] text-stone-400">
+                      Картыг товшиж урд тал руу эргүүлэх боломжтой
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -901,7 +877,7 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
                 className="flex-1 py-3 px-3 sm:px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-black text-xs sm:text-sm shadow-md shadow-emerald-600/25 active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <Check className="w-4 h-4 stroke-[3]" />
-                <span>Мэдэж байна</span>
+                <span>Сурсан гэж тэмдэглэх</span>
               </button>
             </div>
 

@@ -56,7 +56,7 @@ if (!IS_VERCEL && !fs.existsSync(path.resolve(process.cwd(), 'data'))) {
 // ----------------------------------------------------
 let geminiClient: GoogleGenAI | null = null;
 function getGeminiClient(): GoogleGenAI | null {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
   if (!apiKey) {
     return null;
   }
@@ -67,6 +67,10 @@ function getGeminiClient(): GoogleGenAI | null {
     });
   }
   return geminiClient;
+}
+
+function resetGeminiClient(): void {
+  geminiClient = null;
 }
 
 const AUDIO_CACHE_DIR = IS_VERCEL ? path.join('/tmp', 'audio-cache') : path.resolve(process.cwd(), 'data', 'audio-cache');
@@ -2686,13 +2690,12 @@ function recordAIUsage(identifier: string) {
 // ----------------------------------------------------
 const GEMINI_TEXT_MODELS = [
   'gemini-3.8-flash',
-  'gemini-3.6-flash',
   'gemini-3.1-flash-lite',
   'gemini-flash-latest'
 ];
 
 async function executeGeminiGenerateContent(
-  ai: any,
+  _ai: any,
   params: {
     contents: any;
     config?: any;
@@ -2703,10 +2706,15 @@ async function executeGeminiGenerateContent(
   let lastError: any = null;
 
   for (const model of GEMINI_TEXT_MODELS) {
-    // Up to 2 attempts for transient errors (503 UNAVAILABLE / 429 RESOURCE_EXHAUSTED)
+    // Up to 2 attempts for transient errors (503 UNAVAILABLE / 429 RESOURCE_EXHAUSTED / fetch failed)
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        const resp = await ai.models.generateContent({
+        const client = getGeminiClient();
+        if (!client) {
+          throw new Error('AI систем холбогдоогүй байна. GEMINI_API_KEY дутуу байна.');
+        }
+
+        const resp = await client.models.generateContent({
           model,
           contents: params.contents,
           config: params.config
@@ -2723,13 +2731,25 @@ async function executeGeminiGenerateContent(
           errMsg.includes('429') ||
           errMsg.includes('high demand') ||
           errMsg.includes('ResourceExhausted') ||
-          errMsg.includes('spikes in demand');
+          errMsg.includes('spikes in demand') ||
+          errMsg.includes('fetch failed') ||
+          errMsg.includes('ECONNRESET') ||
+          errMsg.includes('ETIMEDOUT') ||
+          errMsg.includes('socket hang up') ||
+          errMsg.includes('other side closed') ||
+          errMsg.includes('Premature close') ||
+          errMsg.includes('network');
 
         console.warn(`[${tag}] Model ${model} attempt ${attempt} failed:`, errMsg);
 
+        // Discard cached client on network socket errors to force a clean TCP connection
+        if (errMsg.includes('fetch failed') || errMsg.includes('ECONNRESET') || errMsg.includes('socket')) {
+          resetGeminiClient();
+        }
+
         if (isTransient && attempt === 1) {
-          // Wait 600ms before retrying the same model once
-          await new Promise(resolve => setTimeout(resolve, 600));
+          // Wait 750ms before retrying the same model once
+          await new Promise(resolve => setTimeout(resolve, 750));
           continue;
         }
         // If not transient, or already retried once, proceed to next model in list
@@ -2739,6 +2759,41 @@ async function executeGeminiGenerateContent(
   }
 
   throw lastError || new Error(`${tag} хариулт үүсгэхэд алдаа гарлаа.`);
+}
+
+function generateQuizFallbackExplanation(quiz: any): string {
+  const q = quiz.question || '';
+  const r = quiz.questionReading ? `（${quiz.questionReading}）` : '';
+  const userAns = quiz.userAnswer || 'сонгосон хариулт';
+  const correctAns = quiz.correctAnswer || '';
+  const exp = quiz.explanation ? `\n\n**Тайлбар санамж:** ${quiz.explanation}` : '';
+
+  return `### 💡 Сонжооны асуултын тайлбар
+
+> **Асуулт:** ${q} ${r}
+
+* **Таны сонгосон хариулт:** \`${userAns}\` (Буруу)
+* **Зөв хариулт:** \`${correctAns}\` ✓
+
+#### 1. Яагаад энэ хариулт тохирохгүй байна вэ?
+Таны сонгосон \`${userAns}\` хувилбар нь тухайн өгүүлбэрийн дүрмийн холболт, тийн ялгал болон хам сэдвийн утгад нийцэхгүй байна. Япон хэлэнд үйл үгийн хувирал (て形, た形, ない形), туслах нөхцөлүүдийн нарийн ялгаа нь өгүүлбэрийн утгыг шууд шийддэг тул өмнөх болон дараах үгтэйгээ хэрхэн холбогдож байгааг анхаараарай.
+
+#### 2. Зөв хариултын бүтэц
+Зөв хариулт болох \`${correctAns}\` нь тухайн түвшний хэл зүйн дүрмийн дагуу хамгийн байгалийн бөгөөд зөв хэлбэр юм.${exp}
+
+#### 3. Бататгах зөвлөгөө
+Энэ төрлийн дүрмийн бүтцийг дахин сайн бататгаж, төстэй жишээ өгүүлбэрүүдийг уншиж дадаарай. Таны сурлагад өндөр амжилт хүсье! ✨`;
+}
+
+function generateRoleplayFallbackExplanation(ctx: any): string {
+  return `### 💡 AI Roleplay — Зөвлөгөө & Дүн шинжилгээ
+
+* **Сценари:** ${ctx.scenarioTitle || 'Бодит харилцан яриа'}
+* **Таны өгүүлбэр:** ${ctx.originalSentence ? `「${ctx.originalSentence}」` : '—'}
+* **Илүү байгалийн хэлбэр:** ${ctx.correctedSentence ? `「${ctx.correctedSentence}」` : '—'}
+
+#### Дүрмийн болон хэрэглээний тайлбар
+Япон хэлний бодит харилцаанд эелдэг найрсаг хэлбэр (丁寧語) болон тухайн нөхцөл байдалд тохирсон хэллэг чухал байдаг. Дээрх зассан хувилбар нь тухайн нөхцөлд илүү байгалийн, ойлгомжтой сонсогдоно. Дүрийн харилцан яриандаа үргэлжлүүлэн дадлага хийгээрэй! ✨`;
 }
 
 async function callGeminiTutor(
@@ -2825,16 +2880,27 @@ ${roleplayContext.conversationExcerpt ? `Харилцан ярианы хэсэ�
     });
   }
 
-  const resp = await executeGeminiGenerateContent(ai, {
-    contents,
-    config: {
-      systemInstruction,
-      temperature: 0.7,
-    },
-    tag: 'Sunny AI'
-  });
+  try {
+    const resp = await executeGeminiGenerateContent(ai, {
+      contents,
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+      },
+      tag: 'Sunny AI'
+    });
 
-  return resp.text;
+    return resp.text;
+  } catch (err: any) {
+    console.warn('[Sunny AI] All Gemini models failed, evaluating fallback:', err?.message || err);
+    if (quizContext) {
+      return generateQuizFallbackExplanation(quizContext);
+    }
+    if (roleplayContext) {
+      return generateRoleplayFallbackExplanation(roleplayContext);
+    }
+    throw err;
+  }
 }
 
 // ----------------------------------------------------

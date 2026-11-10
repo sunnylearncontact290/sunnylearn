@@ -6,7 +6,7 @@ import {
   Compass
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { JLPTLevel, LearnSubTab } from '../../types';
+import { LearnSubTab } from '../../types';
 import { VocabList } from './VocabList';
 import { KanjiList } from './KanjiList';
 import { GrammarList } from './GrammarList';
@@ -15,13 +15,11 @@ import { LearningPathView } from '../path/LearningPathView';
 export const LearnHub: React.FC = () => {
   const {
     selectedLevel,
-    setSelectedLevel,
     learnSubTab,
     setLearnSubTab,
     data
   } = useApp();
 
-  const levels: JLPTLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
   const effectiveLevel = selectedLevel || 'N5';
   
   // Default to 'path' if learnSubTab is 'flashcards' or undefined
@@ -56,37 +54,16 @@ export const LearnHub: React.FC = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6 animate-fade-in">
-      {/* Top Header & JLPT Level Selection Bar */}
+      {/* Top Header */}
       <div className="bg-white dark:bg-stone-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-stone-200 dark:border-stone-800 shadow-xs space-y-4 sm:space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight">
               Сургалтын танхим
             </h1>
             <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-0.5">
-              JLPT {effectiveLevel} түвшний цогц сургалтын агуулга
+              JLPT {effectiveLevel} түвшний сургалтын хөтөлбөр
             </p>
-          </div>
-
-          {/* Level Switcher Pills */}
-          <div className="flex items-center justify-between sm:justify-start gap-1 p-1 bg-stone-100 dark:bg-stone-800/80 rounded-xl sm:rounded-2xl w-full sm:w-auto">
-            {levels.map(lvl => {
-              const isSelected = selectedLevel === lvl;
-              return (
-                <button
-                  key={lvl}
-                  type="button"
-                  onClick={() => setSelectedLevel(lvl)}
-                  className={`flex-1 sm:flex-initial px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-extrabold text-center transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-md shadow-[#FF0000]/25'
-                      : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
-                  }`}
-                >
-                  {lvl}
-                </button>
-              );
-            })}
           </div>
         </div>
 

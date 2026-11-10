@@ -1,0 +1,1122 @@
+# SUNNYLEARN 2.0 — PROFESSIONAL PRODUCT TRANSFORMATION
+## Complete Learning UX Simplification, Curriculum Restructuring, Personalized Learning, Retention & Premium Monetization
+
+You are a senior SaaS product architect, Japanese-language curriculum designer, UX/UI designer, growth product manager, and full-stack engineer.
+
+Your task is to transform the EXISTING SunnyLearn 2.0 application into a polished, intuitive, engaging, and commercially sustainable Japanese-learning platform for Mongolian-speaking learners.
+
+Website: https://sunnylearn.online
+
+**IMPORTANT: This is NOT a rebuild from scratch.**
+
+Inspect the existing application and improve its actual architecture, content organization, learning experience, design consistency, engagement systems, and Premium value proposition.
+
+Preserve the SunnyLearn brand, existing functionality, existing database, existing user accounts, and existing learning records.
+
+## NON-NEGOTIABLE REQUIREMENTS
+
+1. Apply changes consistently across JLPT N5, N4, N3, N2, and N1.
+2. Apply relevant changes to BOTH Vocabulary and Kanji, not just one.
+3. Preserve the existing Grammar, Practice, Quiz, AI, Progress, and payment systems.
+4. Screenshots and example vocabulary are illustrative, NOT hardcoded requirements.
+5. Do not fabricate data, learning achievements, AI functionality, or verified test results.
+6. Preserve all existing stable vocabulary, kanji, grammar, user, and progress IDs.
+7. Do not accidentally unlock Premium content for Free users.
+8. Do not implement duplicate subscription, AI usage, authentication, or progress systems.
+9. Keep the existing Public Beta access policy until monetization is explicitly activated.
+10. The official planned Premium price is **¥480 per month**, NOT ¥880.
+11. Prioritize mobile usability, especially iPhone Safari.
+12. Every important learning action must be obvious and easy to understand.
+
+---
+
+# PHASE 1 — AUDIT THE EXISTING APPLICATION
+
+Before making changes, inspect:
+
+- Current homepage and onboarding.
+- All JLPT selectors and their state management.
+- Learning Room navigation.
+- Vocabulary datasets and flashcard architecture.
+- Kanji datasets and stroke-order components.
+- Grammar lessons.
+- Practice and Quiz systems.
+- Existing dictionary and search.
+- Daily Featured Lessons.
+- Daily Mission, XP, Streak, and badges.
+- Existing SRS implementation.
+- Sunny AI, AI Roleplay, and Free Conversation.
+- User authentication and account persistence.
+- Existing Free/Premium entitlement checks.
+- Payment configuration and subscription expiration.
+- Admin tools.
+- Responsive layouts.
+- Vercel/serverless architecture.
+
+Identify duplicate UI, unnecessary navigation, inconsistent learning progress, broken rendering, and missing product connections.
+
+Use existing working infrastructure whenever possible.
+
+Do not immediately replace large components without understanding their dependencies.
+
+---
+
+# PHASE 2 — SIMPLIFY THE ENTIRE LEARNING EXPERIENCE
+
+## 2.1 One primary JLPT selector
+
+Keep the JLPT selector in the top navigation header beside SunnyLearn.
+
+Remove redundant horizontal N5/N4/N3/N2/N1 selectors from the Learning Room, Vocabulary, Kanji, and other duplicated content areas.
+
+Remove their unnecessary containers and spacing.
+
+Use one shared JLPT state.
+
+Changing the level must update relevant learning content consistently while preserving progress separately for each level.
+
+Do not reset progress when changing levels.
+
+## 2.2 Professional first-time onboarding
+
+Create a compact, polished first-time onboarding experience.
+
+Display:
+
+- A friendly Mongolian welcome.
+- Five JLPT choices: N5, N4, N3, N2, N1.
+- Short explanations of each level.
+- N5 recommended for complete beginners.
+- One clear confirmation button.
+
+The onboarding should feel welcoming rather than like a complicated setup form.
+
+Save the selection through the existing user profile system or existing guest persistence.
+
+Returning users must not repeatedly see onboarding.
+
+After selection, take the user directly into their learning experience.
+
+Do not display another oversized JLPT selection section on the homepage.
+
+## 2.3 Minimal homepage dashboard
+
+The current homepage contains too many competing elements.
+
+Redesign the information hierarchy without changing SunnyLearn's overall identity.
+
+For returning users, the primary homepage area should contain:
+
+**A. Welcome and current JLPT level**
+
+Example:
+
+"Сайн уу! Өнөөдөр япон хэлээ үргэлжлүүлцгээе."
+
+**B. One primary action**
+
+"Үргэлжлүүлэн сурах →"
+
+This button must automatically resume the next relevant learning activity using actual saved progress.
+
+**C. Today's learning summary**
+
+Show compact information such as:
+
+- Today's goal.
+- Due reviews.
+- Daily XP.
+- Current streak.
+
+**D. Three compact learning shortcuts**
+
+- Үгийн сан
+- Ханз
+- Дүрэм
+
+**E. Optional personalized recommendations**
+
+Only show recommendations when supported by real user progress.
+
+For new users, the primary CTA should be "Суралцаж эхлэх".
+
+Avoid large duplicate level cards, oversized promotional banners, and unnecessary repeated navigation.
+
+Preserve the existing Learning Path, but make it secondary to the main Continue Learning action.
+
+Keep Public Beta information accessible without letting it dominate the screen.
+
+---
+
+# PHASE 3 — RESTRUCTURE VOCABULARY AND KANJI
+
+## 3.1 Replace topic-based learning cards
+
+Remove the recently introduced large topic-based learning sections, including examples such as:
+
+- Politics and Government
+- Law and Judiciary
+- Society and Economy
+- Additional Vocabulary
+- Other arbitrary category-based lesson cards
+
+Do not delete actual words, kanji, or topic metadata.
+
+Topic categories may remain available as optional search filters.
+
+They must not be the primary curriculum navigation.
+
+## 3.2 Structured learning sequence
+
+Create a stable, progressive learning sequence for each JLPT level.
+
+Use actual existing N5–N1 data.
+
+For Kanji, present a compact responsive grid.
+
+For beginner Kanji, an illustrative progression is:
+
+一 → 二 → 三 → 四 → 五 → 六 → 七 → 八 → 九 → 十
+
+Continue in an educationally sensible order.
+
+For vocabulary, prioritize foundational words at beginner levels and progressively more complex vocabulary at advanced levels.
+
+Do not randomly sort.
+
+Do not blindly depend on database insertion order.
+
+Do not claim there is one universally official JLPT kanji sequence.
+
+Create stable curriculum order metadata while preserving existing content IDs.
+
+For both Vocabulary and Kanji, support:
+
+- Start learning.
+- Continue learning.
+- Learned/unlearned status.
+- Review.
+- Bookmark.
+- Search.
+- Progress.
+- Existing SRS integration.
+
+Do not build duplicate Vocabulary and Flashcard systems.
+
+Use one underlying content and progress architecture with different presentation modes where appropriate.
+
+## 3.3 Compact curriculum UI
+
+Show a clean learning grid or sequential list with:
+
+- Item or lesson number.
+- Japanese word or Kanji.
+- Learned status.
+- Current learning position.
+- Next available lesson.
+
+Use compact layouts and clear visual hierarchy.
+
+Do not display hundreds of enormous cards simultaneously.
+
+Use pagination or progressive loading when necessary, without creating distracting nested scroll areas.
+
+## 3.4 Kanji detail
+
+Each Kanji detail should show:
+
+- Large Kanji.
+- Mongolian meaning.
+- On'yomi.
+- Kun'yomi.
+- Stroke count.
+- Useful vocabulary.
+- Example sentences where available.
+- Stroke-order visualization.
+- Learning status.
+
+## 3.5 Actual stroke-order animation
+
+Implement accurate stroke-order animation using verified stroke-path data from a compatible, appropriately licensed source.
+
+Controls:
+
+- Play.
+- Pause.
+- Restart.
+- Previous stroke.
+- Next stroke.
+- Current stroke number.
+- Total stroke count.
+
+Do not fake stroke order by revealing the entire character.
+
+If verified stroke data is unavailable, display an honest unavailable state.
+
+Do not invent paths.
+
+## 3.6 Learning-status wording
+
+Replace confusing labels such as "Монгол мэдэж байна" with:
+
+"Сурсан гэж тэмдэглэх"
+
+After completion:
+
+"Сурсан ✓"
+
+Allow undo.
+
+Use consistent terminology for Vocabulary and Kanji.
+
+Manual learned status must not be confused with SRS mastery.
+
+Prevent repeated XP farming through status toggling.
+
+---
+
+# PHASE 4 — CREATE A PROFESSIONAL DICTIONARY
+
+Rename bottom navigation:
+
+"Номын сан" → "Толь бичиг"
+
+Use a dictionary-appropriate icon.
+
+The Dictionary must become a dedicated Japanese lookup experience.
+
+## Search
+
+Support:
+
+- Kanji.
+- Hiragana.
+- Katakana.
+- Mongolian meaning.
+- Existing supported readings.
+
+Search across the actual existing N5–N1 vocabulary database, subject to existing entitlement rules.
+
+Do not restrict search to the selected JLPT level unless the user explicitly applies a level filter.
+
+## Japanese gojūon index
+
+Display a compact, tappable kana index:
+
+あ い う え お
+
+か き く け こ
+
+さ し す せ そ
+
+た ち つ て と
+
+な に ぬ ね の
+
+は ひ ふ へ ほ
+
+ま み む め も
+
+や ゆ よ
+
+ら り る れ ろ
+
+わ を ん
+
+Support voiced and semi-voiced kana consistently.
+
+Use Japanese reading-based sorting, not Kanji Unicode ordering.
+
+Selecting a kana filters words by their dictionary reading.
+
+Provide:
+
+- All words.
+- Clear filter.
+- JLPT filter.
+- Search.
+- Bookmark.
+
+Dictionary results should display Japanese word, reading, Mongolian meaning, part of speech, and JLPT level where available.
+
+Do not duplicate Mongolian translations or meaningless labels.
+
+Opening a result should reuse the existing detailed dictionary view.
+
+---
+
+# PHASE 5 — MOBILE-FIRST UX CLEANUP
+
+## 5.1 Minimal header
+
+The current mobile header is overcrowded and sometimes clips the hamburger icon.
+
+Create a compact header containing:
+
+- SunnyLearn logo.
+- Compact JLPT selector.
+- Account/Login entry.
+- Fully visible menu button.
+
+Move secondary utilities into the menu.
+
+Preserve access to theme, search, settings, and other existing functions.
+
+Respect iPhone safe-area insets.
+
+Do not allow horizontal overflow.
+
+Make touch targets comfortable.
+
+## 5.2 Remove unnecessary nested scrolling
+
+Audit:
+
+- Homepage.
+- Learning Room.
+- Vocabulary.
+- Kanji.
+- Daily Featured Lessons.
+- AI sections.
+- Modal layouts.
+
+Remove unnecessary inner scrollbars.
+
+Prefer natural page scrolling.
+
+Do not hide functional content with overflow:hidden.
+
+Keep intentional scrolling only where necessary, such as a correctly implemented modal or long conversation.
+
+## 5.3 Improve Daily Featured Lessons
+
+Keep the feature, but:
+
+- Remove unnecessary internal scrollbars.
+- Reduce oversized cards.
+- Avoid redundant information.
+- Make the main learning action obvious.
+- Preserve XP and progress.
+- Use actual selected JLPT level.
+
+## 5.4 Consistent visual design
+
+Preserve SunnyLearn's existing red/pink visual identity and dark/light themes.
+
+Standardize:
+
+- Card spacing.
+- Typography.
+- Border radius.
+- Button sizes.
+- Icons.
+- Empty states.
+- Loading states.
+- Error messages.
+
+Avoid excessive shadows, giant gradients, and visually competing components.
+
+Use professional Japanese typography and correct line wrapping.
+
+---
+
+# PHASE 6 — PERSONALIZED DAILY LEARNING SYSTEM
+
+Build a connected learning experience instead of isolated features.
+
+The desired learning loop is:
+
+LEARN → PRACTICE → REVIEW → TRACK PROGRESS → CONTINUE
+
+Reuse existing Daily Mission, XP, Streak, SRS, and Progress infrastructure.
+
+## 6.1 Smart Continue Learning
+
+The main "Үргэлжлүүлэн сурах" button should intelligently choose the next useful activity.
+
+Consider:
+
+1. Due SRS reviews.
+2. Unfinished current lesson.
+3. Next curriculum item.
+4. Relevant practice activity.
+
+Do not force users to search manually for their next lesson.
+
+Use deterministic, explainable logic.
+
+Do not require an expensive AI call for every navigation decision.
+
+## 6.2 Daily learning plan
+
+Create a compact daily plan based on the existing Daily Mission system.
+
+Default target: approximately 10–15 minutes of learning.
+
+Reuse existing Daily Mission rules and XP rewards unless changes are explicitly necessary.
+
+The daily plan may combine:
+
+- New vocabulary.
+- Kanji.
+- Grammar.
+- Short quiz.
+- Due reviews.
+
+Adapt recommendations to the selected JLPT level and actual user progress.
+
+Do not reset existing mission history or streaks.
+
+## 6.3 Meaningful learning progress
+
+Improve the Progress Dashboard.
+
+Keep:
+
+- XP.
+- Streak.
+- Badges.
+- Existing learning totals.
+
+Add meaningful metrics where the necessary real data exists:
+
+- New vocabulary learned this week.
+- Kanji learned this week.
+- Due reviews.
+- Review accuracy.
+- Items requiring more practice.
+- Estimated mastery based on actual review history.
+
+Clearly distinguish:
+
+- Viewed.
+- Manually marked learned.
+- Reviewed successfully.
+- SRS mastered.
+
+Do not claim an item is permanently mastered merely because it was opened or manually marked learned.
+
+If historical data is insufficient, show an appropriate unavailable state or start collecting the necessary events going forward.
+
+Never fabricate past activity.
+
+## 6.4 Personalized error review
+
+Connect existing Quiz and Practice mistakes with the review system.
+
+When a user answers incorrectly:
+
+- Save the relevant mistake using existing per-user infrastructure.
+- Preserve the existing "Яагаад буруу вэ？ (Sunny AI)" button.
+- Allow review of mistakes.
+- Recommend relevant vocabulary, grammar, or kanji.
+
+Do not generate fake corrections.
+
+Do not overwrite SRS scheduling incorrectly.
+
+## 6.5 Motivation without manipulation
+
+Use:
+
+- Daily completion feedback.
+- Weekly learning summaries.
+- Meaningful milestones.
+- Clear progress indicators.
+- Gentle review reminders within the app.
+
+Avoid:
+
+- Fake urgency.
+- Excessive popups.
+- Punishing users for missing days.
+- Misleading progress percentages.
+- Artificial Premium pressure.
+
+The goal is to help learners build a sustainable study habit.
+
+---
+
+# PHASE 7 — MAKE SUNNY AI, ROLEPLAY, AND FREE CONVERSATION CLEAR
+
+Preserve the existing three AI experiences.
+
+Do not merge them into one generic chat.
+
+Present them clearly:
+
+## Sunny AI — Хувийн AI багш
+
+Purpose:
+
+Explain Japanese vocabulary, kanji, grammar, mistakes, and JLPT questions in Mongolian.
+
+Preserve contextual multi-turn tutoring.
+
+Preserve the existing incorrect-answer explanation integration.
+
+## AI Roleplay — Бодит нөхцөлд дадлага хийх
+
+Purpose:
+
+Practice Japanese in structured real-life situations.
+
+Examples:
+
+- コンビニ
+- 面接
+- 病院
+- レストラン
+- 駅
+- ホテル
+
+Preserve scenario objectives and personalized feedback.
+
+## Free Conversation — Японоор чөлөөтэй ярилцах
+
+Purpose:
+
+Practice open-ended Japanese conversation without fixed scenarios.
+
+Support existing text and voice capabilities where implemented.
+
+Do not claim natural neural voice exists if the actual integration does not support it.
+
+Use supported, properly configured speech infrastructure.
+
+Do not substitute robotic browser TTS and claim it is a premium conversational voice experience.
+
+## AI navigation
+
+Within the existing AI section, provide three clear entry cards.
+
+Each should have:
+
+- Simple title.
+- One-sentence Mongolian explanation.
+- Clear primary action.
+- Premium status only when relevant.
+
+Avoid adding three more large homepage sections.
+
+## AI quality
+
+Preserve:
+
+- JLPT-adaptive behavior.
+- Mongolian explanations.
+- Japanese conversational context.
+- Accurate furigana where appropriate.
+- No Romaji.
+- No Mongolian phonetic Japanese.
+- Existing secure backend API calls.
+
+Roleplay and Free Conversation should not constantly interrupt understandable Japanese with corrections.
+
+Use actual conversation transcripts for feedback.
+
+Preserve existing user-message usage accounting.
+
+---
+
+# PHASE 8 — FREE VS PREMIUM PRODUCT STRATEGY
+
+## OFFICIAL PRICING
+
+**SunnyLearn Premium: ¥480 / month.**
+
+Replace outdated ¥880 pricing only in relevant active pricing displays and configuration after verifying the existing payment architecture.
+
+Do not accidentally change historical transactions, existing subscription records, or payment-provider product identifiers.
+
+Do not invent payment success.
+
+Do not create a second payment system.
+
+For Mongolian QPay pricing, use the existing configured local price if present. Do not invent a fixed MNT amount or assume automatic exchange-rate parity.
+
+## IMPORTANT BETA RULE
+
+SunnyLearn currently operates as Public Beta.
+
+If payments are not fully ready, preserve the existing temporary Beta access policy.
+
+Do not suddenly lock currently accessible Beta features simply because the new entitlement design is being implemented.
+
+Prepare the production Free/Premium entitlement structure, but activate it only through the existing explicit monetization configuration.
+
+Avoid accidentally charging users or changing existing subscription rights.
+
+## PROPOSED FREE PLAN
+
+Free should be useful enough to demonstrate real learning value, but should not include the complete Premium experience.
+
+Provide:
+
+- JLPT level selection.
+- Free starter curriculum access at each level.
+- Basic Vocabulary and Kanji learning.
+- Selected Grammar lessons.
+- Basic Practice and Quiz.
+- Basic SRS.
+- Daily Mission.
+- XP and Streak.
+- Basic Progress.
+- Dictionary lookup for permitted content.
+- Bookmarks for accessible content.
+- Sunny AI: existing 20 user-sent messages per rolling 24 hours, shared across applicable AI text features.
+- Limited introductory AI Roleplay experience using the same shared usage accounting.
+- A small, clearly defined Free Conversation trial only if technically and financially supported.
+
+Do not create separate free AI message pools for each AI feature.
+
+Do not let users bypass limits by switching AI modes.
+
+Do not create arbitrary access restrictions that make basic learning unusable.
+
+Choose a coherent, data-driven starter curriculum rather than randomly locking individual words.
+
+## PROPOSED PREMIUM PLAN
+
+Premium should provide:
+
+- Full N5–N1 Vocabulary curriculum.
+- Full N5–N1 Kanji curriculum.
+- Full Grammar curriculum.
+- Full Practice and Quiz access.
+- Complete dictionary content access.
+- Full AI Roleplay scenario library.
+- Unlimited Sunny AI text messages under reasonable anti-abuse and provider-safety controls.
+- Advanced personalized mistake explanations.
+- Personalized learning recommendations.
+- Advanced learning analytics.
+- Full learning history and progress insights.
+- Extended Free Conversation access when real voice infrastructure is available.
+
+Do not promise unlimited voice usage without confirming costs and technical capacity.
+
+Text and voice usage may require different fair-use policies.
+
+Clearly disclose any applicable limits before purchase.
+
+Do not silently throttle paid users.
+
+## PREMIUM DIFFERENTIATION
+
+Premium must not merely mean "more buttons unlocked."
+
+The core Premium value proposition is:
+
+**"Таны түвшин, алдаа, ахицад тохирсон хувийн AI япон хэлний сургалт."**
+
+Users should understand that Premium helps them learn more efficiently through personalized practice and feedback.
+
+## PREMIUM CONVERSION UX
+
+Use contextual upgrade opportunities, not aggressive popups.
+
+Good upgrade moments:
+
+1. User finishes a Free starter lesson and wants to continue into Premium curriculum.
+2. User reaches the existing Free AI usage limit.
+3. User wants advanced feedback after a Roleplay.
+4. User wants advanced personalized progress analysis.
+5. User opens a clearly labeled Premium-only learning module.
+
+When a user encounters a Premium feature:
+
+- Explain the learning benefit.
+- Show the price: ¥480/month.
+- Provide one clear upgrade action.
+- Provide an easy way to return to Free learning.
+
+Never interrupt an active lesson unnecessarily.
+
+Do not repeatedly show the same upgrade popup.
+
+## PREMIUM PAGE
+
+Create or refine the existing Premium page.
+
+Use a clear headline:
+
+"Япон хэлээ илүү үр дүнтэй сур."
+
+Supporting text:
+
+"Хувийн AI багш, бүх JLPT сургалт, бодит ярианы дадлага, таны алдаанд тохирсон давтлага."
+
+Display:
+
+- ¥480 / сар.
+- Exact included features.
+- Accurate Free vs Premium comparison.
+- Subscription period.
+- Renewal behavior.
+- Cancellation instructions.
+- Payment methods actually supported.
+- Relevant terms and refund information.
+
+Do not show unsupported payment options as functional.
+
+Do not invent customer testimonials, user counts, or success statistics.
+
+## SUBSCRIPTION LIFECYCLE
+
+Reuse existing Premium subscription and expiration logic.
+
+Ensure:
+
+- Active subscribers receive correct entitlements.
+- Expired subscriptions revert to Free rules.
+- Existing learning data remains saved.
+- Cancellation does not erase progress.
+- Failed payments do not grant false Premium status.
+- Server-side authorization controls all protected content and AI usage.
+- Client-side Premium flags cannot bypass access restrictions.
+
+Use existing payment-provider verification and secure backend checks.
+
+---
+
+# PHASE 9 — LONG-TERM RETENTION
+
+The objective is not only to convert Free users into Premium users.
+
+The objective is to make Premium genuinely useful month after month.
+
+## 9.1 Weekly progress summary
+
+Show a weekly summary based on real learning records.
+
+Examples:
+
+- Vocabulary studied.
+- Kanji reviewed.
+- Review accuracy.
+- Current streak.
+- Areas needing practice.
+- Suggested next learning focus.
+
+Avoid fake improvement claims.
+
+## 9.2 Personalized learning recommendations
+
+Use actual user behavior to recommend:
+
+- Weak grammar.
+- Frequently missed vocabulary.
+- Due Kanji reviews.
+- Appropriate next lessons.
+- Suitable Roleplay scenarios.
+
+Prefer lightweight rules and existing data before adding expensive AI calls.
+
+## 9.3 AI-supported learning continuity
+
+Where technically supported, allow users to continue learning from their previous weak areas.
+
+For example:
+
+A user repeatedly struggles with particles.
+
+SunnyLearn may recommend relevant particle exercises and optionally offer Sunny AI explanations.
+
+Do not claim the system detected a weakness without sufficient evidence.
+
+## 9.4 Premium renewal value
+
+Premium users should continue receiving meaningful value through:
+
+- New relevant practice.
+- Personalized review.
+- More challenging conversation.
+- Learning analytics.
+- Continued curriculum progression.
+
+Avoid artificial content expiration or manipulative lock-in.
+
+---
+
+# PHASE 10 — JAPANESE TEXT QUALITY
+
+Preserve the existing Furigana toggle.
+
+Use proper ruby markup:
+
+<ruby>漢字<rt>かんじ</rt></ruby>
+
+Readings must appear directly above their corresponding Kanji.
+
+Prevent:
+
+- Detached readings.
+- Overlapping text.
+- Incorrect word segmentation.
+- Duplicated furigana.
+- Excessive line-height gaps.
+- Romaji.
+- Mongolian phonetic Japanese.
+
+Apply fixes to relevant Vocabulary, Kanji, Grammar, and learning examples across N5–N1.
+
+Preserve the existing Roleplay hint behavior: suggested-expression panels should remain free of furigana when that is their intended design.
+
+Do not force furigana into components that intentionally disable it.
+
+---
+
+# PHASE 11 — PERFORMANCE, RELIABILITY, AND SECURITY
+
+Optimize for mobile and Vercel production.
+
+Inspect:
+
+- Large vocabulary and Kanji lists.
+- Unnecessary component rerenders.
+- Duplicate API requests.
+- Expensive AI requests.
+- Image and font loading.
+- Unnecessary client-side data loading.
+- Slow initial page rendering.
+- Mobile horizontal overflow.
+- Failed fetch handling.
+
+Use pagination, virtualization, or progressive loading when justified.
+
+Do not load all content into the DOM unnecessarily.
+
+Preserve secure server-side AI calls.
+
+Never expose provider API keys.
+
+Keep user progress, chat history, and subscription data isolated by authenticated user ID.
+
+Implement robust error states.
+
+Avoid duplicate AI messages or duplicate usage counting during retries.
+
+Do not add unnecessary external dependencies.
+
+---
+
+# PHASE 12 — PRODUCT ANALYTICS
+
+Introduce or improve privacy-conscious product analytics using existing infrastructure where possible.
+
+Track useful events such as:
+
+- Onboarding completed.
+- First lesson started.
+- First lesson completed.
+- Daily Mission completed.
+- SRS review completed.
+- AI feature started.
+- Premium page viewed.
+- Checkout initiated.
+- Verified subscription activated.
+- Subscription renewed.
+- Subscription canceled.
+
+Use these to evaluate:
+
+- First-session activation.
+- Day-7 retention.
+- Day-30 retention.
+- Free-to-Premium conversion.
+- Premium renewal rate.
+- AI cost per active user.
+
+Do not fabricate analytics data.
+
+Respect user privacy, applicable consent requirements, and data minimization.
+
+Avoid exposing personal learning records publicly.
+
+---
+
+# PHASE 13 — DATA INTEGRITY
+
+DO NOT DELETE, RESET, OR BREAK:
+
+- Vocabulary datasets.
+- Kanji datasets.
+- Grammar datasets.
+- Existing IDs.
+- Example sentences.
+- User accounts.
+- Google authentication.
+- Email/password authentication.
+- Existing guest behavior.
+- Bookmarks.
+- Learning progress.
+- SRS schedules.
+- XP.
+- Streaks.
+- Daily Missions.
+- Badges.
+- Quiz and Practice.
+- Sunny AI.
+- AI Roleplay.
+- Free Conversation.
+- Existing AI usage limits.
+- Premium subscriptions.
+- Payment records.
+- Admin functionality.
+- Existing Public Beta settings.
+
+Use migrations only when necessary.
+
+Make migrations backward-compatible and safe for existing records.
+
+Preserve progress mappings when curriculum ordering changes.
+
+Never reset users' learning history to simplify implementation.
+
+---
+
+# PHASE 14 — IMPLEMENTATION STRATEGY
+
+This is a substantial change.
+
+Do not blindly rewrite the entire application in one uncontrolled operation.
+
+Implement in the following order:
+
+**Stage A — UX Foundation**
+
+- Shared JLPT state.
+- Onboarding.
+- Mobile header.
+- Redundant selector removal.
+- Homepage simplification.
+- Navigation cleanup.
+
+**Stage B — Curriculum**
+
+- Vocabulary learning sequence.
+- Kanji learning sequence.
+- Learning-status consistency.
+- Stroke-order integration.
+- Dictionary improvements.
+
+**Stage C — Learning Continuity**
+
+- Continue Learning.
+- Daily plan.
+- SRS integration.
+- Meaningful Progress.
+- Personalized mistake review.
+
+**Stage D — AI Experience**
+
+- Clarify Sunny AI, Roleplay, and Free Conversation.
+- Preserve existing AI endpoints and limits.
+- Improve contextual learning integration.
+
+**Stage E — Premium**
+
+- ¥480 pricing.
+- Proposed Free/Premium entitlement model.
+- Beta-safe rollout.
+- Premium page.
+- Secure access control.
+- Subscription lifecycle.
+
+**Stage F — Quality Assurance**
+
+- Mobile responsive testing.
+- Data integrity checks.
+- Performance.
+- Production build.
+- Vercel compatibility.
+
+For each stage:
+
+1. Inspect relevant existing code.
+2. Identify dependencies.
+3. Make focused changes.
+4. Verify the affected functionality.
+5. Check for regressions.
+6. Continue to the next stage.
+
+Do not present mockups as completed functionality.
+
+Do not claim tests passed unless they actually ran.
+
+---
+
+# PHASE 15 — REQUIRED VERIFICATION
+
+Verify all five JLPT levels individually.
+
+Test:
+
+1. N5 Vocabulary and Kanji.
+2. N4 Vocabulary and Kanji.
+3. N3 Vocabulary and Kanji.
+4. N2 Vocabulary and Kanji.
+5. N1 Vocabulary and Kanji.
+6. First-time onboarding.
+7. Returning-user persistence.
+8. Header JLPT switching.
+9. Mobile hamburger menu.
+10. Dictionary kana filtering.
+11. Dictionary cross-level search.
+12. Kanji stroke-order controls.
+13. Vocabulary and Kanji learned status.
+14. SRS scheduling preservation.
+15. Existing Quiz answer validation.
+16. Daily Mission and XP integrity.
+17. Sunny AI usage limits.
+18. AI Roleplay.
+19. Free Conversation.
+20. Free content restrictions.
+21. Premium content restrictions.
+22. Existing subscription expiration.
+23. Public Beta access policy.
+24. Light and dark themes.
+25. iPhone Safari responsive layout.
+26. Desktop responsive layout.
+27. Production build.
+28. Vercel compatibility.
+
+Report actual Vocabulary and Kanji item counts before and after restructuring.
+
+Explain any missing stroke-order data, unavailable AI capabilities, or tests that could not be completed.
+
+Do not silently omit unfinished functionality.
+
+---
+
+# FINAL PRODUCT STANDARD
+
+SunnyLearn must feel like one coherent, premium-quality Japanese-learning product.
+
+A new user should understand within the first minute:
+
+- What SunnyLearn offers.
+- Which JLPT level they are studying.
+- Where to begin.
+- How to continue.
+- How to review.
+- How to use the dictionary.
+- How to practice with AI.
+- How to see their improvement.
+- What Premium provides.
+
+A returning user should be able to open SunnyLearn and continue studying with minimal effort.
+
+A Premium user should experience ongoing value through personalized learning, AI guidance, and measurable progress.
+
+The product should be simple enough for a beginner and powerful enough for advanced JLPT N1 learners.
+
+**Official Premium price: ¥480/month.**
+
+**Apply improvements across all JLPT N5–N1 levels.**
+
+**Preserve existing data, user progress, AI features, subscriptions, and Public Beta access.**
+
+**Do not rebuild SunnyLearn from scratch.**
+
+Deliver a professional, production-ready improvement to the existing application.

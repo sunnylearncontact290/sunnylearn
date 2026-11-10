@@ -34,7 +34,7 @@ export const MobileTabBar: React.FC = () => {
     },
     {
       id: 'dictionary',
-      label: 'Номын сан',
+      label: 'Толь бичиг',
       icon: BookA
     },
     {

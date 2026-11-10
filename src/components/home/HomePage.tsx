@@ -1,24 +1,24 @@
 import React, { useMemo, useEffect } from 'react';
 import {
-  BookOpen,
-  Sparkles,
-  Search,
+  Compass,
   ArrowRight,
   TrendingUp,
   BookA,
+  Sparkles,
+  BookOpen,
   CheckCircle2,
   Check,
+  Flame,
   Star,
-  Compass,
   Play,
-  X,
-  ShieldCheck,
   RotateCcw,
-  Layers,
-  HelpCircle,
-  CheckSquare,
   Target,
-  MessagesSquare
+  Search,
+  MessagesSquare,
+  AlertCircle,
+  HelpCircle,
+  Bot,
+  Mic
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { JLPTLevel } from '../../types';
@@ -26,8 +26,8 @@ import { LevelBadge } from '../common/LevelBadge';
 import { SunnyLogo } from '../common/SunnyLogo';
 import { AudioButton } from '../common/AudioButton';
 import { speechService, extractKanjiPronunciation, extractVocabPronunciation } from '../../services/speech';
-import { getCleanVocabExplanation } from '../../utils/vocabUtils';
-import { InteractiveJapaneseSentence } from '../learn/InteractiveJapaneseSentence';
+import { ensureGamificationProgress, getTokyoDateString } from '../../services/gamificationEngine';
+import { learningEngine } from '../../services/learningEngine';
 
 export const HomePage: React.FC = () => {
   const {
@@ -39,66 +39,103 @@ export const HomePage: React.FC = () => {
     setLearnSubTab,
     setIsSearchOpen,
     userProgress,
-    toggleFavorite,
     currentUser,
-    setIsAuthModalOpen,
-    isBannerDismissed,
-    dismissBanner,
     isPublicBeta,
-    setIsFeedbackModalOpen
+    setIsFeedbackModalOpen,
+    setPracticeMissedItems
   } = useApp();
 
-  const scrollToLevelSelection = () => {
-    const el = document.getElementById('level-selection');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+  // Gamification progress & today's date
+  const gamification = useMemo(() => {
+    return ensureGamificationProgress(userProgress).gamification!;
+  }, [userProgress]);
+
+  const streakDays = userProgress.streak?.current || gamification.currentStreak || 0;
+  const todayXP = gamification.todayXp || 0;
+
+  // Level content pool
+  const levelVocab = useMemo(() => {
+    return (data.vocabulary || []).filter(v => v.jlptLevel === effectiveLevel);
+  }, [data.vocabulary, effectiveLevel]);
+
+  const levelKanji = useMemo(() => {
+    return (data.kanji || []).filter(k => k.jlptLevel === effectiveLevel);
+  }, [data.kanji, effectiveLevel]);
+
+  const levelGrammar = useMemo(() => {
+    return (data.grammar || []).filter(g => g.jlptLevel === effectiveLevel);
+  }, [data.grammar, effectiveLevel]);
+
+  // Learned counts in current level
+  const learnedVocabCount = useMemo(() => {
+    const ids = new Set((userProgress.learnedVocabIds || []));
+    return levelVocab.filter(v => ids.has(v.id)).length;
+  }, [levelVocab, userProgress.learnedVocabIds]);
+
+  const learnedKanjiCount = useMemo(() => {
+    const ids = new Set((userProgress.learnedKanjiIds || []));
+    return levelKanji.filter(k => ids.has(k.id)).length;
+  }, [levelKanji, userProgress.learnedKanjiIds]);
+
+  const learnedGrammarCount = useMemo(() => {
+    const ids = new Set((userProgress.learnedGrammarIds || []));
+    return levelGrammar.filter(g => ids.has(g.id)).length;
+  }, [levelGrammar, userProgress.learnedGrammarIds]);
+
+  const totalLevelItems = levelVocab.length + levelKanji.length + levelGrammar.length;
+  const totalLevelLearned = learnedVocabCount + learnedKanjiCount + learnedGrammarCount;
+  const totalGlobalLearned = (userProgress.learnedVocabIds?.length || 0) +
+    (userProgress.learnedKanjiIds?.length || 0) +
+    (userProgress.learnedGrammarIds?.length || 0);
+
+  // Due SRS Reviews calculation
+  const dueReviews = useMemo(() => {
+    const records = userProgress.itemStudyRecords || {};
+    const now = Date.now();
+    let count = 0;
+    for (const id in records) {
+      const rec = records[id];
+      if (rec && rec.nextReviewDate && new Date(rec.nextReviewDate).getTime() <= now) {
+        count++;
+      }
     }
-  };
+    return count;
+  }, [userProgress.itemStudyRecords]);
 
-  const handleStartLearning = (level: JLPTLevel) => {
-    setSelectedLevel(level);
-    setLearnSubTab('path');
-    setActiveTab('learn');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  // Daily Missions status
+  const missions = gamification.dailyMissions || [];
+  const completedMissionsCount = missions.filter(m => m.completed).length;
 
-  const handleSubTabSelect = (level: JLPTLevel, subTab: 'vocab' | 'kanji' | 'grammar') => {
-    setSelectedLevel(level);
-    setLearnSubTab(subTab);
-    setActiveTab('learn');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  // Weak/missed items from quizzes & practice
+  const missedItemIds = useMemo(() => {
+    const weakVocab = (userProgress.quizMistakes || []).filter(m => m.jlptLevel === effectiveLevel);
+    const studyRecords = userProgress.itemStudyRecords || {};
+    const reviewNeeded = Object.keys(studyRecords).filter(id => {
+      const r = studyRecords[id];
+      return r && (r.masteryStatus === 'review_needed' || r.incorrectCount > 0);
+    });
+    return Array.from(new Set([...weakVocab.map(v => v.questionId), ...reviewNeeded]));
+  }, [userProgress.quizMistakes, userProgress.itemStudyRecords, effectiveLevel]);
 
-  // Filtered lists based on selected level
-  const filteredVocabList = useMemo(() => {
-    if (!selectedLevel) return [];
-    return (data.vocabulary || []).filter(v => v.jlptLevel === selectedLevel);
-  }, [data.vocabulary, selectedLevel]);
-
-  const filteredKanjiList = useMemo(() => {
-    if (!selectedLevel) return [];
-    return (data.kanji || []).filter(k => k.jlptLevel === selectedLevel);
-  }, [data.kanji, selectedLevel]);
-
-  // Word of the day based on selected level
+  // Word of the day based on level
   const vocabOfTheDay = useMemo(() => {
-    if (!selectedLevel || filteredVocabList.length === 0) return null;
+    if (levelVocab.length === 0) return null;
     const dayOfYear = Math.floor(
       (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24
     );
-    return filteredVocabList[dayOfYear % filteredVocabList.length];
-  }, [filteredVocabList, selectedLevel]);
+    return levelVocab[dayOfYear % levelVocab.length];
+  }, [levelVocab]);
 
-  // Kanji of the day based on selected level
+  // Kanji of the day based on level
   const kanjiOfTheDay = useMemo(() => {
-    if (!selectedLevel || filteredKanjiList.length === 0) return null;
+    if (levelKanji.length === 0) return null;
     const dayOfYear = Math.floor(
       (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24
     );
-    return filteredKanjiList[(dayOfYear + 2) % filteredKanjiList.length];
-  }, [filteredKanjiList, selectedLevel]);
+    return levelKanji[(dayOfYear + 3) % levelKanji.length];
+  }, [levelKanji]);
 
-  // Prefetch audio for Daily Highlights so clicking plays in 0ms!
+  // Audio prefetch
   useEffect(() => {
     if (vocabOfTheDay) {
       const vp = extractVocabPronunciation(vocabOfTheDay);
@@ -110,904 +147,617 @@ export const HomePage: React.FC = () => {
     }
   }, [vocabOfTheDay, kanjiOfTheDay]);
 
-  // Total content statistics across ALL JLPT levels (N5 + N4 + N3 + N2 + N1)
-  const totalContentStats = useMemo(() => {
-    const levels: JLPTLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
-    let totalVocab = 0;
-    let totalKanji = 0;
-    let totalGrammar = 0;
-
-    if (data.counts) {
-      levels.forEach(lvl => {
-        const c = data.counts?.[lvl];
-        if (c) {
-          totalVocab += c.totalVocab || 0;
-          totalKanji += c.totalKanji || 0;
-          totalGrammar += c.totalGrammar || 0;
-        }
-      });
+  // SMART CONTINUE LEARNING ACTION (Phase 6.1)
+  const handleSmartContinue = () => {
+    // 1. If due SRS reviews exist, prioritize review
+    if (dueReviews > 0) {
+      setLearnSubTab('vocab');
+      setActiveTab('learn');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
     }
 
-    if (totalVocab > 0 || totalKanji > 0 || totalGrammar > 0) {
-      return { totalVocab, totalKanji, totalGrammar };
+    // 2. If user studied recently, resume that subTab
+    if (userProgress.lastStudied?.subTab) {
+      setLearnSubTab(userProgress.lastStudied.subTab);
+      setActiveTab('learn');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
     }
 
-    return {
-      totalVocab: (data.vocabulary || []).length,
-      totalKanji: (data.kanji || []).length,
-      totalGrammar: (data.grammar || []).length
-    };
-  }, [data.counts, data.vocabulary, data.kanji, data.grammar]);
-
-  // Level configuration items
-  const levelConfigs = useMemo(() => {
-    const getCounts = (lvl: JLPTLevel) => {
-      const countDetails = data.counts?.[lvl];
-      if (countDetails) {
-        return `Үгийн сан ${countDetails.totalVocab} • Ханз ${countDetails.totalKanji} • Дүрэм ${countDetails.totalGrammar}`;
-      }
-      const vocabCount = (data.vocabulary || []).filter(v => v.jlptLevel === lvl).length;
-      const kanjiCount = (data.kanji || []).filter(k => k.jlptLevel === lvl).length;
-      const grammarCount = (data.grammar || []).filter(g => g.jlptLevel === lvl).length;
-      return `Үгийн сан ${vocabCount} • Ханз ${kanjiCount} • Дүрэм ${grammarCount}`;
-    };
-
-    return [
-      {
-        level: 'N5',
-        title: 'Анхан шат 1',
-        desc: 'Хирагана, Катакана, өдөр тутмын суурь мэндчилгээ, үндсэн үгс',
-        count: getCounts('N5'),
-        accentBorder: 'hover:border-[#FF0000]/40',
-        activeBorder: 'border-[#FF0000] ring-2 ring-[#FF0000]/40 shadow-md shadow-[#FF0000]/10',
-        badgeBg: 'bg-[#FF0000]',
-        buttonActive: 'bg-[#FF0000] hover:bg-[#CC0000] text-white shadow-md shadow-[#FF0000]/20'
-      },
-      {
-        level: 'N4',
-        title: 'Анхан шат 2',
-        desc: 'Өдөр тутмын энгийн яриа, харилцан яриа ба дүрмийн залгаварууд',
-        count: getCounts('N4'),
-        accentBorder: 'hover:border-[#FF3366]/40',
-        activeBorder: 'border-[#FF3366] ring-2 ring-[#FF3366]/40 shadow-md shadow-[#FF3366]/10',
-        badgeBg: 'bg-[#FF3366]',
-        buttonActive: 'bg-[#FF3366] hover:bg-[#CC0033] text-white shadow-md shadow-[#FF3366]/20'
-      },
-      {
-        level: 'N3',
-        title: 'Дунд шат',
-        desc: 'Бодит нөхцөл байдалд ашиглах харилцаа, мэдээ нийтлэл ойлгох',
-        count: getCounts('N3'),
-        accentBorder: 'hover:border-[#FF6666]/40',
-        activeBorder: 'border-[#FF6666] ring-2 ring-[#FF6666]/40 shadow-md shadow-[#FF6666]/10',
-        badgeBg: 'bg-[#FF6666]',
-        buttonActive: 'bg-[#FF6666] hover:bg-[#CC3366] text-white shadow-md shadow-[#FF6666]/20'
-      },
-      {
-        level: 'N2',
-        title: 'Ахисан шат',
-        desc: 'Бизнес, их сургууль, сонин нийтлэл унших гүнзгий чадвар',
-        count: getCounts('N2'),
-        accentBorder: 'hover:border-[#CC0066]/40',
-        activeBorder: 'border-[#CC0066] ring-2 ring-[#CC0066]/40 shadow-md shadow-[#CC0066]/10',
-        badgeBg: 'bg-[#CC0066]',
-        buttonActive: 'bg-[#CC0066] hover:bg-[#990066] text-white shadow-md shadow-[#CC0066]/20'
-      },
-      {
-        level: 'N1',
-        title: 'Мэргэжлийн шат',
-        desc: 'Гүнзгий логик сэтгэлгээ, шинжлэх ухаан, уран зохиол, дээд түвшин',
-        count: getCounts('N1'),
-        accentBorder: 'hover:border-[#990066]/40',
-        activeBorder: 'border-[#990066] ring-2 ring-[#990066]/40 shadow-md shadow-[#990066]/10',
-        badgeBg: 'bg-[#990066]',
-        buttonActive: 'bg-[#990066] hover:bg-[#660044] text-white shadow-md shadow-[#990066]/20'
-      }
-    ];
-  }, [data.vocabulary, data.kanji, data.grammar]);
-
-  // Overall and Level-specific user statistics
-  const totalLearnedVocab = (userProgress.learnedVocabIds || []).length;
-  const totalLearnedKanji = (userProgress.learnedKanjiIds || []).length;
-  const totalLearnedGrammar = (userProgress.learnedGrammarIds || []).length;
-  const totalItemsLearned = totalLearnedVocab + totalLearnedKanji + totalLearnedGrammar;
-
-  const levelLearnedVocab = useMemo(() => {
-    if (!selectedLevel) return totalLearnedVocab;
-    const levelVocabIds = new Set((data.vocabulary || []).filter(v => v.jlptLevel === selectedLevel).map(v => v.id));
-    return (userProgress.learnedVocabIds || []).filter(id => levelVocabIds.has(id)).length;
-  }, [data.vocabulary, selectedLevel, userProgress.learnedVocabIds, totalLearnedVocab]);
-
-  const levelLearnedKanji = useMemo(() => {
-    if (!selectedLevel) return totalLearnedKanji;
-    const levelKanjiIds = new Set((data.kanji || []).filter(k => k.jlptLevel === selectedLevel).map(k => k.id));
-    return (userProgress.learnedKanjiIds || []).filter(id => levelKanjiIds.has(id)).length;
-  }, [data.kanji, selectedLevel, userProgress.learnedKanjiIds, totalLearnedKanji]);
-
-  const levelLearnedGrammar = useMemo(() => {
-    if (!selectedLevel) return totalLearnedGrammar;
-    const levelGrammarIds = new Set((data.grammar || []).filter(g => g.jlptLevel === selectedLevel).map(g => g.id));
-    return (userProgress.learnedGrammarIds || []).filter(id => levelGrammarIds.has(id)).length;
-  }, [data.grammar, selectedLevel, userProgress.learnedGrammarIds, totalLearnedGrammar]);
-
-  const streakDays = userProgress.streak?.current || 0;
-
-  // Last studied resume action
-  const handleResumeStudy = () => {
-    if (userProgress.lastStudied) {
-      if (userProgress.lastStudied.level) {
-        setSelectedLevel(userProgress.lastStudied.level);
-      }
-      setLearnSubTab(userProgress.lastStudied.subTab || 'path');
-    } else {
-      if (selectedLevel) {
-        setLearnSubTab('path');
-      } else {
-        setSelectedLevel('N5');
-        setLearnSubTab('path');
-      }
-    }
+    // 3. Default to the Learning Path
+    setLearnSubTab('path');
     setActiveTab('learn');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleShortcutClick = (subTab: 'vocab' | 'kanji' | 'grammar') => {
+    setLearnSubTab(subTab);
+    setActiveTab('learn');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePracticeMissed = () => {
+    if (missedItemIds.length > 0) {
+      setPracticeMissedItems(missedItemIds);
+      setActiveTab('practice');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="w-full max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 space-y-8 sm:space-y-12 animate-fade-in">
-      {/* COMPACT PUBLIC BETA ANNOUNCEMENT STRIP */}
+    <div className="w-full max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8 animate-fade-in pb-safe">
+      {/* COMPACT PUBLIC BETA STRIP */}
       {isPublicBeta && (
-        <section className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#1E0F14] via-[#2A131C] to-[#1E0F14] border border-[#FF3366]/25 px-3.5 sm:px-5 py-2.5 sm:py-3 shadow-md flex items-center justify-between gap-3 text-xs animate-fade-in">
-          <div className="flex items-center gap-2.5 min-w-0">
+        <section className="rounded-xl sm:rounded-2xl bg-stone-900 border border-stone-800 px-3.5 sm:px-5 py-2.5 shadow-xs flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 min-w-0">
             <span className="px-2 py-0.5 rounded-md bg-red-500/20 text-[#FF6699] text-[10px] font-black uppercase tracking-wider shrink-0 border border-red-500/30">
               PUBLIC BETA
             </span>
-            <span className="text-stone-200 text-xs sm:text-sm font-medium truncate">
-              ✨ Public Beta — SunnyLearn-ийг үнэгүй туршаарай (JLPT N5–N1 бүх контент нээлттэй)
+            <span className="text-stone-300 text-xs sm:text-sm font-medium truncate">
+              SunnyLearn 2.0 нээлттэй туршилт явагдаж байна (JLPT N5–N1 бүх хичээл нээлттэй)
             </span>
           </div>
 
           <button
             type="button"
             onClick={() => setIsFeedbackModalOpen(true)}
-            className="px-3 py-1 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold text-[11px] sm:text-xs transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+            className="px-3 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-stone-200 text-xs font-bold transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
           >
             <MessagesSquare className="w-3.5 h-3.5 text-red-400" />
-            <span className="hidden sm:inline">Санал хүсэлт илгээх</span>
-            <span className="sm:hidden">Санал</span>
+            <span className="hidden sm:inline">Санал хүсэлт</span>
           </button>
         </section>
       )}
 
-      {/* 1. HERO INTRODUCTION */}
-      <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-[radial-gradient(circle_at_85%_20%,rgba(255,51,102,0.18),transparent_35%),radial-gradient(circle_at_10%_80%,rgba(153,0,0,0.20),transparent_40%),linear-gradient(135deg,#160C0F,#211014,#120A0C)] text-white p-5 sm:p-8 md:p-12 shadow-2xl border border-[rgba(255,51,102,0.20)] backdrop-blur-xl">
-        {/* Soft subtle wine-red atmosphere inside Hero card */}
-        <div className="absolute top-0 right-0 -mt-16 -mr-16 w-96 sm:w-[500px] h-96 sm:h-[500px] bg-[#CC0000]/15 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 w-80 sm:w-[450px] h-80 sm:h-[450px] bg-[#990000]/15 rounded-full blur-[120px] pointer-events-none" />
-        
-        {/* SunnyLearn Mascot Logo in Hero */}
-        <div className="hidden lg:flex absolute top-10 right-10 z-10 items-center justify-center">
-          <div className="w-24 h-24 rounded-3xl overflow-hidden shadow-2xl border-2 border-white/20 bg-transparent hover:scale-105 transition-transform">
-            <SunnyLogo className="w-full h-full object-cover" />
-          </div>
-        </div>
-
-        <div className="relative z-10 max-w-3xl space-y-5 sm:space-y-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-semibold">
+      {/* ========================================================= */}
+      {/* 1. HERO DASHBOARD: Welcome, Primary CTA & Quick Search    */}
+      {/* ========================================================= */}
+      <section className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#1E0E13] via-[#2A121A] to-[#160B0E] text-white p-5 sm:p-8 md:p-10 shadow-xl border border-red-500/20">
+        <div className="relative z-10 max-w-3xl space-y-4 sm:space-y-5">
+          {/* Welcome Tag & JLPT Badge */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/30 text-[#FF6699] text-xs font-extrabold">
               <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span>SunnyLearn 2.0 • Интерактив Сургалтын Зам & JLPT N5–N1</span>
+              <span>JLPT {effectiveLevel} Түвшин</span>
             </div>
+            {currentUser && (
+              <span className="text-xs text-stone-400 font-medium">
+                • {currentUser.name}
+              </span>
+            )}
           </div>
 
-          <div className="space-y-2 sm:space-y-3">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight break-words">
-              SunnyLearn 2.0 — Япон хэлийг тоглоомжуулан сурах
+          {/* Heading: Minimal, Warm Greeting */}
+          <div className="space-y-1.5">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-tight">
+              Сайн уу! Өнөөдөр япон хэлээ үргэлжлүүлцгээе.
             </h1>
-            <p className="text-stone-300 text-xs sm:text-base leading-relaxed max-w-2xl">
-              Өдөр бүр сонирхолтой богино хичээлүүдээр алхам алхмаар ахиж, JLPT N5–N1 түвшний үгийн сан, ханз, дүрмээ бодит дасгалаар эзэмшээрэй.
+            <p className="text-stone-300 text-xs sm:text-sm leading-relaxed max-w-2xl">
+              Таны сонгосон JLPT {effectiveLevel} түвшний үгийн сан, ханз, дүрмийн агуулга бэлэн байна.
             </p>
           </div>
 
-          {/* Action buttons inside Hero */}
-          <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          {/* ONE PRIMARY ACTION: "Үргэлжлүүлэн сурах →" */}
+          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <button
-              onClick={() => handleStartLearning(selectedLevel || 'N5')}
-              id="hero-start-btn"
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-red-500/25 active:scale-98 transition-all"
+              type="button"
+              onClick={handleSmartContinue}
+              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white font-black text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-red-500/25 active:scale-98 transition-all"
             >
-              <Compass className="w-4 h-4 shrink-0" />
-              <span>Сургалтын Замаар эхлэх</span>
+              <Play className="w-4 h-4 fill-white shrink-0" />
+              <span>{totalGlobalLearned > 0 ? 'Үргэлжлүүлэн сурах' : 'Суралцаж эхлэх'}</span>
               <ArrowRight className="w-4 h-4 shrink-0" />
             </button>
 
+            {/* Quick Dictionary Search trigger */}
             <div
               onClick={() => setIsSearchOpen(true)}
-              className="w-full sm:w-auto flex items-center justify-center sm:justify-start gap-2.5 bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 cursor-pointer transition-all text-stone-300 text-xs sm:text-sm font-medium"
+              className="flex items-center gap-2.5 bg-white/10 hover:bg-white/15 border border-white/15 rounded-2xl px-4 py-3 cursor-pointer transition-all text-stone-300 text-xs sm:text-sm font-medium"
             >
               <Search className="w-4 h-4 text-red-400 shrink-0" />
-              <span className="truncate">Япон үг, ханз, дүрэм хайх...</span>
+              <span className="truncate">Япон үг, ханз хайх...</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Mascot in Hero Card */}
+        <div className="hidden md:flex absolute top-8 right-8 z-10 items-center justify-center">
+          <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-xl border border-white/20 bg-transparent">
+            <SunnyLogo className="w-full h-full object-cover" />
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* 2. TODAY'S LEARNING SUMMARY (Phase 2.3 C)                */}
+      {/* Compact indicators: Mission, Due Reviews, XP, Streak      */}
+      {/* ========================================================= */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Today's Goal */}
+        <div
+          onClick={() => setActiveTab('progress')}
+          className="p-4 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xs hover:border-red-400 transition-all cursor-pointer space-y-1"
+        >
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Өдрийн зорилго</span>
+            <Target className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100">
+            {completedMissionsCount} / {Math.max(3, missions.length)}
+          </div>
+          <span className="text-[11px] text-stone-400">даалгавар биелсэн</span>
+        </div>
+
+        {/* Due Reviews */}
+        <div
+          onClick={() => {
+            setLearnSubTab('vocab');
+            setActiveTab('learn');
+          }}
+          className="p-4 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xs hover:border-red-400 transition-all cursor-pointer space-y-1"
+        >
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Давтах карт (SRS)</span>
+            <RotateCcw className="w-4 h-4 text-blue-500" />
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100">
+            {dueReviews}
+          </div>
+          <span className="text-[11px] text-stone-400">
+            {dueReviews > 0 ? 'давтлага хийх шаардлагатай' : 'давтах агуулга алга'}
+          </span>
+        </div>
+
+        {/* Daily XP */}
+        <div
+          onClick={() => setActiveTab('progress')}
+          className="p-4 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xs hover:border-red-400 transition-all cursor-pointer space-y-1"
+        >
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Өдрийн оноо</span>
+            <Sparkles className="w-4 h-4 text-amber-500" />
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-stone-900 dark:text-stone-100">
+            {todayXP} <span className="text-xs font-bold text-stone-400 font-sans">XP</span>
+          </div>
+          <span className="text-[11px] text-stone-400">өнөөдөр цуглуулсан</span>
+        </div>
+
+        {/* Current Streak */}
+        <div
+          onClick={() => setActiveTab('progress')}
+          className="p-4 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xs hover:border-red-400 transition-all cursor-pointer space-y-1"
+        >
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Тасралтгүй суралцсан</span>
+            <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-orange-600 dark:text-orange-400">
+            {streakDays} <span className="text-xs font-bold text-stone-500 font-sans">өдөр</span>
+          </div>
+          <span className="text-[11px] text-stone-400">бодит дасгалаар тооцогдоно</span>
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* 3. THREE COMPACT LEARNING SHORTCUTS (Phase 2.3 D)         */}
+      {/* Үгийн сан | Ханз | Дүрэм                                   */}
+      {/* ========================================================= */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm sm:text-base font-extrabold uppercase tracking-wider text-stone-800 dark:text-stone-200">
+            JLPT {effectiveLevel} Хичээлүүд
+          </h2>
+          <span className="text-xs font-bold text-stone-400">
+            Нийт {totalLevelLearned} / {totalLevelItems} сурсан
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
+          {/* 1. Үгийн сан */}
+          <div
+            onClick={() => handleShortcutClick('vocab')}
+            className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 hover:border-[#CC0000] dark:hover:border-[#FF3366] shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 text-[#CC0000] dark:text-[#FF6699] flex items-center justify-center font-bold">
+                  <BookA className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-mono font-bold text-stone-400">
+                  {learnedVocabCount} / {levelVocab.length}
+                </span>
+              </div>
+
+              <div>
+                <h3 className="font-extrabold text-base text-stone-900 dark:text-stone-100 group-hover:text-[#CC0000] dark:group-hover:text-[#FF6699] transition-colors">
+                  Үгийн сан
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                  JLPT {effectiveLevel} түвшний үгс, уншлага, жишээ өгүүлбэр
+                </p>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div className="space-y-1.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+              <div className="w-full h-1.5 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#CC0000] to-[#FF3366] transition-all duration-300"
+                  style={{
+                    width: `${Math.round((learnedVocabCount / Math.max(1, levelVocab.length)) * 100)}%`
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-bold text-stone-400">
+                <span>{Math.round((learnedVocabCount / Math.max(1, levelVocab.length)) * 100)}%</span>
+                <span className="text-[#CC0000] dark:text-[#FF6699] flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                  Нээх →
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Quick Stats Banner */}
-          <div className="pt-2 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-stone-300">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>{totalContentStats.totalVocab} Үгийн сан</span>
+          {/* 2. Ханз */}
+          <div
+            onClick={() => handleShortcutClick('kanji')}
+            className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 hover:border-[#CC0000] dark:hover:border-[#FF3366] shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-mono font-bold text-stone-400">
+                  {learnedKanjiCount} / {levelKanji.length}
+                </span>
+              </div>
+
+              <div>
+                <h3 className="font-extrabold text-base text-stone-900 dark:text-stone-100 group-hover:text-[#CC0000] dark:group-hover:text-[#FF6699] transition-colors">
+                  Ханз
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                  Зурлагын дараалал, оныонми, күнъёми уншлага, холбоо үгс
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-sky-400" />
-              <span>{totalContentStats.totalKanji} Ханз</span>
+
+            {/* Progress bar */}
+            <div className="space-y-1.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+              <div className="w-full h-1.5 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all duration-300"
+                  style={{
+                    width: `${Math.round((learnedKanjiCount / Math.max(1, levelKanji.length)) * 100)}%`
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-bold text-stone-400">
+                <span>{Math.round((learnedKanjiCount / Math.max(1, levelKanji.length)) * 100)}%</span>
+                <span className="text-orange-600 dark:text-orange-400 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                  Нээх →
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-orange-500" />
-              <span>{totalContentStats.totalGrammar} Дүрэм</span>
+          </div>
+
+          {/* 3. Дүрэм */}
+          <div
+            onClick={() => handleShortcutClick('grammar')}
+            className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 hover:border-[#CC0000] dark:hover:border-[#FF3366] shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-mono font-bold text-stone-400">
+                  {learnedGrammarCount} / {levelGrammar.length}
+                </span>
+              </div>
+
+              <div>
+                <h3 className="font-extrabold text-base text-stone-900 dark:text-stone-100 group-hover:text-[#CC0000] dark:group-hover:text-[#FF6699] transition-colors">
+                  Дүрэм
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                  Бүтэц, холболтын дүрэм, бодит амьдралын жишээ өгүүлбэрүүд
+                </p>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div className="space-y-1.5 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+              <div className="w-full h-1.5 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300"
+                  style={{
+                    width: `${Math.round((learnedGrammarCount / Math.max(1, levelGrammar.length)) * 100)}%`
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-bold text-stone-400">
+                <span>{Math.round((learnedGrammarCount / Math.max(1, levelGrammar.length)) * 100)}%</span>
+                <span className="text-blue-600 dark:text-blue-400 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                  Нээх →
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. JLPT LEVEL SELECTION (PLACED FIRST ON TOP) */}
-      <section id="level-selection" className="space-y-5 scroll-mt-24">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <Layers className="w-5 h-5 text-red-600 dark:text-red-400" />
-              <h2 className="text-xl sm:text-2xl font-extrabold text-stone-900 dark:text-stone-100">
-                JLPT Түвшин сонгох
-              </h2>
-            </div>
-            <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1">
-              {selectedLevel ? (
-                <>
-                  Та одоогоор <span className="font-bold text-red-600 dark:text-red-400">JLPT {selectedLevel}</span> түвшнийг сонгосон байна. Түвшингээ хүссэн үедээ солих боломжтой.
-                </>
-              ) : (
-                <span className="font-semibold text-orange-600 dark:text-orange-400">
-                  Сурах түвшнээ сонгоорой. Танд тохирох түвшний дагуу агуулгууд харагдана.
-                </span>
-              )}
-            </p>
-          </div>
-
-          {selectedLevel && (
-            <div className="inline-flex items-center gap-2 self-start sm:self-center px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/60 text-xs font-bold">
-              <Check className="w-3.5 h-3.5" />
-              <span>Сонгосон: JLPT {selectedLevel}</span>
-            </div>
-          )}
+      {/* ========================================================= */}
+      {/* AI EXPERIENCES SECTION (Phase 7)                          */}
+      {/* 1. Sunny AI (Tutor), 2. AI Roleplay, 3. Free Conversation */}
+      {/* ========================================================= */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm sm:text-base font-extrabold uppercase tracking-wider text-stone-800 dark:text-stone-200 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-red-500 fill-red-500" />
+            <span>Хиймэл оюуны туслахууд</span>
+          </h2>
+          <span className="text-xs text-stone-400">24/7 япон хэлний дадлага</span>
         </div>
 
-        {/* Level Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-          {levelConfigs.map(item => {
-            const isSelected = selectedLevel === item.level;
-            return (
-              <div
-                key={item.level}
-                onClick={() => setSelectedLevel(item.level)}
-                className={`relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all flex flex-col justify-between cursor-pointer glass-card ${
-                  isSelected
-                    ? `${item.activeBorder} scale-[1.01] sm:scale-[1.02]`
-                    : `border-stone-200/80 dark:border-stone-800/80 ${item.accentBorder} shadow-sm hover:shadow-md`
-                }`}
-              >
-                {/* Selection indicator pill */}
-                {isSelected && (
-                  <div className={`absolute -top-2.5 right-3.5 sm:right-4 px-2.5 py-0.5 rounded-full ${item.badgeBg} text-white text-[10px] font-extrabold shadow-sm flex items-center gap-1`}>
-                    <Check className="w-3 h-3" />
-                    <span>Сонгосон</span>
-                  </div>
-                )}
-
-                <div className="space-y-2.5 sm:space-y-3">
-                  <div className="flex items-center justify-between">
-                    <LevelBadge level={item.level} size="lg" />
-                    <span className="text-[11px] font-bold text-stone-400">
-                      JLPT
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-extrabold text-base text-stone-900 dark:text-stone-100">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 sm:mt-1.5 leading-relaxed">
-                      {item.desc}
-                    </p>
-                  </div>
-                  <div className="text-[11px] font-semibold text-stone-500 dark:text-stone-400 pt-1">
-                    {item.count}
-                  </div>
-                </div>
-
-                {/* Bottom action button */}
-                <div className="pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-stone-100 dark:border-stone-800/80 flex items-center justify-between gap-2">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleStartLearning(item.level);
-                    }}
-                    className={`w-full py-2.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      isSelected
-                        ? item.buttonActive
-                        : 'bg-stone-100 dark:bg-stone-800/80 text-stone-800 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-700'
-                    }`}
-                  >
-                    <span>Суралцах</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 3. USER LEARNING PROGRESS (PLACED BELOW LEVEL SELECTION) */}
-      <section className="bg-white dark:bg-stone-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-stone-200 dark:border-stone-800 shadow-sm space-y-5 sm:space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-stone-100 dark:border-stone-800">
-          <div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-red-600 dark:text-red-400" />
-              <h2 className="text-lg sm:text-xl font-bold text-stone-900 dark:text-stone-100">
-                Таны сургалтын явц
-              </h2>
-              {selectedLevel && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold">
-                  JLPT {selectedLevel}
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
-              {selectedLevel
-                ? `JLPT ${selectedLevel} түвшинд суралцсан явц болон нийт үзүүлэлт.`
-                : 'Түвшингээ сонгосноор тухайн түвшний явц нарийвчлан тооцогдоно.'}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {totalItemsLearned > 0 && (
-              <button
-                onClick={handleResumeStudy}
-                className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-sm shadow-red-500/20 transition-all"
-              >
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Үргэлжлүүлэх</span>
-              </button>
-            )}
-
-            <button
-              onClick={() => setActiveTab('progress')}
-              className="text-xs font-bold text-stone-600 dark:text-stone-300 hover:text-red-600 dark:hover:text-red-400 inline-flex items-center gap-1 p-1.5 transition-colors"
-            >
-              <span>Дэлгэрэнгүй тайлан</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* First time positive guidance when 0 stats */}
-        {totalItemsLearned === 0 && (
-          <div className="p-4 rounded-2xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-950/60 text-[#CC0000] dark:text-[#FF6699] flex items-center justify-center shrink-0">
-                <Sparkles className="w-4 h-4 text-[#FF3366] fill-[#FF3366]" />
-              </div>
-              <div>
-                <p className="font-bold text-stone-900 dark:text-stone-100">
-                  Эхний үгээ сураад явцаа эхлүүлээрэй!
-                </p>
-                <p className="text-stone-500 dark:text-stone-400">
-                  Өдөр бүр хэдхэн үг, ханз цээжилснээр тасралтгүй суралцах дадал тогтоно.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => handleStartLearning(selectedLevel || 'N5')}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#CC0000] to-[#FF3366] hover:opacity-95 text-white font-bold text-xs shrink-0 shadow-xs transition-all cursor-pointer"
-            >
-              Үгийн сан цээжлэх
-            </button>
-          </div>
-        )}
-
-        {/* 4 Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200/70 dark:border-stone-700/60">
-            <span className="text-xs text-stone-500 font-medium">Цээжилсэн үг</span>
-            <div className="text-2xl font-extrabold text-stone-900 dark:text-white mt-1">
-              {levelLearnedVocab}
-            </div>
-            <span className="text-[11px] text-stone-400">
-              {selectedLevel ? `${selectedLevel} түвшинд` : 'Нийт'}
-            </span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200/70 dark:border-stone-700/60">
-            <span className="text-xs text-stone-500 font-medium">Сурсан ханз</span>
-            <div className="text-2xl font-extrabold text-stone-900 dark:text-white mt-1">
-              {levelLearnedKanji}
-            </div>
-            <span className="text-[11px] text-stone-400">
-              {selectedLevel ? `${selectedLevel} түвшинд` : 'Нийт'}
-            </span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200/70 dark:border-stone-700/60">
-            <span className="text-xs text-stone-500 font-medium">Эзэмшсэн дүрэм</span>
-            <div className="text-2xl font-extrabold text-stone-900 dark:text-white mt-1">
-              {levelLearnedGrammar}
-            </div>
-            <span className="text-[11px] text-stone-400">
-              {selectedLevel ? `${selectedLevel} түвшинд` : 'Нийт'}
-            </span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-800/50 border border-stone-200/70 dark:border-stone-700/60">
-            <span className="text-xs text-stone-500 font-medium">Дараалан суралцсан өдөр</span>
-            <div className="text-2xl font-extrabold text-orange-600 dark:text-orange-400 mt-1 flex items-center gap-1.5">
-              <span>{streakDays}</span>
-              <span className="text-xs font-semibold text-stone-500">өдөр</span>
-            </div>
-            <span className="text-[11px] text-stone-400">Бодит дасгалаар тооцогдоно</span>
-          </div>
-        </div>
-
-        {/* Guest user non-intrusive banner */}
-        {!currentUser && !isBannerDismissed && (
-          <div className="p-4 rounded-2xl bg-stone-100/80 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-            <div className="flex items-start gap-3">
-              <div className="w-7 h-7 rounded-xl bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center shrink-0 mt-0.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              </div>
-              <div>
-                <p className="font-bold text-stone-900 dark:text-stone-100">
-                  Таны явц энэ браузерт хадгалагдаж байна.
-                </p>
-                <p className="text-stone-500 dark:text-stone-400">
-                  Google-ээр нэвтэрвэл утас, таблет, бусад төхөөрөмж дээрээ үргэлжлүүлэн суралцах боломжтой.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-              <button
-                type="button"
-                onClick={() => setIsAuthModalOpen(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm transition-all"
-              >
-                Google-ээр үргэлжлүүлэх
-              </button>
-              <button
-                type="button"
-                onClick={dismissBanner}
-                className="px-2.5 py-1.5 rounded-xl text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 font-medium transition-colors"
-              >
-                Одоохондоо алгасах
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Quick Launch: Practice, Quiz & AI Roleplay */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
+          {/* Card 1: Sunny AI Tutor */}
           <div
             onClick={() => {
-              setActiveTab('practice');
+              setActiveTab('ai');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="p-4 rounded-2xl glass-card hover:border-[#FF0000]/40 dark:hover:border-[#FF0000]/40 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
+            className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 hover:border-[#CC0000] dark:hover:border-[#FF3366] shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
           >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-[#FF0000] text-white flex items-center justify-center shadow-md shadow-[#FF0000]/15 group-hover:scale-105 transition-transform shrink-0">
-                <CheckSquare className="w-5 h-5" />
+            <div className="space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-red-500/10 text-[#CC0000] dark:text-[#FF6699] flex items-center justify-center font-bold">
+                <Bot className="w-5 h-5" />
               </div>
-              <div className="min-w-0">
-                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-[#FF0000] dark:group-hover:text-[#FF4D4D] transition-colors truncate">
-                  Дасгал ажиллах
+              <div>
+                <h3 className="font-extrabold text-sm sm:text-base text-stone-900 dark:text-stone-100 group-hover:text-[#CC0000] dark:group-hover:text-[#FF6699] transition-colors">
+                  Sunny AI Багш
                 </h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-1">
-                  {selectedLevel ? `JLPT ${selectedLevel} ` : ''}Интерактив дасгал, угсрах
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
+                  Япон хэлний үг, дүрмийн нарийн ялгаа, сорилын алдааг монголоор задлан тайлбарлана.
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-[#FF0000] dark:group-hover:text-[#FF4D4D] group-hover:translate-x-0.5 transition-all shrink-0" />
-          </div>
-
-          <div
-            onClick={() => {
-              setActiveTab('quiz');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className="p-4 rounded-2xl glass-card hover:border-[#FF6666]/40 dark:hover:border-[#FF6666]/40 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-[#FF6666] text-white flex items-center justify-center shadow-md shadow-[#FF6666]/15 group-hover:scale-105 transition-transform shrink-0">
-                <Target className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-[#E64C4C] dark:group-hover:text-[#FF8080] transition-colors truncate">
-                  Сорил шалгалт өгөх
-                </h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-1">
-                  {selectedLevel ? `JLPT ${selectedLevel} ` : ''}Цагтай сорил, 10–25 асуулт
-                </p>
-              </div>
+            <div className="pt-2 border-t border-stone-100 dark:border-stone-800/80 flex items-center justify-between text-xs font-bold text-[#CC0000] dark:text-[#FF6699]">
+              <span>Асуулт асуух</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
-            <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-[#FF6666] dark:group-hover:text-[#FF8080] group-hover:translate-x-0.5 transition-all shrink-0" />
           </div>
 
+          {/* Card 2: AI Roleplay */}
           <div
             onClick={() => {
               setActiveTab('roleplay');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="p-4 rounded-2xl glass-card hover:border-[#FF3366]/40 dark:hover:border-[#FF3366]/40 cursor-pointer transition-all hover:scale-[1.01] flex items-center justify-between gap-3 group"
+            className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 hover:border-orange-500 shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
           >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#CC0000] to-[#FF3366] text-white flex items-center justify-center shadow-md shadow-[#FF3366]/20 group-hover:scale-105 transition-transform shrink-0">
+            <div className="space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">
                 <MessagesSquare className="w-5 h-5" />
               </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-sm text-stone-900 dark:text-stone-100 group-hover:text-[#FF3366] dark:group-hover:text-[#FF6688] transition-colors truncate">
-                    AI Roleplay
-                  </h3>
-                  <span className="text-[10px] font-black uppercase px-1.5 py-0.2 rounded-full bg-[#FF3366] text-white leading-tight">
-                    Шинэ
-                  </span>
-                </div>
-                <p className="text-xs text-stone-500 dark:text-stone-400 line-clamp-1">
-                  Бодит нөхцөл байдалд японоор ярилцах
+              <div>
+                <h3 className="font-extrabold text-sm sm:text-base text-stone-900 dark:text-stone-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                  AI Roleplay
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
+                  Конбини, ресторан, ярилцлага зэрэг бодит нөхцөлд дүрд хувиран японоор ярилцана.
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-[#FF3366] dark:group-hover:text-[#FF6688] group-hover:translate-x-0.5 transition-all shrink-0" />
-          </div>
-        </div>
-      </section>
-
-      {/* 4. DAILY HIGHLIGHTS: WORD OF THE DAY & KANJI OF THE DAY (LEVEL-FILTERED) */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-              Өдрийн онцлох хичээлүүд
-            </h2>
-            <p className="text-xs text-stone-500 dark:text-stone-400">
-              {selectedLevel
-                ? `JLPT ${selectedLevel} түвшинд тохируулсан өдрийн үг болон ханз`
-                : 'Түвшнээ сонгосноор танд тохирох өдрийн агуулга харагдана'}
-            </p>
-          </div>
-        </div>
-
-        {/* If no level selected yet, show guided selection prompt */}
-        {!selectedLevel ? (
-          <div className="p-8 rounded-3xl bg-stone-50 dark:bg-stone-900 border border-dashed border-stone-300 dark:border-stone-700 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto">
-              <HelpCircle className="w-6 h-6" />
-            </div>
-            <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
-              Түвшнээ сонговол танд тохирох өдрийн үг, ханз харагдана
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto">
-              Өөрийн суралцах түвшинг (N5–N1) сонгосноор өдөр бүр тохирох шинэ үг, ханз гарч ирнэ.
-            </p>
-            <div className="pt-2">
-              <button
-                onClick={scrollToLevelSelection}
-                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md shadow-red-500/20 transition-all"
-              >
-                Түвшин сонгох
-              </button>
+            <div className="pt-2 border-t border-stone-100 dark:border-stone-800/80 flex items-center justify-between text-xs font-bold text-orange-600 dark:text-orange-400">
+              <span>Дүрд тоглох</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            {/* Word of the Day Card */}
-            {vocabOfTheDay ? (() => {
-              const vocabPronounce = extractVocabPronunciation(vocabOfTheDay);
-              return (
-              <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm relative overflow-hidden flex flex-col justify-between">
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                      <span className="px-2.5 py-1 rounded-lg bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-bold">
-                        Өдрийн шинэ үг
-                      </span>
-                      <LevelBadge level={vocabOfTheDay.jlptLevel} size="sm" />
-                      {vocabOfTheDay.partOfSpeech && (
-                        <span className="text-[11px] px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 font-medium">
-                          {vocabOfTheDay.partOfSpeech}
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => toggleFavorite('vocab', vocabOfTheDay.id)}
-                      title="Хадгалах"
-                      className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors"
-                    >
-                      <Star
-                        className={`w-4 h-4 ${
-                          userProgress.favorites.vocabIds.includes(vocabOfTheDay.id)
-                            ? 'fill-orange-400 text-orange-400'
-                            : ''
-                        }`}
-                      />
-                    </button>
-                  </div>
 
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
-                      <div className="flex flex-wrap items-baseline gap-2 sm:gap-3">
-                        <h3 className="text-2xl sm:text-3xl font-extrabold text-stone-900 dark:text-stone-100 font-jp">
-                          {vocabOfTheDay.japanese}
-                        </h3>
-                        <span className="text-xs sm:text-sm text-stone-500 font-jp">
-                          [{vocabOfTheDay.reading}]
-                        </span>
-                      </div>
-                      <AudioButton
-                        text={vocabPronounce.text}
-                        reading={vocabPronounce.reading}
-                        id={`daily_vocab_main_${vocabOfTheDay.id}`}
-                        size="sm"
-                        title={`"${vocabOfTheDay.japanese}" дуудлага сонсох`}
-                      />
-                    </div>
-                    <p className="text-base sm:text-lg font-bold text-red-600 dark:text-red-400">
-                      {vocabOfTheDay.mongolian}
-                    </p>
-                    {(() => {
-                      const cleanExp = getCleanVocabExplanation(vocabOfTheDay.explanation, vocabOfTheDay.mongolian, vocabOfTheDay.partOfSpeech);
-                      return cleanExp ? (
-                        <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-                          {cleanExp}
-                        </p>
-                      ) : null;
-                    })()}
-
-                    {vocabOfTheDay.exampleSentence && (
-                      <div className="mt-3 p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 text-xs space-y-1.5 border border-stone-200/60 dark:border-stone-700/50">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0 flex-1">
-                            <InteractiveJapaneseSentence
-                              sentence={vocabOfTheDay.exampleSentence}
-                              reading={vocabOfTheDay.exampleReading}
-                              mongolian={vocabOfTheDay.exampleMongolian}
-                              className="text-xs text-stone-900 dark:text-stone-100"
-                            />
-                          </div>
-                          <AudioButton
-                            text={vocabOfTheDay.exampleSentence}
-                            id={`daily_vocab_ex_${vocabOfTheDay.id}`}
-                            size="xs"
-                            variant="ghost"
-                            title="Жишээ өгүүлбэр сонсох"
-                          />
-                        </div>
-                        {vocabOfTheDay.exampleMongolian && (
-                          <p className="text-stone-500 dark:text-stone-400 italic text-[11px] pt-0.5">
-                            {vocabOfTheDay.exampleMongolian}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs">
-                  <span className="text-stone-400">JLPT {vocabOfTheDay.jlptLevel}</span>
-                  <button
-                    onClick={() => handleSubTabSelect(vocabOfTheDay.jlptLevel, 'vocab')}
-                    className="font-bold text-red-600 dark:text-red-400 hover:underline inline-flex items-center gap-1"
-                  >
-                    <span>Бүх үгийн санг үзэх</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-              );
-            })() : (
-              <div className="p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm flex flex-col items-center justify-center text-center space-y-2">
-                <BookA className="w-8 h-8 text-stone-400" />
-                <p className="text-sm font-semibold text-stone-700 dark:text-stone-300">
-                  Энэ түвшний агуулга удахгүй нэмэгдэнэ
-                </p>
-                <p className="text-xs text-stone-500">
-                  {selectedLevel} түвшний үгийн санг бэлтгэж байна.
-                </p>
-              </div>
-            )}
-
-            {/* Kanji of the Day Card */}
-            {kanjiOfTheDay ? (() => {
-              const kanjiPronounce = extractKanjiPronunciation(kanjiOfTheDay);
-              return (
-                <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm relative overflow-hidden flex flex-col justify-between">
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                        <span className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-bold">
-                          Өдрийн ханз
-                        </span>
-                        <LevelBadge level={kanjiOfTheDay.jlptLevel} size="sm" />
-                        {kanjiOfTheDay.strokeCount && (
-                          <span className="text-[11px] px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-500 font-medium">
-                            {kanjiOfTheDay.strokeCount} зуралттай
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => toggleFavorite('kanji', kanjiOfTheDay.id)}
-                        title="Хадгалах"
-                        className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors"
-                      >
-                        <Star
-                          className={`w-4 h-4 ${
-                            userProgress.favorites.kanjiIds.includes(kanjiOfTheDay.id)
-                              ? 'fill-orange-400 text-orange-400'
-                              : ''
-                          }`}
-                        />
-                      </button>
-                    </div>
-
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center text-3xl sm:text-4xl font-extrabold font-jp border border-red-200 dark:border-red-900/60 shadow-sm shrink-0">
-                        {kanjiOfTheDay.kanji}
-                      </div>
-                      <div className="space-y-1 flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <h3 className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 truncate">
-                            {kanjiOfTheDay.mongolian}
-                          </h3>
-                          <AudioButton
-                            text={kanjiPronounce.text}
-                            reading={kanjiPronounce.reading}
-                            id={`daily_kanji_main_${kanjiOfTheDay.id}`}
-                            size="sm"
-                            title={`"${kanjiOfTheDay.kanji}" дуудлага сонсох`}
-                          />
-                        </div>
-                        <div className="text-xs space-y-0.5 text-stone-600 dark:text-stone-400">
-                          <div className="truncate">
-                            <span className="font-semibold text-stone-500">Онь:</span> {kanjiOfTheDay.onyomi || '—'}
-                          </div>
-                          <div className="truncate">
-                            <span className="font-semibold text-stone-500">Күн:</span> {kanjiOfTheDay.kunyomi || '—'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {kanjiOfTheDay.exampleWords && kanjiOfTheDay.exampleWords.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-stone-100 dark:border-stone-800 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                        {kanjiOfTheDay.exampleWords.slice(0, 2).map((ew, idx) => (
-                          <div key={idx} className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/40 min-w-0 flex items-center justify-between gap-1">
-                            <div className="min-w-0 flex-1">
-                              <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">{ew.word}</span>
-                              <span className="text-stone-400 text-[11px] ml-1 font-jp">({ew.reading})</span>
-                              <p className="text-stone-500 text-[11px] truncate">{ew.mongolian}</p>
-                            </div>
-                            <AudioButton
-                              text={ew.word}
-                              reading={ew.reading}
-                              id={`daily_kanji_ew_${kanjiOfTheDay.id}_${idx}`}
-                              size="xs"
-                              variant="ghost"
-                              title={`"${ew.word}" дуудлага сонсох`}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs">
-                    <span className="text-stone-400">JLPT {kanjiOfTheDay.jlptLevel}</span>
-                    <button
-                      onClick={() => handleSubTabSelect(kanjiOfTheDay.jlptLevel, 'kanji')}
-                      className="font-bold text-red-600 dark:text-red-400 hover:underline inline-flex items-center gap-1"
-                    >
-                      <span>Бүх ханзыг үзэх</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })() : (
-              <div className="p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-sm flex flex-col items-center justify-center text-center space-y-2">
-                <Sparkles className="w-8 h-8 text-stone-400" />
-                <p className="text-sm font-semibold text-stone-700 dark:text-stone-300">
-                  Энэ түвшний агуулга удахгүй нэмэгдэнэ
-                </p>
-                <p className="text-xs text-stone-500">
-                  {selectedLevel} түвшний ханзыг бэлтгэж байна.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
-
-      {/* 5. CORE 3 JLPT LEARNING PILLARS & DICTIONARY */}
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-            Сургалтын үндсэн 3 чиглэл
-          </h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            JLPT түвшин бүрийн үгийн сан, ханз, дүрмийн цогц систем
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <div
-            onClick={() => handleSubTabSelect(selectedLevel || 'N5', 'vocab')}
-            className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-emerald-400 dark:hover:border-emerald-700 shadow-sm cursor-pointer transition-all hover:scale-[1.01] sm:hover:scale-[1.02] group"
-          >
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3">
-              <BookA className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-base text-stone-900 dark:text-stone-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-              Үгийн сан
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
-              Үгийн дуудлага, монгол орчуулга, жишээ өгүүлбэр, цээжлэх флаш-карт.
-            </p>
-          </div>
-
-          <div
-            onClick={() => handleSubTabSelect(selectedLevel || 'N5', 'kanji')}
-            className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-sky-400 dark:hover:border-sky-700 shadow-sm cursor-pointer transition-all hover:scale-[1.01] sm:hover:scale-[1.02] group"
-          >
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-3">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-base text-stone-900 dark:text-stone-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
-              Ханз
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
-              Онь, күн дуудлага, монгол утга, зуралтын дараалал ба нийлмэл үгс.
-            </p>
-          </div>
-
-          <div
-            onClick={() => handleSubTabSelect(selectedLevel || 'N5', 'grammar')}
-            className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-orange-400 dark:hover:border-orange-700 shadow-sm cursor-pointer transition-all hover:scale-[1.01] sm:hover:scale-[1.02] group"
-          >
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-3">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-base text-stone-900 dark:text-stone-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-              Дүрэм
-            </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
-              Дүрмийн бүтэц, залгавар, хэрэглээний тайлбар, бодит жишээ өгүүлбэрүүд.
-            </p>
-          </div>
-
+          {/* Card 3: Free Voice Conversation */}
           <div
             onClick={() => {
-              setActiveTab('dictionary');
+              setActiveTab('roleplay');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-rose-400 dark:hover:border-rose-700 shadow-sm cursor-pointer transition-all hover:scale-[1.01] sm:hover:scale-[1.02] group"
+            className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 hover:border-emerald-500 shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-3 group"
           >
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-red-600 dark:text-red-400 flex items-center justify-center mb-3">
-              <Compass className="w-5 h-5" />
+            <div className="space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                <Mic className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-sm sm:text-base text-stone-900 dark:text-stone-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                  Чөлөөт дуут яриа
+                </h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
+                  Sunny-тай ямар нэг сэдэв сонгохгүйгээр өдөр тутмын чөлөөтэй дуут харилцан яриа өрнүүлнэ.
+                </p>
+              </div>
             </div>
-            <h3 className="font-bold text-base text-stone-900 dark:text-stone-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
-              Япон-Монгол Толь
+            <div className="pt-2 border-t border-stone-100 dark:border-stone-800/80 flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              <span>Дуугаар ярих</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================= */}
+      {/* 4. OPTIONAL PERSONALIZED ERROR REVIEW (Phase 6.4)         */}
+      {/* Rendered only if user has mistakes in quiz/practice       */}
+      {/* ========================================================= */}
+      {missedItemIds.length > 0 && (
+        <section className="p-4 sm:p-5 rounded-2xl bg-rose-50/70 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="font-extrabold text-stone-900 dark:text-stone-100 text-sm">
+                Алдаагаа бататгах: Танд давтах {missedItemIds.length} асуулт байна.
+              </p>
+              <p className="text-stone-600 dark:text-stone-400 mt-0.5">
+                Өмнө нь буруу хариулсан асуултуудаа дахин ажиллаж, Sunny AI-аас дүрмийн тайлбар аваарай.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handlePracticeMissed}
+            className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs transition-colors flex items-center gap-1.5"
+          >
+            <span>Алдаагаа давтах</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </section>
+      )}
+
+      {/* ========================================================= */}
+      {/* 5. DAILY FEATURED HIGHLIGHTS (Word & Kanji of the Day)    */}
+      {/* Clean, compact, NO inner scrollbars                       */}
+      {/* ========================================================= */}
+      {(vocabOfTheDay || kanjiOfTheDay) && (
+        <section className="space-y-3">
+          <h2 className="text-sm sm:text-base font-extrabold uppercase tracking-wider text-stone-800 dark:text-stone-200 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
+            <span>Өдрийн онцлох үг & ханз (JLPT {effectiveLevel})</span>
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+            {/* Word of the day */}
+            {vocabOfTheDay && (
+              <div
+                onClick={() => {
+                  setLearnSubTab('vocab');
+                  setActiveTab('learn');
+                }}
+                className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 hover:border-red-400 shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-2 group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider">
+                    Өдрийн үг • {vocabOfTheDay.partOfSpeech || 'Үг'}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <AudioButton
+                      text={vocabOfTheDay.japanese}
+                      reading={vocabOfTheDay.reading}
+                      id={`home_daily_vocab_${vocabOfTheDay.id}`}
+                      size="xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black font-jp text-stone-900 dark:text-stone-100 group-hover:text-[#CC0000] dark:group-hover:text-[#FF6699] transition-colors">
+                      {vocabOfTheDay.japanese}
+                    </span>
+                    {vocabOfTheDay.reading && (
+                      <span className="text-xs font-mono text-stone-400 font-jp">
+                        【{vocabOfTheDay.reading}】
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm font-bold text-[#CC0000] dark:text-[#FF6699] mt-0.5">
+                    {vocabOfTheDay.mongolian}
+                  </p>
+                </div>
+
+                {vocabOfTheDay.exampleSentence && (
+                  <div className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/60 text-xs font-jp text-stone-600 dark:text-stone-300 truncate">
+                    {vocabOfTheDay.exampleSentence}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Kanji of the day */}
+            {kanjiOfTheDay && (
+              <div
+                onClick={() => {
+                  setLearnSubTab('kanji');
+                  setActiveTab('learn');
+                }}
+                className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 hover:border-red-400 shadow-2xs hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-2 group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider">
+                    Өдрийн ханз
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {(() => {
+                      const kp = extractKanjiPronunciation(kanjiOfTheDay);
+                      return (
+                        <AudioButton
+                          text={kp.text}
+                          reading={kp.reading}
+                          id={`home_daily_kanji_${kanjiOfTheDay.id}`}
+                          size="xs"
+                        />
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="text-4xl sm:text-5xl font-black font-jp text-stone-900 dark:text-stone-100 group-hover:text-[#CC0000] dark:group-hover:text-[#FF6699] transition-colors">
+                    {kanjiOfTheDay.kanji}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#CC0000] dark:text-[#FF6699]">
+                      {kanjiOfTheDay.mongolian}
+                    </p>
+                    <div className="text-xs text-stone-500 dark:text-stone-400 font-jp mt-0.5">
+                      {kanjiOfTheDay.kunyomi || kanjiOfTheDay.onyomi}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-[11px] text-stone-400 flex items-center justify-between pt-1 border-t border-stone-100 dark:border-stone-800/70">
+                  <span>Зурлагын дараалал харах</span>
+                  <span className="text-[#CC0000] dark:text-[#FF6699] font-bold">→</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ========================================================= */}
+      {/* 6. LEARNING PATH TEASER (Secondary to Continue action)    */}
+      {/* ========================================================= */}
+      <section className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#CC0000] to-[#FF3366] text-white flex items-center justify-center shrink-0 shadow-sm shadow-red-500/20">
+            <Compass className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-extrabold text-base text-stone-900 dark:text-stone-100">
+              Интерактив Сургалтын Зам 2.0
             </h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">
-              Бүх түвшний үг, ханз, дүрмийн нэгдсэн хурдан хайлт, толь бичиг.
+            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+              Тоглоомжуулсан шат дараалсан интерактив замаар түвшингөө ахиулаарай.
             </p>
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setLearnSubTab('path');
+            setActiveTab('learn');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+        >
+          <span>Замаа харах</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </section>
     </div>
   );

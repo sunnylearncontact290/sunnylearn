@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search,
   Star,
@@ -6,9 +6,16 @@ import {
   BookOpen,
   Sparkles,
   Lock,
-  PenTool,
   Layers,
-  ArrowRight,
+  PenTool,
+  Volume2,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  RotateCcw,
+  Play,
+  Pause,
   Hash,
   Clock,
   Users,
@@ -26,13 +33,16 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LevelBadge } from '../common/LevelBadge';
-import { AudioButton } from '../common/AudioButton';
-import { extractKanjiPronunciation } from '../../services/speech';
+import { extractKanjiPronunciation, speechService } from '../../services/speech';
 import { KanjiItem, ItemStudyRecord } from '../../types';
-import { KanjiStrokeModal } from '../kanji/KanjiStrokeModal';
-import { InteractiveJapaneseSentence } from './InteractiveJapaneseSentence';
+import { KanjiStrokeOrder } from '../kanji/KanjiStrokeOrder';
 import { FlashcardView } from '../flashcards/FlashcardView';
-import { getTopicsForLevel, getTopicStats, TopicStats } from '../../data/curriculumTopics';
+import {
+  getTopicsForLevel,
+  getTopicStats,
+  getOrderedItemsForTopic,
+  TopicStats
+} from '../../data/curriculumTopics';
 
 const TOPIC_ICONS: Record<string, React.ElementType> = {
   Hash,
@@ -72,21 +82,43 @@ export const KanjiList: React.FC = () => {
   const levelCounts = data.counts?.[effectiveLevel];
   const lockedCount = isUnlocked ? 0 : (levelCounts?.lockedKanji || 0);
 
-  // Top Mode: 'topics' (Curriculum & Flashcards) vs 'library' (Searchable List)
-  const [viewMode, setViewMode] = useState<'topics' | 'library'>('topics');
-  const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
+  // Active topic filtering ('all' = all kanji in level, or a specific topic id)
+  const [selectedTopicId, setSelectedTopicId] = useState<string>('all');
+  // Optional full-screen flashcard deck runner
+  const [flashcardDeckTopicId, setFlashcardDeckTopicId] = useState<string | null>(null);
 
-  // Search & Filter state for Library mode
+  // Search & Filter state
   const [search, setSearch] = useState('');
   const [filterLearned, setFilterLearned] = useState<'all' | 'unlearned' | 'learned'>('all');
-  const [selectedStrokeKanji, setSelectedStrokeKanji] = useState<KanjiItem | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const ITEMS_PER_PAGE = 40;
+
+  // Detail Modal state
+  const [activeDetailItem, setActiveDetailItem] = useState<KanjiItem | null>(null);
+  const [isDetailFlipped, setIsDetailFlipped] = useState<boolean>(false);
+  const [strokeReplayKey, setStrokeReplayKey] = useState<number>(0);
+  const [strokeCurrent, setStrokeCurrent] = useState<number>(1);
+  const [strokeTotal, setStrokeTotal] = useState<number>(1);
+  const [strokeIsPlaying, setStrokeIsPlaying] = useState<boolean>(true);
+  const [strokeShowNumbers, setStrokeShowNumbers] = useState<boolean>(true);
+
+  // Reset pagination on filter or topic change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedTopicId, search, filterLearned, effectiveLevel]);
+
+  // Reset stroke controls when active kanji changes
+  useEffect(() => {
+    setStrokeCurrent(1);
+    setStrokeIsPlaying(true);
+  }, [activeDetailItem]);
 
   // Topics for the current level
   const availableTopics = useMemo(() => {
     return getTopicsForLevel(effectiveLevel, 'kanji', data.kanji || []);
   }, [effectiveLevel, data.kanji]);
 
-  // Precomputed stats for each topic (total, mastered, progressPercent)
+  // Topic stats map
   const topicStatsMap = useMemo(() => {
     const map = new Map<string, TopicStats>();
     const studyRecords = (userProgress.itemStudyRecords || {}) as Record<string, ItemStudyRecord>;
@@ -97,11 +129,29 @@ export const KanjiList: React.FC = () => {
     return map;
   }, [availableTopics, data.kanji, effectiveLevel, userProgress.itemStudyRecords]);
 
-  const filteredKanji = useMemo(() => {
-    return (data.kanji || []).filter(item => {
+  // Selected topic object (if not 'all')
+  const currentTopic = useMemo(() => {
+    if (selectedTopicId === 'all') return null;
+    return availableTopics.find(t => t.id === selectedTopicId) || null;
+  }, [selectedTopicId, availableTopics]);
+
+  // Base list of items ordered by topic (e.g. N5 Numbers starts with 一, 二, 三, 四, 五, 六, 七, 八, 九, 十...)
+  const topicOrderedItems = useMemo(() => {
+    const pool = (data.kanji || []).filter(item => {
       if (item.jlptLevel !== effectiveLevel) return false;
       if (!isUnlocked && item.accessTier !== 'FREE') return false;
+      return true;
+    });
 
+    if (currentTopic) {
+      return getOrderedItemsForTopic(currentTopic, pool);
+    }
+    return pool;
+  }, [data.kanji, effectiveLevel, isUnlocked, currentTopic]);
+
+  // Filtered items based on search and learned status
+  const displayItems = useMemo(() => {
+    return topicOrderedItems.filter(item => {
       const isLearned = (userProgress.learnedKanjiIds || []).includes(item.id);
       if (filterLearned === 'learned' && !isLearned) return false;
       if (filterLearned === 'unlearned' && isLearned) return false;
@@ -116,22 +166,68 @@ export const KanjiList: React.FC = () => {
       }
       return true;
     });
-  }, [data.kanji, effectiveLevel, isUnlocked, filterLearned, search, userProgress.learnedKanjiIds]);
+  }, [topicOrderedItems, filterLearned, search, userProgress.learnedKanjiIds]);
 
-  // If a topic is active, render the embedded FlashcardView for that topic
-  if (activeTopicId) {
+  // Pagination calculation
+  const totalPages = Math.max(1, Math.ceil(displayItems.length / ITEMS_PER_PAGE));
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return displayItems.slice(start, start + ITEMS_PER_PAGE);
+  }, [displayItems, currentPage]);
+
+  // Detail index within display items
+  const detailIndex = useMemo(() => {
+    if (!activeDetailItem) return -1;
+    return displayItems.findIndex(i => i.id === activeDetailItem.id);
+  }, [activeDetailItem, displayItems]);
+
+  const handleOpenDetail = (item: KanjiItem, showStrokeDirectly = false) => {
+    setActiveDetailItem(item);
+    setIsDetailFlipped(showStrokeDirectly);
+    setStrokeReplayKey(prev => prev + 1);
+  };
+
+  const handlePrevDetail = () => {
+    if (detailIndex > 0) {
+      setActiveDetailItem(displayItems[detailIndex - 1]);
+      setStrokeReplayKey(prev => prev + 1);
+    }
+  };
+
+  const handleNextDetail = () => {
+    if (detailIndex >= 0 && detailIndex < displayItems.length - 1) {
+      setActiveDetailItem(displayItems[detailIndex + 1]);
+      setStrokeReplayKey(prev => prev + 1);
+    }
+  };
+
+  const handlePlayAudio = (item: KanjiItem) => {
+    const pron = extractKanjiPronunciation(item);
+    speechService.play(pron.text, {
+      reading: pron.reading,
+      rate: userProgress.settings?.speechRate || 0.9
+    });
+  };
+
+  // If flashcard deck is launched
+  if (flashcardDeckTopicId) {
     return (
       <FlashcardView
         initialContentKind="kanji"
-        initialTopicId={activeTopicId}
-        onBack={() => setActiveTopicId(null)}
+        initialTopicId={flashcardDeckTopicId === 'all' ? undefined : flashcardDeckTopicId}
+        onBack={() => setFlashcardDeckTopicId(null)}
         lockContentKind={true}
       />
     );
   }
 
+  const totalInLevel = (data.kanji || []).filter(k => k.jlptLevel === effectiveLevel).length;
+  const learnedInLevel = (data.kanji || []).filter(
+    k => k.jlptLevel === effectiveLevel && (userProgress.learnedKanjiIds || []).includes(k.id)
+  ).length;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 animate-fade-in pb-safe">
       {/* Premium Preview Info Banner */}
       {isLevelPremium && !isUnlocked && (
         <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#FF0000]/10 via-[#FF3366]/5 to-transparent border border-[rgba(255,51,102,0.18)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -143,11 +239,11 @@ export const KanjiList: React.FC = () => {
               <h4 className="text-sm font-extrabold text-stone-900 dark:text-stone-100 flex items-center gap-2">
                 <span>JLPT {effectiveLevel} Ханз — Танилцуулга хувилбар</span>
                 <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/60 text-[#CC0000] dark:text-red-300 text-[10px] font-bold">
-                  {filteredKanji.length} ханз нээлттэй
+                  {displayItems.length} ханз нээлттэй
                 </span>
               </h4>
               <p className="text-xs text-stone-600 dark:text-stone-400 mt-0.5">
-                Энэ түвшний {lockedCount > 0 ? `${lockedCount} ханз` : 'бүх ханз'} болон N4-N1 сургалтын санг бүрэн нээхийн тулд Premium аваарай.
+                Энэ түвшний {lockedCount > 0 ? `${lockedCount} ханз` : 'бүх ханз'} болон N4-N1 бүрэн санг нээхийн тулд Premium аваарай.
               </p>
             </div>
           </div>
@@ -169,361 +265,607 @@ export const KanjiList: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* 1. VIEW MODE SWITCHER: Topics vs Library List             */}
+      {/* 1. TOPIC SELECTION CHIPS BAR (Semantic Curriculum Topics) */}
       {/* ========================================================= */}
-      <div className="flex items-center justify-between gap-3 p-1.5 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-xs">
-        <div className="flex items-center gap-1 w-full sm:w-auto">
-          <button
-            type="button"
-            onClick={() => setViewMode('topics')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
-              viewMode === 'topics'
-                ? 'bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white shadow-sm'
-                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            <span>Сэдвээр сурах (Карт)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setViewMode('library')}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
-              viewMode === 'library'
-                ? 'bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white shadow-sm'
-                : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Бүх ханзны сан (Хайх)</span>
-          </button>
+      <div className="bg-white dark:bg-[#150F12] p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-stone-200 dark:border-stone-800 shadow-xs space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Layers className="w-4 h-4 text-[#CC0000] dark:text-[#FF4D4D]" />
+            <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider text-stone-800 dark:text-stone-200">
+              Ханзны сэдэв сонгох
+            </h2>
+          </div>
+          <span className="text-[11px] font-mono font-bold text-stone-500 dark:text-stone-400">
+            Нийт {totalInLevel} ханз ({learnedInLevel} сурсан)
+          </span>
         </div>
 
-        <span className="hidden sm:inline-block text-xs font-bold text-stone-400 px-3">
-          JLPT {effectiveLevel} • {viewMode === 'topics' ? `${availableTopics.length} сэдэв` : `${filteredKanji.length} ханз`}
-        </span>
+        {/* Scrollable Topic Chips */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar">
+          {/* "Бүгд" (All) Chip */}
+          <button
+            type="button"
+            onClick={() => setSelectedTopicId('all')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+              selectedTopicId === 'all'
+                ? 'bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white shadow-sm shadow-red-500/25'
+                : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Бүгд ({totalInLevel})</span>
+          </button>
+
+          {/* Semantic Topic Chips */}
+          {availableTopics.map(topic => {
+            const Icon = TOPIC_ICONS[topic.iconName] || Layers;
+            const isSelected = selectedTopicId === topic.id;
+            const stats = topicStatsMap.get(topic.id);
+            const count = stats?.total || 0;
+
+            return (
+              <button
+                key={topic.id}
+                type="button"
+                onClick={() => setSelectedTopicId(topic.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white shadow-sm shadow-red-500/25'
+                    : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : ''}`} />
+                <span>{topic.titleMongolian}</span>
+                <span
+                  className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                    isSelected ? 'bg-white/25 text-white' : 'bg-stone-200 dark:bg-stone-700 text-stone-500 dark:text-stone-400'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ========================================================= */}
-      {/* 2. TOPIC BASED CURRICULUM GRID VIEW                       */}
+      {/* 2. SEARCH, FILTER & ACTIVE TOPIC CONTROLS                 */}
       {/* ========================================================= */}
-      {viewMode === 'topics' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base sm:text-lg font-black text-stone-900 dark:text-stone-100">
-                JLPT {effectiveLevel} Ханзны сэдвүүд
-              </h2>
-              <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                Сэдэв бүрийг дарааллын дагуу флаш картаар системтэй суралцаарай.
-              </p>
-            </div>
-          </div>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-[#150F12] p-3 sm:p-4 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-xs">
+        {/* Search Input */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={`${effectiveLevel} ханз, оныонми, күнъёми, монгол утгаар хайх...`}
+            className="w-full pl-10 pr-4 py-2 bg-stone-50 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 rounded-xl text-xs sm:text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+          />
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
-            {availableTopics.map((topic, idx) => {
-              const IconComponent = TOPIC_ICONS[topic.iconName] || Layers;
-              const stats = topicStatsMap.get(topic.id) || { total: 0, mastered: 0, progressPercent: 0 };
-              const totalInTopic = stats.total;
-              const progressPercent = stats.progressPercent;
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          {/* Status filter */}
+          <select
+            value={filterLearned}
+            onChange={e => setFilterLearned(e.target.value as any)}
+            className="px-3 py-2 bg-stone-50 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold text-stone-700 dark:text-stone-300 focus:outline-none cursor-pointer"
+          >
+            <option value="all">Бүх ханз</option>
+            <option value="unlearned">Сураагүй</option>
+            <option value="learned">Сурсан</option>
+          </select>
+
+          {/* Flashcard Player CTA */}
+          <button
+            type="button"
+            onClick={() => setFlashcardDeckTopicId(selectedTopicId)}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-stone-900 to-stone-800 dark:from-stone-800 dark:to-stone-700 hover:from-black text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shadow-xs"
+            title="Энэ сэдвийг флаш карт хэлбэрээр давтах"
+          >
+            <RotateCcw className="w-3.5 h-3.5 text-[#FF6699]" />
+            <span className="hidden md:inline">Флаш картаар давтах</span>
+            <span className="md:hidden">Картаар</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ========================================================= */}
+      {/* 3. MULTI-CARD RESPONSIVE LEARNING GRID                    */}
+      {/* Mobile: 2 cols, Tablet: 3 cols, Desktop: 4-5 cols        */}
+      {/* ========================================================= */}
+      {displayItems.length === 0 ? (
+        <div className="text-center py-16 bg-white dark:bg-[#150F12] rounded-3xl border border-stone-200 dark:border-stone-800 text-stone-400">
+          <BookOpen className="w-10 h-10 mx-auto text-stone-300 dark:text-stone-600 mb-2" />
+          <p className="text-sm font-semibold">Шүүлтүүрт тохирох ханз олдсонгүй.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-3.5">
+            {paginatedItems.map((item, idx) => {
+              const isLearned = (userProgress.learnedKanjiIds || []).includes(item.id);
+              const isFav = (userProgress.favorites?.kanjiIds || []).includes(item.id);
+              const mainReading = item.kunyomi || item.onyomi || '';
+              const itemIndex = (currentPage - 1) * ITEMS_PER_PAGE + idx + 1;
 
               return (
                 <div
-                  key={topic.id}
-                  onClick={() => setActiveTopicId(topic.id)}
-                  className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#181114] border border-stone-200 dark:border-stone-800 hover:border-[#CC0000] dark:hover:border-[#FF3366] transition-all shadow-xs hover:shadow-md cursor-pointer flex flex-col justify-between space-y-3.5 group"
+                  key={item.id}
+                  onClick={() => handleOpenDetail(item, false)}
+                  className={`p-3 sm:p-4 rounded-2xl bg-white dark:bg-[#160E12] border transition-all duration-200 flex flex-col justify-between cursor-pointer group relative shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
+                    isLearned
+                      ? 'border-emerald-200/90 dark:border-emerald-900/50 bg-emerald-50/15 dark:bg-emerald-950/10'
+                      : 'border-stone-200/80 dark:border-stone-800/80 hover:border-[#CC0000] dark:hover:border-[#FF3366]'
+                  }`}
                 >
-                  <div className="space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div
-                        className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-xs"
-                        style={{ backgroundColor: topic.themeColor }}
-                      >
-                        <IconComponent className="w-5 h-5" />
-                      </div>
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-500">
-                        {idx + 1}-р сэдэв
-                      </span>
-                    </div>
+                  {/* Top bar: Index + Learned Checkmark */}
+                  <div className="flex items-center justify-between gap-1 mb-2">
+                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider truncate">
+                      #{itemIndex} • {item.jlptLevel}
+                    </span>
 
-                    <div>
-                      <div className="flex items-baseline gap-2">
-                        <h3 className="text-base font-extrabold text-stone-900 dark:text-stone-100 group-hover:text-[#CC0000] dark:group-hover:text-[#FF6699] transition-colors">
-                          {topic.titleMongolian}
-                        </h3>
-                        <span className="text-xs font-bold text-stone-400 font-jp">
-                          {topic.titleJapanese}
-                        </span>
-                      </div>
-                      <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 line-clamp-2 leading-relaxed">
-                        {topic.descriptionMongolian}
-                      </p>
-                    </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleKanjiLearned(item.id);
+                    }}
+                    className={`p-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
+                      isLearned
+                        ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-100/60 dark:bg-emerald-950/50'
+                        : 'text-stone-300 dark:text-stone-600 hover:text-stone-500'
+                    }`}
+                    title={isLearned ? 'Сурсан' : 'Сурсанд тооцох'}
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Center Hero Kanji, Reading, Mongolian */}
+                <div className="text-center my-auto py-2 space-y-1">
+                  <div className="text-4xl sm:text-5xl font-black font-jp text-stone-900 dark:text-stone-100 group-hover:text-[#CC0000] dark:group-hover:text-[#FF6699] transition-colors leading-none tracking-wide">
+                    {item.kanji}
                   </div>
 
-                  {/* Progress & Card Action */}
-                  <div className="space-y-2 pt-2 border-t border-stone-100 dark:border-stone-800">
-                    <div className="flex items-center justify-between text-[11px] font-bold text-stone-500">
-                      <span>{totalInTopic} ханз</span>
-                      <span>{progressPercent}% эзэмшсэн</span>
+                  {mainReading && (
+                    <div className="text-xs font-mono text-stone-400 dark:text-stone-500 font-jp truncate pt-1">
+                      {mainReading}
                     </div>
-                    
-                    <div className="w-full h-1.5 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-300"
-                        style={{
-                          width: `${progressPercent}%`,
-                          backgroundColor: topic.themeColor
-                        }}
-                      />
-                    </div>
+                  )}
+
+                  <div className="text-xs sm:text-sm font-bold text-stone-800 dark:text-stone-200 line-clamp-1 leading-snug">
+                    {item.mongolian}
+                  </div>
+                </div>
+
+                {/* Bottom Bar: Audio, Stroke Shortcut & Star */}
+                <div className="flex items-center justify-between pt-2 mt-2 border-t border-stone-100 dark:border-stone-800/70">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePlayAudio(item);
+                    }}
+                    className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-[#CC0000] dark:text-[#FF6699] transition-colors cursor-pointer"
+                    title={`"${item.kanji}" дуудлага сонсох`}
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenDetail(item, true);
+                      }}
+                      className="p-1 text-stone-400 hover:text-[#CC0000] dark:hover:text-[#FF6699] rounded transition-colors cursor-pointer"
+                      title={`"${item.kanji}" зурлагын дараалал харах`}
+                    >
+                      <PenTool className="w-3.5 h-3.5" />
+                    </button>
 
                     <button
                       type="button"
-                      className="w-full mt-1.5 py-2 px-3 rounded-xl bg-stone-50 dark:bg-stone-800/80 group-hover:bg-[#CC0000] text-stone-700 dark:text-stone-300 group-hover:text-white text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite('kanji', item.id);
+                      }}
+                      className="p-1 text-stone-400 hover:text-amber-500 transition-colors cursor-pointer"
+                      title="Хадгалах"
                     >
-                      <span>Картаар сурах</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-amber-400 text-amber-400' : ''}`} />
                     </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
         </div>
-      )}
 
-      {/* ========================================================= */}
-      {/* 3. SEARCHABLE LIBRARY / LIST VIEW                         */}
-      {/* ========================================================= */}
-      {viewMode === 'library' && (
-        <div className="space-y-4">
-          {/* Search and Filters */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-stone-900 p-3.5 sm:p-4 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-xs">
-            <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder={`${effectiveLevel} ханз, оныонми, күнъёми, монгол утгаар хайх...`}
-                className="w-full pl-10 pr-4 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs sm:text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20"
-              />
-            </div>
+          {/* ========================================================= */}
+          {/* PAGINATION CONTROLS (40 items/page)                       */}
+          {/* ========================================================= */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 sm:pt-6 border-t border-stone-200 dark:border-stone-800 text-xs font-semibold">
+              <div className="text-stone-500 dark:text-stone-400">
+                Нийт <span className="font-bold text-stone-900 dark:text-stone-100">{displayItems.length}</span> ханзнаас{' '}
+                <span className="font-bold text-stone-900 dark:text-stone-100">
+                  {(currentPage - 1) * ITEMS_PER_PAGE + 1} – {Math.min(currentPage * ITEMS_PER_PAGE, displayItems.length)}
+                </span>
+                -г харуулж байна (Хуудас {currentPage} / {totalPages})
+              </div>
 
-            <select
-              value={filterLearned}
-              onChange={e => setFilterLearned(e.target.value as any)}
-              className="px-3.5 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold text-stone-700 dark:text-stone-300 focus:outline-none"
-            >
-              <option value="all">Бүх ханз</option>
-              <option value="unlearned">Сураагүй</option>
-              <option value="learned">Сурсан</option>
-            </select>
-          </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={() => {
+                    setCurrentPage(prev => Math.max(1, prev - 1));
+                    window.scrollTo({ top: 300, behavior: 'smooth' });
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Өмнөх</span>
+                </button>
 
-          {/* Kanji Cards */}
-          {filteredKanji.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 text-stone-400">
-              <BookOpen className="w-10 h-10 mx-auto text-stone-300 dark:text-stone-600 mb-2" />
-              <p className="text-sm font-medium">Шүүлтүүрт тохирох ханз олдсонгүй.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 w-full">
-              {filteredKanji.map(item => {
-                const isLearned = userProgress.learnedKanjiIds.includes(item.id);
-                const isFav = userProgress.favorites.kanjiIds.includes(item.id);
-
-                return (
-                  <div
-                    key={item.id}
-                    className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-stone-900 border transition-all duration-200 shadow-xs hover:shadow-md flex flex-col justify-between ${
-                      isLearned
-                        ? 'border-emerald-200 dark:border-emerald-900/40 bg-emerald-50/20 dark:bg-emerald-950/10'
-                        : 'border-stone-200 dark:border-stone-800 hover:border-stone-300'
-                    }`}
-                  >
-                    <div>
-                      {/* Top Bar */}
-                      <div className="flex items-center justify-between gap-2 mb-2.5">
-                        <LevelBadge level={item.jlptLevel} size="xs" />
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedStrokeKanji(item)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-red-50 dark:hover:bg-red-950/40 text-stone-700 dark:text-stone-300 hover:text-[#CC0000] dark:hover:text-[#FF6699] border border-stone-200/80 dark:border-stone-700/80 hover:border-red-200 dark:hover:border-red-800/60 text-xs font-bold transition-all cursor-pointer"
-                            title={`"${item.kanji}" зурлагын дараалал (書き順) харах`}
-                          >
-                            <PenTool className="w-3.5 h-3.5 text-[#FF3366]" />
-                            <span>書き順</span>
-                          </button>
-                          <button
-                            onClick={() => toggleFavorite('kanji', item.id)}
-                            className="p-1.5 rounded-lg text-stone-400 hover:text-orange-500 transition-colors cursor-pointer"
-                            title="Хадгалах"
-                          >
-                            <Star className={`w-4 h-4 ${isFav ? 'fill-orange-400 text-orange-400' : ''}`} />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Large Kanji Character & Core Info */}
-                      <div className="flex items-start gap-3 sm:gap-4">
-                        <div className="relative group">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedStrokeKanji(item)}
-                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-stone-100 dark:bg-stone-800 hover:bg-red-50 dark:hover:bg-red-950/30 text-stone-900 dark:text-stone-100 hover:text-[#CC0000] dark:hover:text-[#FF6699] flex items-center justify-center text-3xl sm:text-4xl font-extrabold font-jp border border-stone-200 dark:border-stone-700 hover:border-red-300 dark:hover:border-red-800/80 shadow-xs shrink-0 transition-all cursor-pointer text-center"
-                            title={`"${item.kanji}" зурлагын дараалал харах`}
-                          >
-                            <span>{item.kanji}</span>
-                          </button>
-                          <div className="absolute -bottom-2 -right-2">
-                            {(() => {
-                              const kp = extractKanjiPronunciation(item);
-                              return (
-                                <AudioButton
-                                  text={kp.text}
-                                  reading={kp.reading}
-                                  id={`kanji_char_${item.id}`}
-                                  size="xs"
-                                  title={`"${item.kanji}" дуудлага сонсох`}
-                                />
-                              );
-                            })()}
-                          </div>
-                        </div>
-                        <div className="space-y-1 flex-1 min-w-0">
-                          <h3 className="text-base sm:text-lg font-bold text-red-600 dark:text-red-400">
-                            {item.mongolian}
-                          </h3>
-                          <div className="text-xs space-y-0.5 text-stone-600 dark:text-stone-400">
-                            <div className="flex flex-wrap items-baseline gap-1">
-                              <span className="font-semibold text-stone-500">Онь:</span>
-                              <span className="font-bold text-stone-900 dark:text-stone-200 font-jp">
-                                {item.onyomi}
-                              </span>
-                            </div>
-                            <div className="flex flex-wrap items-baseline gap-1">
-                              <span className="font-semibold text-stone-500">Күн:</span>
-                              <span className="font-bold text-stone-900 dark:text-stone-200 font-jp">
-                                {item.kunyomi}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Example Compound Words */}
-                      {item.exampleWords && item.exampleWords.length > 0 && (
-                        <div className="mt-3.5 pt-3 border-t border-stone-100 dark:border-stone-800 space-y-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
-                            Холбоо үгс:
-                          </span>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                            {item.exampleWords.map((ew, idx) => (
-                              <div
-                                key={idx}
-                                className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/50 dark:border-stone-700/40 flex items-center justify-between gap-1"
-                              >
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-baseline gap-1">
-                                    <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">
-                                      {ew.word}
-                                    </span>
-                                    <span className="text-[11px] text-stone-400 font-jp">
-                                      [{ew.reading}]
-                                    </span>
-                                  </div>
-                                  <p className="text-[11px] text-red-600 dark:text-red-400 font-medium truncate">
-                                    {ew.mongolian}
-                                  </p>
-                                </div>
-                                <AudioButton
-                                  text={ew.word}
-                                  reading={ew.reading}
-                                  id={`kanji_ew_${item.id}_${idx}`}
-                                  size="xs"
-                                  variant="ghost"
-                                  title={`"${ew.word}" дуудлага сонсох`}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Example Sentence */}
-                      {item.exampleSentence && (
-                        <div className="mt-3 p-3 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/50 space-y-1 text-xs">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-[10px] font-bold text-stone-400 block">Жишээ:</span>
-                            <AudioButton
-                              text={item.exampleSentence}
-                              id={`kanji_ex_${item.id}`}
-                              size="xs"
-                              title="Жишээ өгүүлбэр сонсох"
-                            />
-                          </div>
-                          <InteractiveJapaneseSentence
-                            sentence={item.exampleSentence}
-                            reading={item.exampleReading}
-                            mongolian={item.exampleMongolian}
-                            className="font-bold text-stone-900 dark:text-stone-100"
-                          />
-                          {item.exampleMongolian && (
-                            <p className="text-stone-600 dark:text-stone-400 italic">
-                              {item.exampleMongolian}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Card Action footer */}
-                    <div className="pt-3 mt-3 border-t border-stone-100 dark:border-stone-800/80 flex items-center justify-between gap-2">
+                {/* Quick numbered page buttons */}
+                <div className="flex items-center gap-1 px-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum = currentPage;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    return (
                       <button
+                        key={pageNum}
                         type="button"
-                        onClick={() => setSelectedStrokeKanji(item)}
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-600 dark:text-stone-400 hover:text-[#CC0000] dark:hover:text-[#FF6699] transition-colors cursor-pointer"
-                        title={`"${item.kanji}" зурлагын дараалал харах`}
+                        onClick={() => {
+                          setCurrentPage(pageNum);
+                          window.scrollTo({ top: 300, behavior: 'smooth' });
+                        }}
+                        className={`w-8 h-8 rounded-xl font-bold transition-colors cursor-pointer text-xs ${
+                          currentPage === pageNum
+                            ? 'bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white shadow-xs'
+                            : 'bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300'
+                        }`}
                       >
-                        <PenTool className="w-3.5 h-3.5 text-[#FF3366]" />
-                        <span>書き順</span>
+                        {pageNum}
                       </button>
+                    );
+                  })}
+                </div>
 
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-stone-400 hidden sm:inline">
-                          {isLearned ? '✓ Сурсан' : 'Сураагүй'}
-                        </span>
-                        <button
-                          onClick={() => toggleKanjiLearned(item.id)}
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                            isLearned
-                              ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200'
-                              : 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
-                          }`}
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>{isLearned ? 'Сурсан' : 'Сурсанд тооцох'}</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => {
+                    setCurrentPage(prev => Math.min(totalPages, prev + 1));
+                    window.scrollTo({ top: 300, behavior: 'smooth' });
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <span>Дараах</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
         </div>
       )}
 
-      {/* Kanji Stroke Order Modal */}
-      <KanjiStrokeModal
-        isOpen={!!selectedStrokeKanji}
-        onClose={() => setSelectedStrokeKanji(null)}
-        kanjiItem={selectedStrokeKanji}
-      />
+      {/* ========================================================= */}
+      {/* 4. DETAIL VIEW MODAL ON CARD TAP (Flippable Card)         */}
+      {/* Natural height, NO internal scrollbars, smooth Prev/Next  */}
+      {/* ========================================================= */}
+      {activeDetailItem && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm overflow-y-auto animate-fade-in"
+          onClick={e => {
+            if (e.target === e.currentTarget) {
+              setActiveDetailItem(null);
+            }
+          }}
+        >
+          <div
+            className="w-full max-w-lg rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xl p-5 sm:p-6 space-y-4 my-auto relative animate-scale-up"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
+              <div className="flex items-center gap-2">
+                <LevelBadge level={activeDetailItem.jlptLevel} size="xs" />
+                <span className="text-xs font-bold text-stone-500 dark:text-stone-400 font-jp">
+                  漢字 • #{detailIndex + 1}
+                </span>
+                <span className="text-[11px] font-mono text-stone-400">
+                  ({detailIndex + 1} / {displayItems.length})
+                </span>
+              </div>
+
+              {/* Front/Back Flip Toggle Button */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setIsDetailFlipped(prev => !prev)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    isDetailFlipped
+                      ? 'bg-red-50 dark:bg-red-950/60 text-[#CC0000] dark:text-[#FF6699] border border-red-200 dark:border-red-900/60'
+                      : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300'
+                  }`}
+                >
+                  <PenTool className="w-3.5 h-3.5" />
+                  <span>{isDetailFlipped ? 'Мэдээлэл' : 'Зурлага'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveDetailItem(null)}
+                  className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                  title="Хаах"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body: Either Front (Core Info) or Back (Accurate KanjiVG Stroke Order with numbers 1..N) */}
+            {!isDetailFlipped ? (
+              /* FRONT FACE: Large Kanji, Meaning, Onyomi/Kunyomi, Compounds */
+              <div className="space-y-4 animate-fade-in">
+                {/* Hero Kanji & Meaning */}
+                <div className="text-center py-2 space-y-2">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-6xl sm:text-7xl font-black font-jp text-stone-900 dark:text-stone-100 tracking-wider">
+                      {activeDetailItem.kanji}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handlePlayAudio(activeDetailItem)}
+                      className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-[#CC0000] dark:text-[#FF3366] transition-colors cursor-pointer"
+                      title="Дуудлага сонсох"
+                    >
+                      <Volume2 className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="text-xl sm:text-2xl font-black text-[#CC0000] dark:text-[#FF6699]">
+                    {activeDetailItem.mongolian}
+                  </div>
+                </div>
+
+                {/* Onyomi & Kunyomi Grid */}
+                <div className="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 text-xs">
+                  <div>
+                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                      Оньёми (Onyomi):
+                    </span>
+                    <span className="text-sm font-black font-jp text-stone-900 dark:text-stone-100 mt-0.5 block">
+                      {activeDetailItem.onyomi || '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                      Күньёми (Kunyomi):
+                    </span>
+                    <span className="text-sm font-black font-jp text-stone-900 dark:text-stone-100 mt-0.5 block">
+                      {activeDetailItem.kunyomi || '—'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Example Compound Words */}
+                {activeDetailItem.exampleWords && activeDetailItem.exampleWords.length > 0 && (
+                  <div className="space-y-1.5 text-left">
+                    <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">
+                      Холбоо үгс:
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {activeDetailItem.exampleWords.slice(0, 4).map((ex, exIdx) => (
+                        <div
+                          key={exIdx}
+                          className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/60 dark:border-stone-800 text-xs flex items-center justify-between gap-1"
+                        >
+                          <div className="min-w-0">
+                            <div className="font-bold text-stone-900 dark:text-stone-100 font-jp truncate">
+                              {ex.word} <span className="font-normal text-stone-400 font-jp">【{ex.reading}】</span>
+                            </div>
+                            <div className="text-[11px] text-stone-500 dark:text-stone-400 truncate mt-0.5">
+                              {ex.mongolian}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => speechService.play(ex.word, { reading: ex.reading })}
+                            className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer shrink-0"
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Flip to Stroke Order Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsDetailFlipped(true)}
+                  className="w-full py-2.5 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <PenTool className="w-3.5 h-3.5 text-[#FF3366]" />
+                  <span>Зурлагын дараалал үзэх (書き順)</span>
+                </button>
+              </div>
+            ) : (
+              /* BACK FACE: Accurate Stroke Order Diagram with Interactive Controls and Numbers 1..N */
+              <div className="space-y-3.5 animate-fade-in flex flex-col items-center">
+                <div className="w-full flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-stone-900 dark:text-stone-100 font-jp text-base">
+                      {activeDetailItem.kanji}
+                    </span>
+                    <span className="text-stone-400">• Зурлагын дараалал (書き順)</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStrokeCurrent(1);
+                      setStrokeIsPlaying(true);
+                      setStrokeReplayKey(k => k + 1);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Эхнээс нь</span>
+                  </button>
+                </div>
+
+                {/* Clean Canvas with Visible Numbers 1..N */}
+                <div
+                  key={`${activeDetailItem.kanji}_${strokeReplayKey}`}
+                  className="flex items-center justify-center p-2 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800"
+                >
+                  <KanjiStrokeOrder
+                    kanji={activeDetailItem.kanji}
+                    size={220}
+                    autoPlay={strokeIsPlaying}
+                    isPlaying={strokeIsPlaying}
+                    onPlayingChange={setStrokeIsPlaying}
+                    currentStroke={strokeCurrent}
+                    onStrokeChange={(curr, total) => {
+                      setStrokeCurrent(curr);
+                      setStrokeTotal(total);
+                    }}
+                    showNumbers={strokeShowNumbers}
+                    showGrid={true}
+                  />
+                </div>
+
+                {/* Stroke Navigation Controls Bar */}
+                <div className="flex items-center justify-center w-full max-w-xs gap-2 pt-1">
+                  <button
+                    type="button"
+                    disabled={strokeCurrent <= 1}
+                    onClick={() => {
+                      setStrokeIsPlaying(false);
+                      setStrokeCurrent(prev => Math.max(1, prev - 1));
+                    }}
+                    className="p-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 transition-colors cursor-pointer"
+                    title="Өмнөх зурлага"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setStrokeIsPlaying(p => !p)}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#CC0000] to-[#FF3366] hover:opacity-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-red-500/20 cursor-pointer transition-all"
+                  >
+                    {strokeIsPlaying ? (
+                      <>
+                        <Pause className="w-3.5 h-3.5 fill-white" />
+                        <span>Зогсоох</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3.5 h-3.5 fill-white" />
+                        <span>Тоглуулах</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={strokeCurrent >= strokeTotal}
+                    onClick={() => {
+                      setStrokeIsPlaying(false);
+                      setStrokeCurrent(prev => Math.min(strokeTotal, prev + 1));
+                    }}
+                    className="p-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 transition-colors cursor-pointer"
+                    title="Дараах зурлага"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Stroke Counter & Number Toggle */}
+                <div className="flex items-center justify-between w-full max-w-xs text-xs text-stone-500 dark:text-stone-400 font-semibold px-2">
+                  <span>
+                    Зурлага: <b className="text-stone-900 dark:text-stone-100">{strokeCurrent}</b> / {strokeTotal}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setStrokeShowNumbers(n => !n)}
+                    className="hover:text-[#CC0000] dark:hover:text-[#FF6699] transition-colors cursor-pointer text-[11px]"
+                  >
+                    {strokeShowNumbers ? 'Дугаар нуух' : 'Дугаар харуулах'}
+                  </button>
+                </div>
+
+                <p className="text-[11px] text-stone-400 text-center">
+                  Зурлага бүрийн эхлэх цэг дээрх дугаарын дагуу зурна.
+                </p>
+              </div>
+            )}
+
+            {/* Simplified Mark as Learned Button: "Сурсан гэж тэмдэглэх" / "✓ Сурсан" */}
+            <div className="pt-2 border-t border-stone-100 dark:border-stone-800">
+              {(() => {
+                const isLearned = (userProgress.learnedKanjiIds || []).includes(activeDetailItem.id);
+                return (
+                  <button
+                    type="button"
+                    onClick={() => toggleKanjiLearned(activeDetailItem.id)}
+                    className={`w-full py-3 px-4 rounded-2xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-98 ${
+                      isLearned
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/25'
+                        : 'bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white shadow-red-500/25'
+                    }`}
+                  >
+                    <Check className="w-4 h-4 stroke-[3]" />
+                    <span>{isLearned ? '✓ Сурсан' : 'Сурсан гэж тэмдэглэх'}</span>
+                  </button>
+                );
+              })()}
+            </div>
+
+            {/* Bottom Prev / Next Navigation Controls */}
+            <div className="flex items-center justify-between gap-3 pt-1">
+              <button
+                type="button"
+                disabled={detailIndex <= 0}
+                onClick={handlePrevDetail}
+                className="flex-1 py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Өмнөх</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={detailIndex < 0 || detailIndex >= displayItems.length - 1}
+                onClick={handleNextDetail}
+                className="flex-1 py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <span>Дараах</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

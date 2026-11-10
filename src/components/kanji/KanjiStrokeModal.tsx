@@ -219,77 +219,16 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
                 </div>
               </div>
             </div>
-
-            {/* Quick Canvas View Toggles */}
-            <div className="flex items-center gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => setShowNumbers(!showNumbers)}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  showNumbers
-                    ? 'bg-red-50 dark:bg-red-950/60 text-[#CC0000] dark:text-[#FF6699] border border-red-200 dark:border-red-900/60'
-                    : 'bg-stone-100 dark:bg-stone-800 text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
-                }`}
-                title="Зурлагын дугаарыг харуулах / нуух"
-              >
-                <Hash className="w-3.5 h-3.5" />
-                <span>Дугаар (番号)</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowGrid(!showGrid)}
-                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  showGrid
-                    ? 'bg-red-50 dark:bg-red-950/60 text-[#CC0000] dark:text-[#FF6699] border border-red-200 dark:border-red-900/60'
-                    : 'bg-stone-100 dark:bg-stone-800 text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
-                }`}
-                title="Хүснэгтийн шугамыг харуулах / нуух"
-              >
-                <Grid className="w-3.5 h-3.5" />
-                <span>Шугам (Grid)</span>
-              </button>
-
-              {/* Speed Controller */}
-              <div className="inline-flex items-center rounded-lg bg-stone-100 dark:bg-stone-800 p-0.5 text-[11px] font-bold">
-                {[0.75, 1, 1.5].map(spd => (
-                  <button
-                    key={spd}
-                    type="button"
-                    onClick={() => setSpeedMultiplier(spd)}
-                    className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
-                      speedMultiplier === spd
-                        ? 'bg-white dark:bg-stone-700 text-[#CC0000] dark:text-[#FF6699] shadow-xs'
-                        : 'text-stone-500 hover:text-stone-900 dark:hover:text-stone-200'
-                    }`}
-                  >
-                    {spd}x
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
-          {/* MAIN PLAYBACK CONTROLS */}
-          <div className="flex items-center justify-center gap-2 sm:gap-3 p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/80 border border-stone-200/60 dark:border-stone-800/80">
-            {/* Previous Stroke */}
-            <button
-              type="button"
-              onClick={handlePrev}
-              disabled={currentStroke <= 1}
-              className="p-2.5 sm:px-3 sm:py-2 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer flex items-center gap-1 text-xs font-bold"
-              title="Өмнөх зурлага"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Өмнөх</span>
-            </button>
-
+          {/* STREAMLINED PLAYBACK CONTROLS (Clean Replay & Play/Pause) */}
+          <div className="flex items-center justify-center gap-3 p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/80 border border-stone-200/60 dark:border-stone-800/80">
             {/* Play / Pause Toggle Button */}
             <button
               type="button"
               onClick={() => setIsPlaying(!isPlaying)}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-red-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer min-w-[120px]"
-              title={isPlaying ? 'Түр зогсоох (Space)' : 'Зурлагыг тоглох (Space)'}
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-red-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer min-w-[130px]"
+              title={isPlaying ? 'Түр зогсоох (Space)' : 'Зурлагыг тоглуулах (Space)'}
             >
               {isPlaying ? (
                 <>
@@ -304,76 +243,17 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
               )}
             </button>
 
-            {/* Next Stroke */}
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={currentStroke >= totalStrokes}
-              className="p-2.5 sm:px-3 sm:py-2 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer flex items-center gap-1 text-xs font-bold"
-              title="Дараах зурлага"
-            >
-              <span className="hidden sm:inline">Дараах</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-
             {/* Replay Button */}
             <button
               type="button"
               onClick={handleReplay}
-              className="p-2.5 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-700 transition-all shadow-xs cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-700 transition-all shadow-xs cursor-pointer flex items-center gap-1.5 text-xs font-bold"
               title="Эхнээс нь дахин эхлүүлэх"
             >
               <RotateCcw className="w-4 h-4" />
-            </button>
-
-            {/* Show All Strokes Button */}
-            <button
-              type="button"
-              onClick={handleShowAll}
-              className="p-2.5 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-700 transition-all shadow-xs cursor-pointer"
-              title="Бүх зурлагыг бүтнээр харах"
-            >
-              <CheckCheck className="w-4 h-4" />
+              <span>Дахин эхлүүлэх</span>
             </button>
           </div>
-
-          {/* STROKE STEP STRIP (Jump directly to any stroke) */}
-          {data && data.strokeCount > 1 && (
-            <div className="space-y-1.5 pt-1">
-              <div className="flex items-center justify-between text-[11px] font-bold text-stone-500 dark:text-stone-400">
-                <span>Зурлага алхам бүрээр:</span>
-                <span>Нийт {data.strokeCount} зурлага</span>
-              </div>
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 pt-0.5 scrollbar-thin">
-                {Array.from({ length: data.strokeCount }).map((_, idx) => {
-                  const stepNum = idx + 1;
-                  const isActive = currentStroke === stepNum;
-                  const isDone = currentStroke > stepNum;
-
-                  return (
-                    <button
-                      key={stepNum}
-                      type="button"
-                      onClick={() => {
-                        setIsPlaying(false);
-                        setCurrentStroke(stepNum);
-                      }}
-                      className={`h-8 min-w-[32px] px-2 rounded-xl text-xs font-black transition-all cursor-pointer shrink-0 flex items-center justify-center ${
-                        isActive
-                          ? 'bg-gradient-to-r from-[#FF0000] to-[#FF3366] text-white shadow-xs scale-105'
-                          : isDone
-                          ? 'bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700'
-                          : 'bg-stone-100 dark:bg-stone-900/60 text-stone-400 dark:text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-800'
-                      }`}
-                      title={`${stepNum}-р зурлага руу үсрэх`}
-                    >
-                      {stepNum}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {/* Example Words / Context info if available */}
           {kanjiItem.exampleWords && kanjiItem.exampleWords.length > 0 && (
