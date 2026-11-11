@@ -536,7 +536,7 @@ export const KanjiList: React.FC = () => {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm overflow-y-auto animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm overflow-y-auto animate-fade-in min-h-[100dvh] h-[100dvh] pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] px-[max(0.75rem,env(safe-area-inset-left))]"
           onClick={e => {
             if (e.target === e.currentTarget) {
               setActiveDetailItem(null);
@@ -544,7 +544,7 @@ export const KanjiList: React.FC = () => {
           }}
         >
           <div
-            className="w-full max-w-xl sm:max-w-2xl lg:max-w-3xl rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xl p-4 sm:p-5 space-y-3.5 my-auto relative animate-scale-up"
+            className="w-full max-w-xl sm:max-w-2xl lg:max-w-3xl rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xl p-3.5 sm:p-5 space-y-2.5 sm:space-y-3.5 relative animate-scale-up"
             onClick={e => e.stopPropagation()}
           >
             {/* Modal Header */}

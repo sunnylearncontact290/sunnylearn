@@ -64,7 +64,7 @@ export const WordDictionaryModal: React.FC<WordDictionaryModalProps> = ({
       <div
         role="dialog"
         aria-modal="true"
-        className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm overflow-y-auto animate-fade-in"
+        className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm overflow-y-auto animate-fade-in min-h-[100dvh] h-[100dvh] pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] px-[max(0.75rem,env(safe-area-inset-left))]"
         onClick={e => {
           if (e.target === e.currentTarget) {
             onClose();
@@ -72,7 +72,7 @@ export const WordDictionaryModal: React.FC<WordDictionaryModalProps> = ({
         }}
       >
         <div
-          className="w-full max-w-lg rounded-3xl bg-white dark:bg-[#150E11] border border-stone-200 dark:border-stone-800 shadow-2xl overflow-hidden flex flex-col my-auto transition-all"
+          className="w-full max-w-lg rounded-3xl bg-white dark:bg-[#150E11] border border-stone-200 dark:border-stone-800 shadow-2xl overflow-hidden flex flex-col relative transition-all"
           onClick={e => e.stopPropagation()}
         >
           {/* HEADER */}

@@ -647,225 +647,295 @@ export const HomePage: React.FC = () => {
       {/* 5. DAILY FEATURED HIGHLIGHTS (Word & Kanji of the Day)    */}
       {/* Clean, compact, NO inner scrollbars                       */}
       {/* ========================================================= */}
+      {/* ========================================================= */}
+      {/* 5. DAILY FEATURED HIGHLIGHTS (Word & Kanji of the Day)    */}
+      {/* Clean, content-driven height, ZERO inner scrollbars       */}
+      {/* ========================================================= */}
       {(vocabOfTheDay || kanjiOfTheDay) && (
-        <section className="space-y-3">
-          <h2 className="text-sm sm:text-base font-extrabold uppercase tracking-wider text-stone-800 dark:text-stone-200 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
-            <span>Өдрийн онцлох үг & ханз (JLPT {effectiveLevel})</span>
-          </h2>
+        <section className="space-y-3.5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm sm:text-base font-extrabold uppercase tracking-wider text-stone-800 dark:text-stone-200 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <span>Өдрийн онцлох хичээл (JLPT {effectiveLevel})</span>
+            </h2>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
-            {/* Word of the day */}
+          <div className="space-y-3.5">
+            {/* 1. Word of the Day Card - 2-Column Responsive Layout on Desktop */}
             {vocabOfTheDay && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-3.5">
-                {/* Header row */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider">
-                      Өдрийн үг
-                    </span>
-                    <LevelBadge level={vocabOfTheDay.jlptLevel} size="xs" />
-                    {vocabOfTheDay.partOfSpeech && (
-                      <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 text-[10px] font-bold">
-                        {vocabOfTheDay.partOfSpeech}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <AudioButton
-                      text={vocabOfTheDay.japanese}
-                      reading={vocabOfTheDay.reading}
-                      id={`home_daily_vocab_${vocabOfTheDay.id}`}
-                      size="xs"
-                    />
-                  </div>
-                </div>
+              <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xs hover:shadow-sm transition-all">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                  {/* LEFT COLUMN: Daily Word Hero, Reading, Mongolian Meaning, Audio */}
+                  <div className="flex flex-col justify-between space-y-3">
+                    {/* Header tags */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-red-500/10 text-[#CC0000] dark:text-[#FF6699]">
+                          Өдрийн үг
+                        </span>
+                        <LevelBadge level={vocabOfTheDay.jlptLevel} size="xs" />
+                        {vocabOfTheDay.partOfSpeech && (
+                          <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 text-[10px] font-bold">
+                            {vocabOfTheDay.partOfSpeech}
+                          </span>
+                        )}
+                      </div>
 
-                {/* Main word display */}
-                <div className="space-y-1">
-                  <div className="flex items-baseline flex-wrap gap-2">
-                    <span className="text-2xl sm:text-3xl font-black font-jp text-stone-900 dark:text-stone-100">
-                      {vocabOfTheDay.japanese}
-                    </span>
-                    {vocabOfTheDay.reading && (
-                      <span className="text-sm font-mono text-stone-400 font-jp">
-                        【{vocabOfTheDay.reading}】
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-base font-extrabold text-[#CC0000] dark:text-[#FF6699]">
-                    {vocabOfTheDay.mongolian}
-                  </p>
-                  {(() => {
-                    const cleanExp = getCleanVocabExplanation(
-                      vocabOfTheDay.explanation,
-                      vocabOfTheDay.mongolian,
-                      vocabOfTheDay.partOfSpeech
-                    );
-                    return cleanExp ? (
-                      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed pt-0.5">
-                        {cleanExp}
-                      </p>
-                    ) : null;
-                  })()}
-                </div>
-
-                {/* Interactive example sentence with Mongolian translation */}
-                {vocabOfTheDay.exampleSentence && (
-                  <div className="p-3 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 space-y-2">
-                    <div className="flex items-center justify-between text-[10px] font-black uppercase text-stone-400 tracking-wider">
-                      <span>Жишээ өгүүлбэр</span>
-                      <span className="text-stone-400/80 normal-case font-normal text-[10px]">
-                        (Ханзан дээр дарж толь бичиг, зурлага харах)
-                      </span>
+                      <AudioButton
+                        text={vocabOfTheDay.japanese}
+                        reading={vocabOfTheDay.reading}
+                        id={`home_daily_vocab_${vocabOfTheDay.id}`}
+                        size="xs"
+                      />
                     </div>
-                    <InteractiveJapaneseSentence
-                      sentence={vocabOfTheDay.exampleSentence}
-                      reading={vocabOfTheDay.exampleReading}
-                      mongolian={vocabOfTheDay.exampleMongolian}
-                      className="text-sm font-jp leading-relaxed"
-                    />
-                    {vocabOfTheDay.exampleMongolian && (
-                      <div className="text-xs text-stone-600 dark:text-stone-300 font-medium pt-1.5 border-t border-stone-200/50 dark:border-stone-800/80 leading-relaxed">
-                        {vocabOfTheDay.exampleMongolian}
+
+                    {/* Japanese Word + Reading + Mongolian Meaning */}
+                    <div className="space-y-1">
+                      <div className="flex items-baseline flex-wrap gap-2">
+                        <span className="text-2xl sm:text-3xl font-black font-jp text-stone-900 dark:text-stone-100 tracking-tight">
+                          {vocabOfTheDay.japanese}
+                        </span>
+                        {vocabOfTheDay.reading && (
+                          <span className="text-xs sm:text-sm font-mono text-stone-400 font-jp">
+                            【{vocabOfTheDay.reading}】
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-base sm:text-lg font-extrabold text-[#CC0000] dark:text-[#FF6699]">
+                        {vocabOfTheDay.mongolian}
+                      </p>
+
+                      {(() => {
+                        const cleanExp = getCleanVocabExplanation(
+                          vocabOfTheDay.explanation,
+                          vocabOfTheDay.mongolian,
+                          vocabOfTheDay.partOfSpeech
+                        );
+                        return cleanExp ? (
+                          <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed pt-0.5">
+                            {cleanExp}
+                          </p>
+                        ) : null;
+                      })()}
+                    </div>
+
+                    {/* Bottom action to browse all vocabulary */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLearnSubTab('vocab');
+                        setActiveTab('learn');
+                      }}
+                      className="py-2 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer mt-auto"
+                    >
+                      <span>Бүх үгс үзэх (JLPT {effectiveLevel})</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* RIGHT COLUMN: Interactive Example Sentence + Stroke Order Access */}
+                  <div className="flex flex-col justify-between space-y-2.5">
+                    {vocabOfTheDay.exampleSentence ? (
+                      <div className="p-3 sm:p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 space-y-2 flex-1">
+                        <div className="flex items-center justify-between text-[10px] font-black uppercase text-stone-400 tracking-wider">
+                          <span>Жишээ өгүүлбэр</span>
+                          <span className="text-stone-400/80 normal-case font-normal text-[10px]">
+                            (Ханзан дээр дарж толь, зурлага харах)
+                          </span>
+                        </div>
+
+                        <InteractiveJapaneseSentence
+                          sentence={vocabOfTheDay.exampleSentence}
+                          reading={vocabOfTheDay.exampleReading}
+                          mongolian={vocabOfTheDay.exampleMongolian}
+                          className="text-xs sm:text-sm font-jp leading-relaxed"
+                        />
+
+                        {vocabOfTheDay.exampleMongolian && (
+                          <div className="text-xs text-stone-600 dark:text-stone-300 font-medium pt-1.5 border-t border-stone-200/50 dark:border-stone-800/80 leading-relaxed">
+                            {vocabOfTheDay.exampleMongolian}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-3 sm:p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 flex items-center justify-center text-xs text-stone-400 flex-1">
+                        Энэ үгэнд зориулсан жишээ өгүүлбэр бэлэн байна.
                       </div>
                     )}
-                  </div>
-                )}
 
-                {/* Footer Action */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLearnSubTab('vocab');
-                    setActiveTab('learn');
-                  }}
-                  className="w-full py-2.5 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer mt-auto"
-                >
-                  <span>Бүх үгс үзэх (JLPT {effectiveLevel})</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-
-            {/* Kanji of the day */}
-            {kanjiOfTheDay && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-3.5">
-                {/* Header row */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider">
-                      Өдрийн ханз
-                    </span>
-                    <LevelBadge level={kanjiOfTheDay.jlptLevel} size="xs" />
-                    {dailyKanjiStrokes && (
-                      <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 text-[10px] font-mono font-bold">
-                        {dailyKanjiStrokes} зурлага
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
+                    {/* Stroke order access button if Japanese word has Kanji */}
                     {(() => {
-                      const kp = extractKanjiPronunciation(kanjiOfTheDay);
-                      return (
-                        <AudioButton
-                          text={kp.text}
-                          reading={kp.reading}
-                          id={`home_daily_kanji_${kanjiOfTheDay.id}`}
-                          size="xs"
-                        />
-                      );
+                      const kanjiChars = vocabOfTheDay.japanese.match(/[\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]/g);
+                      if (kanjiChars && kanjiChars.length > 0) {
+                        const firstChar = kanjiChars[0];
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const found = (data.kanji || []).find(k => k.kanji === firstChar);
+                              if (found) {
+                                setSelectedStrokeKanji(found);
+                              } else {
+                                setSelectedStrokeKanji({
+                                  id: `kanji_daily_${firstChar}`,
+                                  kanji: firstChar,
+                                  onyomi: '—',
+                                  kunyomi: '—',
+                                  mongolian: vocabOfTheDay.mongolian,
+                                  jlptLevel: vocabOfTheDay.jlptLevel,
+                                  exampleWords: [{
+                                    word: vocabOfTheDay.japanese,
+                                    reading: vocabOfTheDay.reading,
+                                    mongolian: vocabOfTheDay.mongolian
+                                  }],
+                                  createdAt: new Date().toISOString()
+                                });
+                              }
+                            }}
+                            className="w-full py-2 px-3 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-950/60 text-[#CC0000] dark:text-[#FF6699] border border-red-200/60 dark:border-red-900/50 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                          >
+                            <PenTool className="w-3.5 h-3.5 text-[#FF3366]" />
+                            <span>Зурлагын дараалал үзэх ({firstChar})</span>
+                          </button>
+                        );
+                      }
+                      return null;
                     })()}
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* Main Kanji box & Onyomi / Kunyomi */}
-                <div className="flex items-start gap-3.5">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/30 dark:to-stone-900 border border-red-100 dark:border-red-900/30 flex items-center justify-center shrink-0 shadow-inner">
-                    <span className="text-4xl sm:text-5xl font-black font-jp text-stone-900 dark:text-stone-100">
-                      {kanjiOfTheDay.kanji}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="text-base sm:text-lg font-black text-[#CC0000] dark:text-[#FF6699]">
-                      {kanjiOfTheDay.mongolian}
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5 text-xs pt-0.5">
-                      <div className="p-1.5 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-100 dark:border-stone-800">
-                        <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">
-                          Оньёми (音):
+            {/* 2. Kanji of the Day Card - 2-Column Responsive Layout on Desktop */}
+            {kanjiOfTheDay && (
+              <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xs hover:shadow-sm transition-all">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                  {/* LEFT COLUMN: Kanji Hero, Meaning, Onyomi & Kunyomi */}
+                  <div className="flex flex-col justify-between space-y-3">
+                    {/* Header tags */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-red-500/10 text-[#CC0000] dark:text-[#FF6699]">
+                          Өдрийн ханз
                         </span>
-                        <span className="font-bold font-jp text-stone-800 dark:text-stone-200 truncate block mt-0.5">
-                          {kanjiOfTheDay.onyomi?.trim() ? kanjiOfTheDay.onyomi : '—'}
+                        <LevelBadge level={kanjiOfTheDay.jlptLevel} size="xs" />
+                        {dailyKanjiStrokes && (
+                          <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 text-[10px] font-mono font-bold">
+                            {dailyKanjiStrokes} зурлага
+                          </span>
+                        )}
+                      </div>
+
+                      {(() => {
+                        const kp = extractKanjiPronunciation(kanjiOfTheDay);
+                        return (
+                          <AudioButton
+                            text={kp.text}
+                            reading={kp.reading}
+                            id={`home_daily_kanji_${kanjiOfTheDay.id}`}
+                            size="xs"
+                          />
+                        );
+                      })()}
+                    </div>
+
+                    {/* Kanji Hero Box + Meaning + Onyomi/Kunyomi */}
+                    <div className="flex items-start gap-3">
+                      <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/30 dark:to-stone-900 border border-red-100 dark:border-red-900/30 flex items-center justify-center shrink-0 shadow-inner">
+                        <span className="text-4xl sm:text-5xl font-black font-jp text-stone-900 dark:text-stone-100">
+                          {kanjiOfTheDay.kanji}
                         </span>
                       </div>
-                      <div className="p-1.5 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-100 dark:border-stone-800">
-                        <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">
-                          Күньёми (訓):
-                        </span>
-                        <span className="font-bold font-jp text-stone-800 dark:text-stone-200 truncate block mt-0.5">
-                          {kanjiOfTheDay.kunyomi?.trim() ? kanjiOfTheDay.kunyomi : '—'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Relevant example compound words */}
-                {kanjiOfTheDay.exampleWords && kanjiOfTheDay.exampleWords.length > 0 && (
-                  <div className="space-y-1.5">
-                    <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">
-                      Холбоо үгс:
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                      {kanjiOfTheDay.exampleWords.slice(0, 2).map((ex, exIdx) => (
-                        <div
-                          key={exIdx}
-                          className="p-1.5 px-2 rounded-lg bg-stone-50 dark:bg-stone-800/50 border border-stone-100 dark:border-stone-800/80 text-xs flex items-center justify-between gap-1"
-                        >
-                          <div className="min-w-0 truncate">
-                            <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">{ex.word}</span>{' '}
-                            <span className="text-stone-400 font-jp text-[11px]">【{ex.reading}】</span>
-                            <span className="text-stone-500 dark:text-stone-400 text-[11px] block truncate">
-                              {ex.mongolian}
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="text-base sm:text-lg font-black text-[#CC0000] dark:text-[#FF6699]">
+                          {kanjiOfTheDay.mongolian}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-1.5 text-xs pt-0.5">
+                          <div className="p-1.5 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-100 dark:border-stone-800">
+                            <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">
+                              Оньёми (音):
+                            </span>
+                            <span className="font-bold font-jp text-stone-800 dark:text-stone-200 truncate block mt-0.5">
+                              {kanjiOfTheDay.onyomi?.trim() ? kanjiOfTheDay.onyomi : '—'}
                             </span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => speechService.play(ex.word, { reading: ex.reading })}
-                            className="p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer shrink-0"
-                            title="Дуудлага сонсох"
-                          >
-                            <Volume2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="p-1.5 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-100 dark:border-stone-800">
+                            <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">
+                              Күньёми (訓):
+                            </span>
+                            <span className="font-bold font-jp text-stone-800 dark:text-stone-200 truncate block mt-0.5">
+                              {kanjiOfTheDay.kunyomi?.trim() ? kanjiOfTheDay.kunyomi : '—'}
+                            </span>
+                          </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
+
+                    {/* Bottom action to browse all kanji */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLearnSubTab('kanji');
+                        setActiveTab('learn');
+                      }}
+                      className="py-2 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer mt-auto"
+                    >
+                      <span>Бүх ханз үзэх (JLPT {effectiveLevel})</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
-                )}
 
-                {/* Action Controls: Stroke order modal & browse all */}
-                <div className="space-y-1.5 pt-1 mt-auto">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedStrokeKanji(kanjiOfTheDay)}
-                    className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
-                  >
-                    <PenTool className="w-3.5 h-3.5" />
-                    <span>Зурлагын дараалал үзэх (書き順)</span>
-                  </button>
+                  {/* RIGHT COLUMN: Compound Words & Stroke Order Access */}
+                  <div className="flex flex-col justify-between space-y-2.5">
+                    {kanjiOfTheDay.exampleWords && kanjiOfTheDay.exampleWords.length > 0 ? (
+                      <div className="space-y-1.5 flex-1">
+                        <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">
+                          Холбоо үгс:
+                        </span>
+                        <div className="space-y-1.5">
+                          {kanjiOfTheDay.exampleWords.slice(0, 3).map((ex, exIdx) => (
+                            <div
+                              key={exIdx}
+                              className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/50 border border-stone-100 dark:border-stone-800/80 text-xs flex items-center justify-between gap-1.5"
+                            >
+                              <div className="min-w-0 truncate">
+                                <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">{ex.word}</span>{' '}
+                                <span className="text-stone-400 font-jp text-[11px]">【{ex.reading}】</span>
+                                <span className="text-stone-500 dark:text-stone-400 text-[11px] block truncate">
+                                  {ex.mongolian}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => speechService.play(ex.word, { reading: ex.reading })}
+                                className="p-1 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer shrink-0"
+                                title="Дуудлага сонсох"
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 flex items-center justify-center text-xs text-stone-400 flex-1">
+                        Зурлагын дарааллыг ажиглан бичиж дасгал хийгээрэй.
+                      </div>
+                    )}
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setLearnSubTab('kanji');
-                      setActiveTab('learn');
-                    }}
-                    className="w-full py-2 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <span>Бүх ханз үзэх (JLPT {effectiveLevel})</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                    {/* Animated Stroke Order Button */}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStrokeKanji(kanjiOfTheDay)}
+                      className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+                    >
+                      <PenTool className="w-3.5 h-3.5" />
+                      <span>Зурлагын дараалал үзэх (書き順)</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

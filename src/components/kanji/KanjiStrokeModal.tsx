@@ -111,7 +111,7 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-4 bg-black/65 dark:bg-black/80 backdrop-blur-md overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-[80] flex items-center justify-center p-2.5 sm:p-4 bg-black/65 dark:bg-black/80 backdrop-blur-md overflow-y-auto animate-fade-in min-h-[100dvh] h-[100dvh] pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] px-[max(0.75rem,env(safe-area-inset-left))]"
       onClick={e => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -119,7 +119,7 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
       }}
     >
       <div
-        className="w-full max-w-xl sm:max-w-2xl lg:max-w-3xl rounded-3xl bg-white dark:bg-[#150E11] border border-[rgba(255,51,102,0.20)] dark:border-[rgba(255,51,102,0.28)] shadow-2xl overflow-hidden flex flex-col my-auto transition-all"
+        className="w-full max-w-xl sm:max-w-2xl lg:max-w-3xl rounded-3xl bg-white dark:bg-[#150E11] border border-[rgba(255,51,102,0.20)] dark:border-[rgba(255,51,102,0.28)] shadow-2xl overflow-hidden flex flex-col relative transition-all"
         onClick={e => e.stopPropagation()}
       >
         {/* MODAL HEADER */}
