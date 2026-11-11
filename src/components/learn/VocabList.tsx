@@ -36,7 +36,6 @@ import { VocabularyItem, KanjiItem, ItemStudyRecord } from '../../types';
 import { getCleanVocabExplanation } from '../../utils/vocabUtils';
 import { InteractiveJapaneseSentence } from './InteractiveJapaneseSentence';
 import { KanjiStrokeModal } from '../kanji/KanjiStrokeModal';
-import { FlashcardView } from '../flashcards/FlashcardView';
 import { JapaneseText } from '../common/JapaneseText';
 import {
   getTopicsForLevel,
@@ -87,8 +86,6 @@ export const VocabList: React.FC = () => {
 
   // Active topic filtering ('all' = all vocab in level, or a specific topic id)
   const [selectedTopicId, setSelectedTopicId] = useState<string>('all');
-  // Optional full-screen flashcard deck runner
-  const [flashcardDeckTopicId, setFlashcardDeckTopicId] = useState<string | null>(null);
 
   // Search & Filter state
   const [search, setSearch] = useState('');
@@ -191,18 +188,6 @@ export const VocabList: React.FC = () => {
       rate: userProgress.settings?.speechRate || 0.9
     });
   };
-
-  // If flashcard deck is launched
-  if (flashcardDeckTopicId) {
-    return (
-      <FlashcardView
-        initialContentKind="vocab"
-        initialTopicId={flashcardDeckTopicId === 'all' ? undefined : flashcardDeckTopicId}
-        onBack={() => setFlashcardDeckTopicId(null)}
-        lockContentKind={true}
-      />
-    );
-  }
 
   const totalInLevel = (data.vocabulary || []).filter(v => v.jlptLevel === effectiveLevel).length;
   const learnedInLevel = (data.vocabulary || []).filter(
@@ -339,18 +324,6 @@ export const VocabList: React.FC = () => {
             <option value="unlearned">Цээжлээгүй</option>
             <option value="learned">Цээжилсэн</option>
           </select>
-
-          {/* Flashcard Player CTA */}
-          <button
-            type="button"
-            onClick={() => setFlashcardDeckTopicId(selectedTopicId)}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-stone-900 to-stone-800 dark:from-stone-800 dark:to-stone-700 hover:from-black text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shadow-xs"
-            title="Энэ сэдвийг флаш карт хэлбэрээр давтах"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-[#FF6699]" />
-            <span className="hidden md:inline">Флаш картаар давтах</span>
-            <span className="md:hidden">Картаар</span>
-          </button>
         </div>
       </div>
 
@@ -569,8 +542,8 @@ export const VocabList: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* 4. DETAIL VIEW MODAL ON CARD TAP                          */}
-      {/* Natural height, NO internal scrollbars, smooth Prev/Next  */}
+      {/* 4. DETAIL VIEW MODAL ON CARD TAP (Zero-Scroll Desktop)    */}
+      {/* All information & action buttons visible simultaneously   */}
       {/* ========================================================= */}
       {activeDetailItem && (
         <div
@@ -584,11 +557,11 @@ export const VocabList: React.FC = () => {
           }}
         >
           <div
-            className="w-full max-w-lg rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xl p-5 sm:p-6 space-y-4 my-auto relative animate-scale-up"
+            className="w-full max-w-xl sm:max-w-2xl lg:max-w-3xl rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xl p-4 sm:p-5 space-y-3.5 my-auto relative animate-scale-up"
             onClick={e => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
+            <div className="flex items-center justify-between pb-2.5 border-b border-stone-100 dark:border-stone-800">
               <div className="flex items-center gap-2">
                 <LevelBadge level={activeDetailItem.jlptLevel} size="xs" />
                 <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
@@ -603,133 +576,152 @@ export const VocabList: React.FC = () => {
                 type="button"
                 onClick={() => setActiveDetailItem(null)}
                 className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-                title="Хаах"
+                title="Хаах (ESC)"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Word Hero Section */}
-            <div className="text-center py-2 space-y-2">
-              <div className="flex items-center justify-center gap-2">
-                <h3 className="text-3xl sm:text-4xl font-black font-jp text-stone-900 dark:text-stone-100 tracking-tight">
-                  <JapaneseText
-                    text={activeDetailItem.japanese}
-                    reading={activeDetailItem.reading}
-                    showFurigana={true}
-                  />
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => handlePlayAudio(activeDetailItem.japanese, activeDetailItem.reading)}
-                  className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-[#CC0000] dark:text-[#FF3366] transition-colors cursor-pointer"
-                  title="Дуудлага сонсох"
-                >
-                  <Volume2 className="w-5 h-5" />
-                </button>
-              </div>
-
-              {activeDetailItem.reading && (
-                <div className="text-sm font-mono text-stone-400 dark:text-stone-500 font-jp">
-                  【 {activeDetailItem.reading} 】
-                </div>
-              )}
-
-              <div className="text-xl sm:text-2xl font-black text-[#CC0000] dark:text-[#FF6699] pt-1">
-                {activeDetailItem.mongolian}
-              </div>
-
-              {/* Clean explanation if available */}
-              {(() => {
-                const cleanExp = getCleanVocabExplanation(
-                  activeDetailItem.explanation,
-                  activeDetailItem.mongolian,
-                  activeDetailItem.partOfSpeech
-                );
-                return cleanExp ? (
-                  <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed max-w-md mx-auto pt-1">
-                    {cleanExp}
-                  </p>
-                ) : null;
-              })()}
-            </div>
-
-            {/* Example Sentence Section */}
-            {activeDetailItem.exampleSentence && (
-              <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 space-y-1.5 text-left">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider">
-                    Жишээ өгүүлбэр:
-                  </span>
+            {/* Modal Body: Two-column balanced layout on sm+ for zero-scroll fit */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-stretch">
+              {/* Left Column: Word Hero, Reading & Mongolian Meaning */}
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 flex flex-col justify-center text-center space-y-1.5">
+                <div className="flex items-center justify-center gap-2">
+                  <h3 className="text-2xl sm:text-3xl font-black font-jp text-stone-900 dark:text-stone-100 tracking-tight">
+                    <JapaneseText
+                      text={activeDetailItem.japanese}
+                      reading={activeDetailItem.reading}
+                      showFurigana={true}
+                    />
+                  </h3>
                   <button
                     type="button"
-                    onClick={() => handlePlayAudio(activeDetailItem.exampleSentence!)}
-                    className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
-                    title="Өгүүлбэр сонсох"
+                    onClick={() => handlePlayAudio(activeDetailItem.japanese, activeDetailItem.reading)}
+                    className="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-[#CC0000] dark:text-[#FF3366] transition-colors cursor-pointer shrink-0"
+                    title="Дуудлага сонсох"
                   >
                     <Volume2 className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="text-sm font-bold text-stone-900 dark:text-stone-100 font-jp leading-relaxed">
-                  <InteractiveJapaneseSentence
-                    sentence={activeDetailItem.exampleSentence}
-                    reading={activeDetailItem.exampleReading}
-                    mongolian={activeDetailItem.exampleMongolian}
-                    className="text-xs font-bold text-stone-900 dark:text-stone-100"
-                  />
-                </div>
-                {activeDetailItem.exampleMongolian && (
-                  <div className="text-xs text-stone-500 dark:text-stone-400 italic">
-                    {activeDetailItem.exampleMongolian}
+
+                {activeDetailItem.reading && (
+                  <div className="text-xs font-mono text-stone-400 dark:text-stone-500 font-jp">
+                    【 {activeDetailItem.reading} 】
                   </div>
                 )}
+
+                <div className="text-lg sm:text-xl font-black text-[#CC0000] dark:text-[#FF6699] pt-0.5">
+                  {activeDetailItem.mongolian}
+                </div>
+
+                {/* Clean explanation if available (no redundant duplicate meaning) */}
+                {(() => {
+                  const cleanExp = getCleanVocabExplanation(
+                    activeDetailItem.explanation,
+                    activeDetailItem.mongolian,
+                    activeDetailItem.partOfSpeech
+                  );
+                  return cleanExp ? (
+                    <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed max-w-sm mx-auto pt-0.5">
+                      {cleanExp}
+                    </p>
+                  ) : null;
+                })()}
               </div>
-            )}
 
-            {/* Kanji Stroke Order Button if Kanji is present */}
-            {(() => {
-              const kanjiChars = activeDetailItem.japanese.match(/[\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]/g);
-              if (kanjiChars && kanjiChars.length > 0) {
-                return (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const firstChar = kanjiChars[0];
-                      const found = (data.kanji || []).find(k => k.kanji === firstChar);
-                      if (found) {
-                        setSelectedStrokeKanji(found);
-                      } else {
-                        setSelectedStrokeKanji({
-                          id: `kanji_vocab_${firstChar}`,
-                          kanji: firstChar,
-                          onyomi: '—',
-                          kunyomi: '—',
-                          mongolian: activeDetailItem.mongolian,
-                          jlptLevel: activeDetailItem.jlptLevel,
-                          exampleWords: [{ word: activeDetailItem.japanese, reading: activeDetailItem.reading, mongolian: activeDetailItem.mongolian }],
-                          createdAt: new Date().toISOString()
-                        });
-                      }
-                    }}
-                    className="w-full py-2 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                  >
-                    <PenTool className="w-3.5 h-3.5 text-[#FF3366]" />
-                    <span>Ханзны зурлагын дараалал харах (書き順)</span>
-                  </button>
-                );
-              }
-              return null;
-            })()}
+              {/* Right Column: Interactive Example Sentence & Stroke Order Access */}
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 flex flex-col justify-between space-y-2 text-left">
+                {activeDetailItem.exampleSentence ? (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider">
+                        Жишээ өгүүлбэр:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handlePlayAudio(activeDetailItem.exampleSentence!)}
+                        className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
+                        title="Өгүүлбэр сонсох"
+                      >
+                        <Volume2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <div className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 font-jp leading-relaxed">
+                      <InteractiveJapaneseSentence
+                        sentence={activeDetailItem.exampleSentence}
+                        reading={activeDetailItem.exampleReading}
+                        mongolian={activeDetailItem.exampleMongolian}
+                        className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100"
+                      />
+                    </div>
+                    {activeDetailItem.exampleMongolian && (
+                      <div className="text-xs text-stone-600 dark:text-stone-400 font-medium pt-1 border-t border-stone-200/50 dark:border-stone-800/60 leading-relaxed">
+                        {activeDetailItem.exampleMongolian}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center text-xs text-stone-400 py-3">
+                    Жишээ өгүүлбэр одоогоор байхгүй байна.
+                  </div>
+                )}
 
-            {/* Simplified Mark as Learned Button: "Сурсан гэж тэмдэглэх" / "✓ Сурсан" */}
-            <div className="pt-2 border-t border-stone-100 dark:border-stone-800">
+                {/* Kanji Stroke Order Button if Kanji is present */}
+                {(() => {
+                  const kanjiChars = activeDetailItem.japanese.match(/[\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]/g);
+                  if (kanjiChars && kanjiChars.length > 0) {
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const firstChar = kanjiChars[0];
+                          const found = (data.kanji || []).find(k => k.kanji === firstChar);
+                          if (found) {
+                            setSelectedStrokeKanji(found);
+                          } else {
+                            setSelectedStrokeKanji({
+                              id: `kanji_vocab_${firstChar}`,
+                              kanji: firstChar,
+                              onyomi: '—',
+                              kunyomi: '—',
+                              mongolian: activeDetailItem.mongolian,
+                              jlptLevel: activeDetailItem.jlptLevel,
+                              exampleWords: [{ word: activeDetailItem.japanese, reading: activeDetailItem.reading, mongolian: activeDetailItem.mongolian }],
+                              createdAt: new Date().toISOString()
+                            });
+                          }
+                        }}
+                        className="w-full py-2 px-3 rounded-xl bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer mt-auto"
+                      >
+                        <PenTool className="w-3.5 h-3.5 text-[#FF3366]" />
+                        <span>Зурлагын дараалал үзэх ({kanjiChars[0]})</span>
+                      </button>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+            </div>
+
+            {/* Bottom Action Row: Previous, Mark as Learned, Next (all visible without scrolling) */}
+            <div className="flex items-center justify-between gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
+              <button
+                type="button"
+                disabled={detailIndex <= 0}
+                onClick={handlePrevDetail}
+                className="px-3.5 py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors shrink-0"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Өмнөх</span>
+              </button>
+
               {(() => {
                 const isLearned = (userProgress.learnedVocabIds || []).includes(activeDetailItem.id);
                 return (
                   <button
                     type="button"
                     onClick={() => toggleVocabLearned(activeDetailItem.id)}
-                    className={`w-full py-3 px-4 rounded-2xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-98 ${
+                    className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-98 ${
                       isLearned
                         ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/25'
                         : 'bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white shadow-red-500/25'
@@ -740,25 +732,12 @@ export const VocabList: React.FC = () => {
                   </button>
                 );
               })()}
-            </div>
-
-            {/* Bottom Prev / Next Navigation Controls */}
-            <div className="flex items-center justify-between gap-3 pt-1">
-              <button
-                type="button"
-                disabled={detailIndex <= 0}
-                onClick={handlePrevDetail}
-                className="flex-1 py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Өмнөх</span>
-              </button>
 
               <button
                 type="button"
                 disabled={detailIndex < 0 || detailIndex >= displayItems.length - 1}
                 onClick={handleNextDetail}
-                className="flex-1 py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                className="px-3.5 py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors shrink-0"
               >
                 <span>Дараах</span>
                 <ChevronRight className="w-4 h-4" />

@@ -36,7 +36,6 @@ import { LevelBadge } from '../common/LevelBadge';
 import { extractKanjiPronunciation, speechService } from '../../services/speech';
 import { KanjiItem, ItemStudyRecord } from '../../types';
 import { KanjiStrokeOrder } from '../kanji/KanjiStrokeOrder';
-import { FlashcardView } from '../flashcards/FlashcardView';
 import {
   getTopicsForLevel,
   getTopicStats,
@@ -84,8 +83,6 @@ export const KanjiList: React.FC = () => {
 
   // Active topic filtering ('all' = all kanji in level, or a specific topic id)
   const [selectedTopicId, setSelectedTopicId] = useState<string>('all');
-  // Optional full-screen flashcard deck runner
-  const [flashcardDeckTopicId, setFlashcardDeckTopicId] = useState<string | null>(null);
 
   // Search & Filter state
   const [search, setSearch] = useState('');
@@ -208,18 +205,6 @@ export const KanjiList: React.FC = () => {
       rate: userProgress.settings?.speechRate || 0.9
     });
   };
-
-  // If flashcard deck is launched
-  if (flashcardDeckTopicId) {
-    return (
-      <FlashcardView
-        initialContentKind="kanji"
-        initialTopicId={flashcardDeckTopicId === 'all' ? undefined : flashcardDeckTopicId}
-        onBack={() => setFlashcardDeckTopicId(null)}
-        lockContentKind={true}
-      />
-    );
-  }
 
   const totalInLevel = (data.kanji || []).filter(k => k.jlptLevel === effectiveLevel).length;
   const learnedInLevel = (data.kanji || []).filter(
@@ -356,18 +341,6 @@ export const KanjiList: React.FC = () => {
             <option value="unlearned">Сураагүй</option>
             <option value="learned">Сурсан</option>
           </select>
-
-          {/* Flashcard Player CTA */}
-          <button
-            type="button"
-            onClick={() => setFlashcardDeckTopicId(selectedTopicId)}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-stone-900 to-stone-800 dark:from-stone-800 dark:to-stone-700 hover:from-black text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shadow-xs"
-            title="Энэ сэдвийг флаш карт хэлбэрээр давтах"
-          >
-            <RotateCcw className="w-3.5 h-3.5 text-[#FF6699]" />
-            <span className="hidden md:inline">Флаш картаар давтах</span>
-            <span className="md:hidden">Картаар</span>
-          </button>
         </div>
       </div>
 
@@ -386,7 +359,6 @@ export const KanjiList: React.FC = () => {
             {paginatedItems.map((item, idx) => {
               const isLearned = (userProgress.learnedKanjiIds || []).includes(item.id);
               const isFav = (userProgress.favorites?.kanjiIds || []).includes(item.id);
-              const mainReading = item.kunyomi || item.onyomi || '';
               const itemIndex = (currentPage - 1) * ITEMS_PER_PAGE + idx + 1;
 
               return (
@@ -422,17 +394,11 @@ export const KanjiList: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Center Hero Kanji, Reading, Mongolian */}
-                <div className="text-center my-auto py-2 space-y-1">
+                {/* Center Hero Kanji, Mongolian Meaning (Clean: No Readings on compact card) */}
+                <div className="text-center my-auto py-2 space-y-1.5">
                   <div className="text-4xl sm:text-5xl font-black font-jp text-stone-900 dark:text-stone-100 group-hover:text-[#CC0000] dark:group-hover:text-[#FF6699] transition-colors leading-none tracking-wide">
                     {item.kanji}
                   </div>
-
-                  {mainReading && (
-                    <div className="text-xs font-mono text-stone-400 dark:text-stone-500 font-jp truncate pt-1">
-                      {mainReading}
-                    </div>
-                  )}
 
                   <div className="text-xs sm:text-sm font-bold text-stone-800 dark:text-stone-200 line-clamp-1 leading-snug">
                     {item.mongolian}
@@ -578,11 +544,11 @@ export const KanjiList: React.FC = () => {
           }}
         >
           <div
-            className="w-full max-w-lg rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xl p-5 sm:p-6 space-y-4 my-auto relative animate-scale-up"
+            className="w-full max-w-xl sm:max-w-2xl lg:max-w-3xl rounded-3xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xl p-4 sm:p-5 space-y-3.5 my-auto relative animate-scale-up"
             onClick={e => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800">
+            <div className="flex items-center justify-between pb-2.5 border-b border-stone-100 dark:border-stone-800">
               <div className="flex items-center gap-2">
                 <LevelBadge level={activeDetailItem.jlptLevel} size="xs" />
                 <span className="text-xs font-bold text-stone-500 dark:text-stone-400 font-jp">
@@ -591,9 +557,14 @@ export const KanjiList: React.FC = () => {
                 <span className="text-[11px] font-mono text-stone-400">
                   ({detailIndex + 1} / {displayItems.length})
                 </span>
+                {strokeTotal > 1 && (
+                  <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 text-[10px] font-mono font-bold">
+                    {strokeTotal} зурлага
+                  </span>
+                )}
               </div>
 
-              {/* Front/Back Flip Toggle Button */}
+              {/* Front/Back Flip Toggle Button & Close */}
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
@@ -612,7 +583,7 @@ export const KanjiList: React.FC = () => {
                   type="button"
                   onClick={() => setActiveDetailItem(null)}
                   className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-                  title="Хаах"
+                  title="Хаах (ESC)"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -621,125 +592,110 @@ export const KanjiList: React.FC = () => {
 
             {/* Modal Body: Either Front (Core Info) or Back (Accurate KanjiVG Stroke Order with numbers 1..N) */}
             {!isDetailFlipped ? (
-              /* FRONT FACE: Large Kanji, Meaning, Onyomi/Kunyomi, Compounds */
-              <div className="space-y-4 animate-fade-in">
-                {/* Hero Kanji & Meaning */}
-                <div className="text-center py-2 space-y-2">
+              /* FRONT FACE: Two-column balanced layout on sm+ for zero-scroll fit */
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-stretch animate-fade-in">
+                {/* Left Column: Hero Kanji, Meaning, Onyomi & Kunyomi */}
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 flex flex-col justify-center text-center space-y-2">
                   <div className="flex items-center justify-center gap-2">
-                    <span className="text-6xl sm:text-7xl font-black font-jp text-stone-900 dark:text-stone-100 tracking-wider">
+                    <span className="text-5xl sm:text-6xl font-black font-jp text-stone-900 dark:text-stone-100 tracking-wider">
                       {activeDetailItem.kanji}
                     </span>
                     <button
                       type="button"
                       onClick={() => handlePlayAudio(activeDetailItem)}
-                      className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-[#CC0000] dark:text-[#FF3366] transition-colors cursor-pointer"
+                      className="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-[#CC0000] dark:text-[#FF3366] transition-colors cursor-pointer shrink-0"
                       title="Дуудлага сонсох"
                     >
-                      <Volume2 className="w-5 h-5" />
+                      <Volume2 className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <div className="text-xl sm:text-2xl font-black text-[#CC0000] dark:text-[#FF6699]">
+                  <div className="text-lg sm:text-xl font-black text-[#CC0000] dark:text-[#FF6699]">
                     {activeDetailItem.mongolian}
                   </div>
-                </div>
 
-                {/* Onyomi & Kunyomi Grid */}
-                <div className="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 text-xs">
-                  <div>
-                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
-                      Оньёми (Onyomi):
-                    </span>
-                    <span className="text-sm font-black font-jp text-stone-900 dark:text-stone-100 mt-0.5 block">
-                      {activeDetailItem.onyomi || '—'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
-                      Күньёми (Kunyomi):
-                    </span>
-                    <span className="text-sm font-black font-jp text-stone-900 dark:text-stone-100 mt-0.5 block">
-                      {activeDetailItem.kunyomi || '—'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Example Compound Words */}
-                {activeDetailItem.exampleWords && activeDetailItem.exampleWords.length > 0 && (
-                  <div className="space-y-1.5 text-left">
-                    <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">
-                      Холбоо үгс:
-                    </span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {activeDetailItem.exampleWords.slice(0, 4).map((ex, exIdx) => (
-                        <div
-                          key={exIdx}
-                          className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/60 dark:border-stone-800 text-xs flex items-center justify-between gap-1"
-                        >
-                          <div className="min-w-0">
-                            <div className="font-bold text-stone-900 dark:text-stone-100 font-jp truncate">
-                              {ex.word} <span className="font-normal text-stone-400 font-jp">【{ex.reading}】</span>
-                            </div>
-                            <div className="text-[11px] text-stone-500 dark:text-stone-400 truncate mt-0.5">
-                              {ex.mongolian}
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => speechService.play(ex.word, { reading: ex.reading })}
-                            className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer shrink-0"
-                          >
-                            <Volume2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
+                  {/* Onyomi & Kunyomi Grid */}
+                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-white dark:bg-stone-900 border border-stone-200/70 dark:border-stone-800 text-xs text-left">
+                    <div>
+                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                        Оньёми (音):
+                      </span>
+                      <span className="text-xs sm:text-sm font-black font-jp text-stone-900 dark:text-stone-100 mt-0.5 block truncate">
+                        {activeDetailItem.onyomi || '—'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                        Күньёми (訓):
+                      </span>
+                      <span className="text-xs sm:text-sm font-black font-jp text-stone-900 dark:text-stone-100 mt-0.5 block truncate">
+                        {activeDetailItem.kunyomi || '—'}
+                      </span>
                     </div>
                   </div>
-                )}
-
-                {/* Flip to Stroke Order Button */}
-                <button
-                  type="button"
-                  onClick={() => setIsDetailFlipped(true)}
-                  className="w-full py-2.5 px-3 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  <PenTool className="w-3.5 h-3.5 text-[#FF3366]" />
-                  <span>Зурлагын дараалал үзэх (書き順)</span>
-                </button>
-              </div>
-            ) : (
-              /* BACK FACE: Accurate Stroke Order Diagram with Interactive Controls and Numbers 1..N */
-              <div className="space-y-3.5 animate-fade-in flex flex-col items-center">
-                <div className="w-full flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-stone-900 dark:text-stone-100 font-jp text-base">
-                      {activeDetailItem.kanji}
-                    </span>
-                    <span className="text-stone-400">• Зурлагын дараалал (書き順)</span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStrokeCurrent(1);
-                      setStrokeIsPlaying(true);
-                      setStrokeReplayKey(k => k + 1);
-                    }}
-                    className="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    <span>Эхнээс нь</span>
-                  </button>
                 </div>
 
-                {/* Clean Canvas with Visible Numbers 1..N */}
+                {/* Right Column: Example Compound Words & Flip to Stroke Order */}
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 flex flex-col justify-between space-y-2 text-left">
+                  {activeDetailItem.exampleWords && activeDetailItem.exampleWords.length > 0 ? (
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">
+                        Холбоо үгс:
+                      </span>
+                      <div className="space-y-1.5">
+                        {activeDetailItem.exampleWords.slice(0, 3).map((ex, exIdx) => (
+                          <div
+                            key={exIdx}
+                            className="p-2 rounded-xl bg-white dark:bg-stone-900/80 border border-stone-200/60 dark:border-stone-800 text-xs flex items-center justify-between gap-1.5"
+                          >
+                            <div className="min-w-0">
+                              <div className="font-bold text-stone-900 dark:text-stone-100 font-jp truncate">
+                                {ex.word} <span className="font-normal text-stone-400 font-jp text-[11px]">【{ex.reading}】</span>
+                              </div>
+                              <div className="text-[11px] text-stone-500 dark:text-stone-400 truncate">
+                                {ex.mongolian}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => speechService.play(ex.word, { reading: ex.reading })}
+                              className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer shrink-0"
+                              title="Дуудлага сонсох"
+                            >
+                              <Volume2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex-1 flex items-center justify-center text-xs text-stone-400 py-3">
+                      Холбоо үгийн жишээ одоогоор байхгүй байна.
+                    </div>
+                  )}
+
+                  {/* Flip to Stroke Order Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsDetailFlipped(true)}
+                    className="w-full py-2 px-3 rounded-xl bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer mt-auto"
+                  >
+                    <PenTool className="w-3.5 h-3.5 text-[#FF3366]" />
+                    <span>Зурлагын дараалал үзэх (書き順)</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* BACK FACE: Two-column Stroke Order Diagram with Interactive Controls and Numbers 1..N */
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-center animate-fade-in">
+                {/* Left Column: Clean Canvas with Visible Numbers 1..N */}
                 <div
                   key={`${activeDetailItem.kanji}_${strokeReplayKey}`}
-                  className="flex items-center justify-center p-2 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800"
+                  className="flex items-center justify-center p-2 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 max-w-full aspect-square mx-auto"
                 >
                   <KanjiStrokeOrder
                     kanji={activeDetailItem.kanji}
-                    size={220}
+                    size={200}
                     autoPlay={strokeIsPlaying}
                     isPlaying={strokeIsPlaying}
                     onPlayingChange={setStrokeIsPlaying}
@@ -753,82 +709,122 @@ export const KanjiList: React.FC = () => {
                   />
                 </div>
 
-                {/* Stroke Navigation Controls Bar */}
-                <div className="flex items-center justify-center w-full max-w-xs gap-2 pt-1">
-                  <button
-                    type="button"
-                    disabled={strokeCurrent <= 1}
-                    onClick={() => {
-                      setStrokeIsPlaying(false);
-                      setStrokeCurrent(prev => Math.max(1, prev - 1));
-                    }}
-                    className="p-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 transition-colors cursor-pointer"
-                    title="Өмнөх зурлага"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
+                {/* Right Column: Interactive Stroke Controls & Numbers Toggle */}
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 flex flex-col justify-between space-y-3 text-center sm:text-left">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-stone-900 dark:text-stone-100 font-jp text-base">
+                        {activeDetailItem.kanji}
+                      </span>
+                      <span className="text-[11px] text-stone-400">
+                        Зурлага: <b className="text-stone-900 dark:text-stone-100">{strokeCurrent}</b> / {strokeTotal}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-snug">
+                      Зурлага бүрийн эхлэх цэг дээрх дугаарын дагуу зурна.
+                    </p>
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setStrokeIsPlaying(p => !p)}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#CC0000] to-[#FF3366] hover:opacity-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-red-500/20 cursor-pointer transition-all"
-                  >
-                    {strokeIsPlaying ? (
-                      <>
-                        <Pause className="w-3.5 h-3.5 fill-white" />
-                        <span>Зогсоох</span>
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-3.5 h-3.5 fill-white" />
-                        <span>Тоглуулах</span>
-                      </>
-                    )}
-                  </button>
+                  {/* Stroke Navigation Controls Bar */}
+                  <div className="flex items-center justify-center sm:justify-start gap-2">
+                    <button
+                      type="button"
+                      disabled={strokeCurrent <= 1}
+                      onClick={() => {
+                        setStrokeIsPlaying(false);
+                        setStrokeCurrent(prev => Math.max(1, prev - 1));
+                      }}
+                      className="p-2 rounded-xl bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 transition-colors cursor-pointer"
+                      title="Өмнөх зурлага"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
 
-                  <button
-                    type="button"
-                    disabled={strokeCurrent >= strokeTotal}
-                    onClick={() => {
-                      setStrokeIsPlaying(false);
-                      setStrokeCurrent(prev => Math.min(strokeTotal, prev + 1));
-                    }}
-                    className="p-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 transition-colors cursor-pointer"
-                    title="Дараах зурлага"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setStrokeIsPlaying(p => !p)}
+                      className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-[#CC0000] to-[#FF3366] hover:opacity-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-red-500/20 cursor-pointer transition-all"
+                    >
+                      {strokeIsPlaying ? (
+                        <>
+                          <Pause className="w-3.5 h-3.5 fill-white" />
+                          <span>Зогсоох</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3.5 h-3.5 fill-white" />
+                          <span>Тоглуулах</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={strokeCurrent >= strokeTotal}
+                      onClick={() => {
+                        setStrokeIsPlaying(false);
+                        setStrokeCurrent(prev => Math.min(strokeTotal, prev + 1));
+                      }}
+                      className="p-2 rounded-xl bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 transition-colors cursor-pointer"
+                      title="Дараах зурлага"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStrokeCurrent(1);
+                        setStrokeIsPlaying(true);
+                        setStrokeReplayKey(k => k + 1);
+                      }}
+                      className="p-2 rounded-xl bg-white dark:bg-stone-800 hover:bg-stone-100 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 transition-colors cursor-pointer"
+                      title="Эхнээс нь давтах"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-stone-200/50 dark:border-stone-800">
+                    <button
+                      type="button"
+                      onClick={() => setStrokeShowNumbers(n => !n)}
+                      className="text-[11px] font-semibold text-stone-500 hover:text-[#CC0000] dark:hover:text-[#FF6699] transition-colors cursor-pointer"
+                    >
+                      {strokeShowNumbers ? 'Дугаар нуух' : 'Дугаар харуулах'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsDetailFlipped(false)}
+                      className="text-[11px] font-bold text-[#CC0000] dark:text-[#FF6699] hover:underline cursor-pointer"
+                    >
+                      ← Мэдээлэл харах
+                    </button>
+                  </div>
                 </div>
-
-                {/* Stroke Counter & Number Toggle */}
-                <div className="flex items-center justify-between w-full max-w-xs text-xs text-stone-500 dark:text-stone-400 font-semibold px-2">
-                  <span>
-                    Зурлага: <b className="text-stone-900 dark:text-stone-100">{strokeCurrent}</b> / {strokeTotal}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setStrokeShowNumbers(n => !n)}
-                    className="hover:text-[#CC0000] dark:hover:text-[#FF6699] transition-colors cursor-pointer text-[11px]"
-                  >
-                    {strokeShowNumbers ? 'Дугаар нуух' : 'Дугаар харуулах'}
-                  </button>
-                </div>
-
-                <p className="text-[11px] text-stone-400 text-center">
-                  Зурлага бүрийн эхлэх цэг дээрх дугаарын дагуу зурна.
-                </p>
               </div>
             )}
 
-            {/* Simplified Mark as Learned Button: "Сурсан гэж тэмдэглэх" / "✓ Сурсан" */}
-            <div className="pt-2 border-t border-stone-100 dark:border-stone-800">
+            {/* Bottom Action Row: Previous, Mark as Learned, Next (all visible without scrolling) */}
+            <div className="flex items-center justify-between gap-2.5 pt-2 border-t border-stone-100 dark:border-stone-800">
+              <button
+                type="button"
+                disabled={detailIndex <= 0}
+                onClick={handlePrevDetail}
+                className="px-3.5 py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors shrink-0"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Өмнөх</span>
+              </button>
+
               {(() => {
                 const isLearned = (userProgress.learnedKanjiIds || []).includes(activeDetailItem.id);
                 return (
                   <button
                     type="button"
                     onClick={() => toggleKanjiLearned(activeDetailItem.id)}
-                    className={`w-full py-3 px-4 rounded-2xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-98 ${
+                    className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-98 ${
                       isLearned
                         ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/25'
                         : 'bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] hover:opacity-95 text-white shadow-red-500/25'
@@ -839,25 +835,12 @@ export const KanjiList: React.FC = () => {
                   </button>
                 );
               })()}
-            </div>
-
-            {/* Bottom Prev / Next Navigation Controls */}
-            <div className="flex items-center justify-between gap-3 pt-1">
-              <button
-                type="button"
-                disabled={detailIndex <= 0}
-                onClick={handlePrevDetail}
-                className="flex-1 py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Өмнөх</span>
-              </button>
 
               <button
                 type="button"
                 disabled={detailIndex < 0 || detailIndex >= displayItems.length - 1}
                 onClick={handleNextDetail}
-                className="flex-1 py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                className="px-3.5 py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed text-stone-700 dark:text-stone-300 font-bold text-xs flex items-center justify-center gap-1 cursor-pointer transition-colors shrink-0"
               >
                 <span>Дараах</span>
                 <ChevronRight className="w-4 h-4" />

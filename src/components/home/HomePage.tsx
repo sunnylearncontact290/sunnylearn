@@ -33,6 +33,7 @@ import { learningEngine } from '../../services/learningEngine';
 import { InteractiveJapaneseSentence } from '../learn/InteractiveJapaneseSentence';
 import { KanjiStrokeModal } from '../kanji/KanjiStrokeModal';
 import { loadKanjiStrokeData } from '../../utils/kanjiVG';
+import { getCleanVocabExplanation } from '../../utils/vocabUtils';
 
 export const HomePage: React.FC = () => {
   const {
@@ -695,11 +696,18 @@ export const HomePage: React.FC = () => {
                   <p className="text-base font-extrabold text-[#CC0000] dark:text-[#FF6699]">
                     {vocabOfTheDay.mongolian}
                   </p>
-                  {vocabOfTheDay.explanation && (
-                    <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed pt-0.5">
-                      {vocabOfTheDay.explanation}
-                    </p>
-                  )}
+                  {(() => {
+                    const cleanExp = getCleanVocabExplanation(
+                      vocabOfTheDay.explanation,
+                      vocabOfTheDay.mongolian,
+                      vocabOfTheDay.partOfSpeech
+                    );
+                    return cleanExp ? (
+                      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed pt-0.5">
+                        {cleanExp}
+                      </p>
+                    ) : null;
+                  })()}
                 </div>
 
                 {/* Interactive example sentence with Mongolian translation */}
@@ -718,11 +726,8 @@ export const HomePage: React.FC = () => {
                       className="text-sm font-jp leading-relaxed"
                     />
                     {vocabOfTheDay.exampleMongolian && (
-                      <div className="text-xs text-stone-600 dark:text-stone-300 font-medium pt-2 border-t border-stone-200/50 dark:border-stone-800/80 flex items-start gap-1.5">
-                        <span className="text-[#CC0000] dark:text-[#FF6699] font-bold shrink-0 text-[10px] uppercase tracking-wider">
-                          Орчуулга:
-                        </span>
-                        <span className="leading-relaxed">{vocabOfTheDay.exampleMongolian}</span>
+                      <div className="text-xs text-stone-600 dark:text-stone-300 font-medium pt-1.5 border-t border-stone-200/50 dark:border-stone-800/80 leading-relaxed">
+                        {vocabOfTheDay.exampleMongolian}
                       </div>
                     )}
                   </div>

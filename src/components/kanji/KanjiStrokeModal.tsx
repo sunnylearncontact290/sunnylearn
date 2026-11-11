@@ -111,7 +111,7 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/75 backdrop-blur-md overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-[80] flex items-center justify-center p-2 sm:p-4 bg-black/65 dark:bg-black/80 backdrop-blur-md overflow-y-auto animate-fade-in"
       onClick={e => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -119,19 +119,19 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
       }}
     >
       <div
-        className="w-full max-w-xl rounded-3xl bg-white dark:bg-[#150E11] border border-[rgba(255,51,102,0.20)] dark:border-[rgba(255,51,102,0.28)] shadow-2xl overflow-hidden flex flex-col my-auto transition-all"
+        className="w-full max-w-xl sm:max-w-2xl lg:max-w-3xl rounded-3xl bg-white dark:bg-[#150E11] border border-[rgba(255,51,102,0.20)] dark:border-[rgba(255,51,102,0.28)] shadow-2xl overflow-hidden flex flex-col my-auto transition-all"
         onClick={e => e.stopPropagation()}
       >
         {/* MODAL HEADER */}
-        <div className="relative px-5 py-4 border-b border-stone-100 dark:border-stone-800/80 bg-gradient-to-r from-[#FFF9FA] to-white dark:from-[#1C1014] dark:to-[#150E11] flex items-center justify-between gap-3">
+        <div className="relative px-4 sm:px-5 py-3 border-b border-stone-100 dark:border-stone-800/80 bg-gradient-to-r from-[#FFF9FA] to-white dark:from-[#1C1014] dark:to-[#150E11] flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FF0000] to-[#FF3366] text-white flex items-center justify-center font-extrabold text-xl font-jp shadow-sm shadow-red-500/25 shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#FF0000] to-[#FF3366] text-white flex items-center justify-center font-extrabold text-xl font-jp shadow-sm shadow-red-500/25 shrink-0">
               {kanjiItem.kanji}
             </div>
 
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-black text-stone-900 dark:text-stone-100 flex items-center gap-1.5 font-jp">
+                <h2 className="text-base sm:text-lg font-black text-stone-900 dark:text-stone-100 flex items-center gap-1.5 font-jp">
                   <span>{kanjiItem.kanji}</span>
                   <span className="text-xs font-bold text-stone-500 dark:text-stone-400">
                     書き順 (Зурлагын дараалал)
@@ -163,7 +163,7 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-xl text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
               title="Хаах (ESC)"
             >
               <X className="w-5 h-5" />
@@ -171,30 +171,14 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
           </div>
         </div>
 
-        {/* MODAL BODY */}
-        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto max-h-[calc(90vh-140px)]">
-          {/* Readings Sub-Bar */}
-          <div className="grid grid-cols-2 gap-2 text-xs p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/60 dark:border-stone-800/80">
-            <div>
-              <span className="text-[11px] text-stone-400 block font-medium">Онь (Onyomi):</span>
-              <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">
-                {kanjiItem.onyomi || '—'}
-              </span>
-            </div>
-            <div>
-              <span className="text-[11px] text-stone-400 block font-medium">Күн (Kunyomi):</span>
-              <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">
-                {kanjiItem.kunyomi || '—'}
-              </span>
-            </div>
-          </div>
-
-          {/* Large Stroke Animation Canvas */}
-          <div className="flex flex-col items-center justify-center space-y-3">
-            <div className="relative group">
+        {/* MODAL BODY - 2-column zero-scroll layout on desktop */}
+        <div className="p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-center">
+          {/* LEFT COLUMN: Animated Canvas + Complete Playback Controls */}
+          <div className="flex flex-col items-center justify-center space-y-2.5">
+            <div className="relative flex items-center justify-center w-full max-w-[210px] aspect-square mx-auto">
               <KanjiStrokeOrder
                 kanji={kanjiItem.kanji}
-                size={260}
+                size={200}
                 isPlaying={isPlaying}
                 onPlayingChange={setIsPlaying}
                 currentStroke={currentStroke}
@@ -206,12 +190,12 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
               />
 
               {/* Status Pill overlay at bottom */}
-              <div className="absolute bottom-2.5 inset-x-0 flex items-center justify-center pointer-events-none">
-                <div className="px-3 py-1 rounded-full bg-black/65 dark:bg-black/80 backdrop-blur-md text-white text-[11px] font-bold flex items-center gap-1.5 shadow-md">
+              <div className="absolute bottom-2 inset-x-0 flex items-center justify-center pointer-events-none">
+                <div className="px-2.5 py-0.5 rounded-full bg-black/70 dark:bg-black/85 backdrop-blur-md text-white text-[10px] sm:text-[11px] font-bold flex items-center gap-1.5 shadow-sm">
                   <PenTool className="w-3 h-3 text-[#FF3366]" />
                   <span>
                     {currentStroke === totalStrokes && !isPlaying
-                      ? '✓ Бүх зурлага дууссан'
+                      ? '✓ Бүрэн дууссан'
                       : `${currentStroke}-р зурлага`}
                   </span>
                   <span className="text-white/60">/</span>
@@ -219,81 +203,161 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* FULL PLAYBACK CONTROLS (Prev, Play/Pause, Next, Replay) */}
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-2xl bg-stone-50 dark:bg-stone-900/80 border border-stone-200/60 dark:border-stone-800/80 w-full max-w-[260px]">
+              {/* Prev Stroke */}
+              <button
+                type="button"
+                onClick={handlePrev}
+                disabled={currentStroke <= 1}
+                className="p-1.5 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                title="Өмнөх зурлага (←)"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              {/* Play / Pause Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setIsPlaying(!isPlaying)}
+                className="flex-1 py-1.5 px-3 rounded-lg bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-extrabold text-xs shadow-xs shadow-red-500/25 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                title={isPlaying ? 'Түр зогсоох (Space)' : 'Зурлагыг тоглуулах (Space)'}
+              >
+                {isPlaying ? (
+                  <>
+                    <Pause className="w-3.5 h-3.5 fill-white" />
+                    <span>Зогсоох</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 fill-white" />
+                    <span>{currentStroke >= totalStrokes ? 'Дахин' : 'Тоглуулах'}</span>
+                  </>
+                )}
+              </button>
+
+              {/* Next Stroke */}
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={currentStroke >= totalStrokes}
+                className="p-1.5 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+                title="Дараагийн зурлага (→)"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              {/* Replay */}
+              <button
+                type="button"
+                onClick={handleReplay}
+                className="p-1.5 rounded-lg bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 transition-all cursor-pointer"
+                title="Эхнээс нь дахин тоглуулах"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
-          {/* STREAMLINED PLAYBACK CONTROLS (Clean Replay & Play/Pause) */}
-          <div className="flex items-center justify-center gap-3 p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/80 border border-stone-200/60 dark:border-stone-800/80">
-            {/* Play / Pause Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#FF0000] to-[#FF3366] hover:from-[#CC0000] hover:to-[#FF0000] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-red-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer min-w-[130px]"
-              title={isPlaying ? 'Түр зогсоох (Space)' : 'Зурлагыг тоглуулах (Space)'}
-            >
-              {isPlaying ? (
-                <>
-                  <Pause className="w-4 h-4 fill-white" />
-                  <span>Түр зогсоох</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4 fill-white" />
-                  <span>{currentStroke >= totalStrokes ? 'Дахин тоглуулах' : 'Тоглуулах'}</span>
-                </>
-              )}
-            </button>
-
-            {/* Replay Button */}
-            <button
-              type="button"
-              onClick={handleReplay}
-              className="px-4 py-2.5 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-700 transition-all shadow-xs cursor-pointer flex items-center gap-1.5 text-xs font-bold"
-              title="Эхнээс нь дахин эхлүүлэх"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>Дахин эхлүүлэх</span>
-            </button>
-          </div>
-
-          {/* Example Words / Context info if available */}
-          {kanjiItem.exampleWords && kanjiItem.exampleWords.length > 0 && (
-            <div className="pt-2 border-t border-stone-100 dark:border-stone-800/80">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block mb-2">
-                Холбоо үгс:
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                {kanjiItem.exampleWords.slice(0, 4).map((ew, idx) => (
-                  <div
-                    key={idx}
-                    className="p-2 rounded-xl bg-stone-50 dark:bg-stone-900/50 border border-stone-200/50 dark:border-stone-800/60 flex items-center justify-between gap-1"
-                  >
-                    <div className="min-w-0">
-                      <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">
-                        {ew.word}
-                      </span>
-                      <span className="text-[11px] text-stone-400 font-jp ml-1">
-                        [{ew.reading}]
-                      </span>
-                      <p className="text-[11px] text-red-600 dark:text-red-400 font-medium truncate">
-                        {ew.mongolian}
-                      </p>
-                    </div>
-                    <AudioButton
-                      text={ew.word}
-                      reading={ew.reading}
-                      id={`modal_ew_${kanjiItem.id}_${idx}`}
-                      size="xs"
-                      variant="ghost"
-                    />
-                  </div>
-                ))}
+          {/* RIGHT COLUMN: Readings, Toggles & Example Words */}
+          <div className="flex flex-col justify-between space-y-2.5 min-w-0">
+            {/* Readings Box */}
+            <div className="grid grid-cols-2 gap-2 text-xs p-2.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/60 dark:border-stone-800/80">
+              <div>
+                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                  Онь (音):
+                </span>
+                <span className="font-bold text-stone-900 dark:text-stone-100 font-jp text-xs truncate block">
+                  {kanjiItem.onyomi || '—'}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+                  Күн (訓):
+                </span>
+                <span className="font-bold text-stone-900 dark:text-stone-100 font-jp text-xs truncate block">
+                  {kanjiItem.kunyomi || '—'}
+                </span>
               </div>
             </div>
-          )}
+
+            {/* Display Toggles (Grid & Numbers) */}
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setShowGrid(!showGrid)}
+                className={`flex-1 py-1 px-2 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                  showGrid
+                    ? 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/50 text-[#CC0000] dark:text-[#FF6699]'
+                    : 'bg-stone-50 dark:bg-stone-900/50 border-stone-200 dark:border-stone-800 text-stone-500'
+                }`}
+              >
+                <Grid className="w-3 h-3" />
+                <span>Шугам {showGrid ? 'Нээлттэй' : 'Хаалттай'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowNumbers(!showNumbers)}
+                className={`flex-1 py-1 px-2 rounded-lg border text-xs font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+                  showNumbers
+                    ? 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900/50 text-[#CC0000] dark:text-[#FF6699]'
+                    : 'bg-stone-50 dark:bg-stone-900/50 border-stone-200 dark:border-stone-800 text-stone-500'
+                }`}
+              >
+                <Hash className="w-3 h-3" />
+                <span>Дугаар {showNumbers ? 'Нээлттэй' : 'Хаалттай'}</span>
+              </button>
+            </div>
+
+            {/* Example Words (Up to 3 items) */}
+            {kanjiItem.exampleWords && kanjiItem.exampleWords.length > 0 ? (
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
+                  Холбоо үгс:
+                </span>
+                <div className="space-y-1 max-h-[140px] overflow-y-auto pr-0.5">
+                  {kanjiItem.exampleWords.slice(0, 3).map((ew, idx) => (
+                    <div
+                      key={idx}
+                      className="p-1.5 rounded-xl bg-stone-50 dark:bg-stone-900/50 border border-stone-200/50 dark:border-stone-800/60 flex items-center justify-between gap-1 text-xs"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1">
+                          <span className="font-bold text-stone-900 dark:text-stone-100 font-jp">
+                            {ew.word}
+                          </span>
+                          <span className="text-[10px] text-stone-400 font-jp">
+                            [{ew.reading}]
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-red-600 dark:text-red-400 font-medium truncate">
+                          {ew.mongolian}
+                        </p>
+                      </div>
+                      <AudioButton
+                        text={ew.word}
+                        reading={ew.reading}
+                        id={`modal_ew_${kanjiItem.id}_${idx}`}
+                        size="xs"
+                        variant="ghost"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/40 border border-dashed border-stone-200 dark:border-stone-800 text-center">
+                <p className="text-xs text-stone-400">
+                  Зурлагын дарааллыг сайтар ажиглан бичиж дасгал хийгээрэй.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* MODAL FOOTER */}
-        <div className="px-5 py-3 border-t border-stone-100 dark:border-stone-800/80 bg-stone-50/50 dark:bg-stone-900/30 flex items-center justify-between text-xs text-stone-400">
+        <div className="px-4 sm:px-5 py-2.5 border-t border-stone-100 dark:border-stone-800/80 bg-stone-50/50 dark:bg-stone-900/30 flex items-center justify-between text-xs text-stone-400 shrink-0">
           <span className="flex items-center gap-1 text-[11px]">
             <Sparkles className="w-3.5 h-3.5 text-[#FF3366]" />
             <span>KanjiVG стандарт зурлагын дараалал</span>

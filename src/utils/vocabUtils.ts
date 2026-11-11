@@ -59,8 +59,8 @@ export function getCleanVocabExplanation(
 
   // 2. Redundant pattern check where the ENTIRE explanation consists only of
   // an optional Part-Of-Speech prefix + "Монгол утга: <meaning>"
-  // e.g., "Нэр үг. Монгол утга: онгоц" or "Нэр үг / Тэмдэг нэр. Монгол утга: завтай, чөлөөт цаг"
-  const fullRedundantRegex = /^(?:(?:Нэр үг|Үйл үг|Тэмдэг нэр|Дайвар үг|Тооны нэр|Төлөөний үг|Холбоос үг|Нөхцөл|Сул үг|Аялга үг|Оноосон нэр|[\w\s\/\(\)\-\,\.]+)*[.:])?\s*(?:Монгол утга|монгол утга)\s*:\s*(.+)$/i;
+  // e.g., "Нэр үг. Монгол утга: онгоц" or "нэр үг・する үйл үг. Монгол утга: мөхөл; сүйрэл"
+  const fullRedundantRegex = /^(?:[а-яА-ЯёЁөӨүҮ\w\s/()\-.,・]+[.:])?\s*(?:Монгол утга|монгол утга|Утга|утга)\s*:\s*(.+)$/iu;
   const matchFull = text.match(fullRedundantRegex);
   if (matchFull) {
     const extractedMeaning = normalize(matchFull[1]);
@@ -72,7 +72,7 @@ export function getCleanVocabExplanation(
 
   // 3. If there is genuine explanation followed by or containing "Монгол утга: <meaning>"
   // strip only the redundant "Монгол утга: ..." clause
-  text = text.replace(/(?:[.;,\s]+)?(?:Монгол утга|монгол утга)\s*:\s*([^.;\n]+)[.;]?/gi, (match, val) => {
+  text = text.replace(/(?:[.;,\s]+)?(?:Монгол утга|монгол утга|Утга|утга)\s*:\s*([^.;\n]+)[.;]?/giu, (match, val) => {
     const valNorm = normalize(val);
     if (!normMn || valNorm === normMn || normMn.includes(valNorm) || valNorm.includes(normMn)) {
       return '';
@@ -83,7 +83,7 @@ export function getCleanVocabExplanation(
   // 4. If after stripping, the remaining text is only a Part of Speech declaration
   // e.g. "Нэр үг." or "Үйл үг (1-р бүлэг)", remove it as POS is already displayed in the badge
   const isOnlyPos = POS_KEYWORDS.some(kw => {
-    const regex = new RegExp(`^(?:${kw}|[\\s\\/\\-\\(\\)\\d.,])*$`, 'i');
+    const regex = new RegExp(`^(?:${kw}|[\\s\\/\\-\\(\\)\\d.,・а-яА-ЯёЁөӨүҮ])*$`, 'iu');
     return regex.test(text);
   });
   if (isOnlyPos) {

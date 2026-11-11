@@ -202,8 +202,8 @@ export const KanjiStrokeOrder: React.FC<KanjiStrokeOrderProps> = ({
   if (error || !data) {
     return (
       <div
-        style={{ width: size, height: size }}
-        className={`p-6 flex flex-col items-center justify-center text-center rounded-3xl bg-white/70 dark:bg-stone-900/70 border border-red-500/20 backdrop-blur-md space-y-2.5 ${className}`}
+        style={{ width: size, height: size, maxWidth: '100%', maxHeight: '100%', aspectRatio: '1 / 1' }}
+        className={`p-6 flex flex-col items-center justify-center text-center rounded-3xl bg-white/70 dark:bg-stone-900/70 border border-red-500/20 backdrop-blur-md space-y-2.5 max-w-full ${className}`}
       >
         <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-[#FF3366] flex items-center justify-center">
           <AlertCircle className="w-6 h-6" />
@@ -222,8 +222,8 @@ export const KanjiStrokeOrder: React.FC<KanjiStrokeOrderProps> = ({
 
   return (
     <div
-      style={{ width: size, height: size }}
-      className={`relative select-none rounded-3xl overflow-hidden shadow-md border border-[rgba(255,51,102,0.18)] dark:border-[rgba(255,51,102,0.25)] transition-all ${className}`}
+      style={{ width: size, height: size, maxWidth: '100%', maxHeight: '100%', aspectRatio: '1 / 1' }}
+      className={`relative select-none rounded-3xl overflow-hidden shadow-md border border-[rgba(255,51,102,0.18)] dark:border-[rgba(255,51,102,0.25)] transition-all max-w-full ${className}`}
     >
       {/* Background with traditional practice grid canvas styling */}
       <div className="absolute inset-0 bg-gradient-to-br from-white via-[#FFF7F8] to-[#FFF0F3] dark:from-[#170D10] dark:via-[#1F1216] dark:to-[#120B0D]" />
