@@ -734,74 +734,34 @@ export const HomePage: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* RIGHT COLUMN: Interactive Example Sentence + Stroke Order Access */}
-                  <div className="flex flex-col justify-between space-y-2.5">
+                  {/* RIGHT COLUMN: Interactive Example Sentence */}
+                  <div className="flex flex-col justify-between">
                     {vocabOfTheDay.exampleSentence ? (
-                      <div className="p-3 sm:p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 space-y-2 flex-1">
-                        <div className="flex items-center justify-between text-[10px] font-black uppercase text-stone-400 tracking-wider">
-                          <span>Жишээ өгүүлбэр</span>
-                          <span className="text-stone-400/80 normal-case font-normal text-[10px]">
-                            (Ханзан дээр дарж толь, зурлага харах)
-                          </span>
+                      <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 space-y-2 flex-1 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between text-[10px] font-black uppercase text-stone-400 tracking-wider mb-2">
+                            <span>Жишээ өгүүлбэр</span>
+                          </div>
+
+                          <InteractiveJapaneseSentence
+                            sentence={vocabOfTheDay.exampleSentence}
+                            reading={vocabOfTheDay.exampleReading}
+                            mongolian={vocabOfTheDay.exampleMongolian}
+                            className="text-xs sm:text-sm font-jp leading-relaxed"
+                          />
                         </div>
 
-                        <InteractiveJapaneseSentence
-                          sentence={vocabOfTheDay.exampleSentence}
-                          reading={vocabOfTheDay.exampleReading}
-                          mongolian={vocabOfTheDay.exampleMongolian}
-                          className="text-xs sm:text-sm font-jp leading-relaxed"
-                        />
-
                         {vocabOfTheDay.exampleMongolian && (
-                          <div className="text-xs text-stone-600 dark:text-stone-300 font-medium pt-1.5 border-t border-stone-200/50 dark:border-stone-800/80 leading-relaxed">
+                          <div className="text-xs text-stone-600 dark:text-stone-300 font-medium pt-2 border-t border-stone-200/50 dark:border-stone-800/80 leading-relaxed">
                             {vocabOfTheDay.exampleMongolian}
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="p-3 sm:p-3.5 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 flex items-center justify-center text-xs text-stone-400 flex-1">
+                      <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 flex items-center justify-center text-xs text-stone-400 flex-1">
                         Энэ үгэнд зориулсан жишээ өгүүлбэр бэлэн байна.
                       </div>
                     )}
-
-                    {/* Stroke order access button if Japanese word has Kanji */}
-                    {(() => {
-                      const kanjiChars = vocabOfTheDay.japanese.match(/[\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]/g);
-                      if (kanjiChars && kanjiChars.length > 0) {
-                        const firstChar = kanjiChars[0];
-                        return (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const found = (data.kanji || []).find(k => k.kanji === firstChar);
-                              if (found) {
-                                setSelectedStrokeKanji(found);
-                              } else {
-                                setSelectedStrokeKanji({
-                                  id: `kanji_daily_${firstChar}`,
-                                  kanji: firstChar,
-                                  onyomi: '—',
-                                  kunyomi: '—',
-                                  mongolian: vocabOfTheDay.mongolian,
-                                  jlptLevel: vocabOfTheDay.jlptLevel,
-                                  exampleWords: [{
-                                    word: vocabOfTheDay.japanese,
-                                    reading: vocabOfTheDay.reading,
-                                    mongolian: vocabOfTheDay.mongolian
-                                  }],
-                                  createdAt: new Date().toISOString()
-                                });
-                              }
-                            }}
-                            className="w-full py-2 px-3 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-950/60 text-[#CC0000] dark:text-[#FF6699] border border-red-200/60 dark:border-red-900/50 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                          >
-                            <PenTool className="w-3.5 h-3.5 text-[#FF3366]" />
-                            <span>Зурлагын дараалал үзэх ({firstChar})</span>
-                          </button>
-                        );
-                      }
-                      return null;
-                    })()}
                   </div>
                 </div>
               </div>
@@ -920,11 +880,7 @@ export const HomePage: React.FC = () => {
                           ))}
                         </div>
                       </div>
-                    ) : (
-                      <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 flex items-center justify-center text-xs text-stone-400 flex-1">
-                        Зурлагын дарааллыг ажиглан бичиж дасгал хийгээрэй.
-                      </div>
-                    )}
+                    ) : null}
 
                     {/* Animated Stroke Order Button */}
                     <button

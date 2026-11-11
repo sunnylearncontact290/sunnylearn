@@ -346,13 +346,7 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
                   ))}
                 </div>
               </div>
-            ) : (
-              <div className="p-3 rounded-2xl bg-stone-50 dark:bg-stone-900/40 border border-dashed border-stone-200 dark:border-stone-800 text-center">
-                <p className="text-xs text-stone-400">
-                  Зурлагын дарааллыг сайтар ажиглан бичиж дасгал хийгээрэй.
-                </p>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
 

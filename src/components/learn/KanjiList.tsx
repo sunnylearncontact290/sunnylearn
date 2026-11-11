@@ -720,9 +720,6 @@ export const KanjiList: React.FC = () => {
                         Зурлага: <b className="text-stone-900 dark:text-stone-100">{strokeCurrent}</b> / {strokeTotal}
                       </span>
                     </div>
-                    <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-snug">
-                      Зурлага бүрийн эхлэх цэг дээрх дугаарын дагуу зурна.
-                    </p>
                   </div>
 
                   {/* Stroke Navigation Controls Bar */}

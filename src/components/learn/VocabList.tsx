@@ -409,42 +409,6 @@ export const VocabList: React.FC = () => {
                   </button>
 
                   <div className="flex items-center gap-1">
-                    {/* Kanji stroke shortcut if word has kanji */}
-                    {(() => {
-                      const kanjiChars = item.japanese.match(/[\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]/g);
-                      if (kanjiChars && kanjiChars.length > 0) {
-                        return (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const firstChar = kanjiChars[0];
-                              const found = (data.kanji || []).find(k => k.kanji === firstChar);
-                              if (found) {
-                                setSelectedStrokeKanji(found);
-                              } else {
-                                setSelectedStrokeKanji({
-                                  id: `kanji_vocab_${firstChar}`,
-                                  kanji: firstChar,
-                                  onyomi: '—',
-                                  kunyomi: '—',
-                                  mongolian: item.mongolian,
-                                  jlptLevel: item.jlptLevel,
-                                  exampleWords: [{ word: item.japanese, reading: item.reading, mongolian: item.mongolian }],
-                                  createdAt: new Date().toISOString()
-                                });
-                              }
-                            }}
-                            className="p-1 text-stone-400 hover:text-[#CC0000] dark:hover:text-[#FF6699] rounded transition-colors cursor-pointer"
-                            title="Зурлагын дараалал харах"
-                          >
-                            <PenTool className="w-3.5 h-3.5" />
-                          </button>
-                        );
-                      }
-                      return null;
-                    })()}
-
                     <button
                       type="button"
                       onClick={(e) => {
