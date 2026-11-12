@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Play,
@@ -107,11 +108,11 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
 
   if (!isOpen || !kanjiItem) return null;
 
-  return (
+  const modalJSX = (
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[80] flex items-center justify-center p-2.5 sm:p-4 bg-black/65 dark:bg-black/80 backdrop-blur-md overflow-y-auto animate-fade-in min-h-[100dvh] h-[100dvh] pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] px-[max(0.75rem,env(safe-area-inset-left))]"
+      className="fixed inset-0 z-[110] flex items-center justify-center p-2.5 sm:p-4 bg-black/65 dark:bg-black/80 backdrop-blur-md overflow-y-auto animate-fade-in min-h-[100dvh] h-[100dvh] pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] px-[max(0.75rem,env(safe-area-inset-left))]"
       onClick={e => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -367,4 +368,9 @@ export const KanjiStrokeModal: React.FC<KanjiStrokeModalProps> = ({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalJSX, document.body)
+    : modalJSX;
 };
+
