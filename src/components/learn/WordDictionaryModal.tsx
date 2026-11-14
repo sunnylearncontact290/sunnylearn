@@ -18,6 +18,7 @@ import { alignRubyParts, hasKanji } from '../../utils/furiganaRenderer';
 import { loadKanjiStrokeData } from '../../utils/kanjiVG';
 import { LevelBadge } from '../common/LevelBadge';
 import { AudioButton } from '../common/AudioButton';
+import { JapaneseText } from '../common/JapaneseText';
 import { KanjiStrokeModal } from '../kanji/KanjiStrokeModal';
 import { KanjiItem } from '../../types';
 import { useApp } from '../../context/AppContext';
@@ -47,7 +48,7 @@ export const WordDictionaryModal: React.FC<WordDictionaryModalProps> = ({
   const [displayedWord, setDisplayedWord] = useState<DetailedWordInfo | null>(wordInfo);
   const [historyStack, setHistoryStack] = useState<DetailedWordInfo[]>([]);
   const [selectedKanjiForStroke, setSelectedKanjiForStroke] = useState<KanjiItem | null>(null);
-  const [showFurigana, setShowFurigana] = useState<boolean>(true);
+  const [showFurigana, setShowFurigana] = useState<boolean>(userProgress.settings?.showFurigana ?? true);
   const [strokeCounts, setStrokeCounts] = useState<Record<string, number | null>>({});
 
   // Sync internal displayedWord when external wordInfo changes or modal opens
@@ -56,8 +57,9 @@ export const WordDictionaryModal: React.FC<WordDictionaryModalProps> = ({
       setDisplayedWord(wordInfo);
       setHistoryStack([]);
       setSelectedKanjiForStroke(null);
+      setShowFurigana(userProgress.settings?.showFurigana ?? true);
     }
-  }, [isOpen, wordInfo]);
+  }, [isOpen, wordInfo, userProgress.settings?.showFurigana]);
 
   // Handle ESC key to close / step back cleanly
   useEffect(() => {
@@ -335,97 +337,107 @@ export const WordDictionaryModal: React.FC<WordDictionaryModalProps> = ({
             </div>
           </div>
 
-          {/* 2. INTERACTIVE EXAMPLE SENTENCE (Жишээ өгүүлбэр) */}
+          {/* 2. INTERACTIVE EXAMPLE SENTENCE */}
           {displayedWord.exampleSentence ? (
-            <div className="p-2.5 sm:p-3 rounded-2xl bg-stone-50/90 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800/80 space-y-1">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] font-black uppercase tracking-wider text-stone-400">
-                  Жишээ өгүүлбэр (Ханзтай үг дээр дарж үзээрэй)
-                </span>
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-stone-50/90 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800/80 space-y-1.5">
+              <div className="flex items-start justify-between gap-2">
+                <div className={`font-jp text-sm sm:text-base min-w-0 flex-1 [overflow-wrap:anywhere] [word-break:break-word] ${showFurigana ? 'leading-[2.2]' : 'leading-relaxed'}`}>
+                  <p className="inline">
+                    {exampleTokens.map((token, idx) => {
+                      const isKanjiWord = !token.isPunctuation && hasKanji(token.surface);
+
+                      const rubyContent =
+                        showFurigana && token.rubyParts && token.rubyParts.length > 0
+                          ? token.rubyParts.map((chunk, cIdx) =>
+                              chunk.kanji ? (
+                                <ruby key={`ex-${idx}-${cIdx}-${chunk.kanji}`} className="ruby-unit">
+                                  {chunk.kanji}
+                                  <rt className="ruby-reading">{chunk.ruby}</rt>
+                                </ruby>
+                              ) : (
+                                <span key={`ex-${idx}-${cIdx}`}>{chunk.text}</span>
+                              )
+                            )
+                          : token.surface;
+
+                      if (!isKanjiWord) {
+                        return (
+                          <span
+                            key={`ex-${token.surface}-${idx}`}
+                            className="select-text text-stone-900 dark:text-stone-100"
+                          >
+                            {rubyContent}
+                          </span>
+                        );
+                      }
+
+                      const isSameActiveWord =
+                        token.word === displayedWord.word && token.surface === displayedWord.surface;
+
+                      return (
+                        <button
+                          type="button"
+                          key={`ex-${token.surface}-${idx}`}
+                          onClick={() => {
+                            if (!isSameActiveWord) {
+                              handleNavigateToToken(token);
+                            }
+                          }}
+                          className={`inline px-0.5 mx-[0.5px] rounded transition-all duration-150 font-bold border-b font-jp text-left focus:outline-none focus:ring-1 focus:ring-red-400/50 ${
+                            isSameActiveWord
+                              ? 'text-[#CC0000] dark:text-[#FF6699] border-red-400/70 bg-red-50/70 dark:bg-red-950/40 cursor-default'
+                              : 'cursor-pointer text-stone-900 dark:text-stone-100 border-dotted border-stone-300/90 dark:border-stone-700 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-600 dark:hover:text-red-400 active:scale-95 bg-transparent'
+                          }`}
+                          title={`"${token.surface}" толь бичиг харах`}
+                        >
+                          {rubyContent}
+                        </button>
+                      );
+                    })}
+                  </p>
+                </div>
+
                 <AudioButton
                   text={displayedWord.exampleSentence}
                   reading={displayedWord.exampleReading}
                   id={`dict_ex_${displayedWord.word}`}
                   size="xs"
                   variant="ghost"
+                  className="shrink-0 mt-0.5"
                   title="Жишээ өгүүлбэр сонсох"
                 />
               </div>
 
-              <div className="font-jp text-xs sm:text-sm leading-relaxed">
-                <p className="inline flex-wrap items-baseline">
-                  {exampleTokens.map((token, idx) => {
-                    const isKanjiWord = !token.isPunctuation && hasKanji(token.surface);
-
-                    const rubyContent =
-                      showFurigana && token.rubyParts && token.rubyParts.length > 0
-                        ? token.rubyParts.map((chunk, cIdx) =>
-                            chunk.kanji ? (
-                              <ruby key={`ex-${idx}-${cIdx}-${chunk.kanji}`} className="ruby-unit">
-                                {chunk.kanji}
-                                <rt className="ruby-reading">{chunk.ruby}</rt>
-                              </ruby>
-                            ) : (
-                              <span key={`ex-${idx}-${cIdx}`}>{chunk.text}</span>
-                            )
-                          )
-                        : token.surface;
-
-                    if (!isKanjiWord) {
-                      return (
-                        <span
-                          key={`ex-${token.surface}-${idx}`}
-                          className="select-text text-stone-900 dark:text-stone-100"
-                        >
-                          {rubyContent}
-                        </span>
-                      );
-                    }
-
-                    const isSameActiveWord =
-                      token.word === displayedWord.word && token.surface === displayedWord.surface;
-
-                    return (
-                      <button
-                        type="button"
-                        key={`ex-${token.surface}-${idx}`}
-                        onClick={() => {
-                          if (!isSameActiveWord) {
-                            handleNavigateToToken(token);
-                          }
-                        }}
-                        className={`inline-block px-0.5 py-0.5 mx-[0.5px] rounded transition-all duration-150 font-bold border-b font-jp text-left focus:outline-none focus:ring-1 focus:ring-red-400/50 ${
-                          showFurigana ? 'leading-[2.1]' : 'leading-snug'
-                        } ${
-                          isSameActiveWord
-                            ? 'text-[#CC0000] dark:text-[#FF6699] border-red-400/70 bg-red-50/70 dark:bg-red-950/40 cursor-default'
-                            : 'cursor-pointer text-stone-900 dark:text-stone-100 border-dotted border-stone-300/90 dark:border-stone-700 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-600 dark:hover:text-red-400 active:scale-95 bg-transparent'
-                        }`}
-                        title={`"${token.surface}" толь бичиг харах`}
-                      >
-                        {rubyContent}
-                      </button>
-                    );
-                  })}
-                </p>
-              </div>
-
               {displayedWord.exampleMongolian && (
-                <p className="text-[11px] sm:text-xs text-stone-600 dark:text-stone-400 pt-1 border-t border-stone-200/50 dark:border-stone-800/60 leading-snug">
+                <p className="text-[11px] sm:text-xs text-stone-600 dark:text-stone-400 pt-1.5 border-t border-stone-200/50 dark:border-stone-800/60 leading-snug">
                   {displayedWord.exampleMongolian}
                 </p>
               )}
             </div>
           ) : sentenceContext ? (
-            <div className="p-2.5 rounded-xl bg-stone-50/80 dark:bg-stone-900/50 border border-dashed border-stone-300 dark:border-stone-700 space-y-0.5">
-              <span className="text-[9px] font-extrabold uppercase tracking-wider text-stone-400 block">
-                Өгүүлбэр дэх хэрэглээ:
-              </span>
-              <p className="text-xs font-bold text-stone-800 dark:text-stone-200 font-jp leading-snug truncate">
-                {sentenceContext.japanese}
-              </p>
+            <div className="p-2.5 rounded-xl bg-stone-50/80 dark:bg-stone-900/50 border border-dashed border-stone-300 dark:border-stone-700 space-y-1">
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-xs sm:text-sm font-bold text-stone-800 dark:text-stone-200 font-jp min-w-0 flex-1">
+                  <JapaneseText
+                    text={sentenceContext.japanese}
+                    reading={sentenceContext.reading}
+                    showFurigana={showFurigana}
+                    vocabulary={data.vocabulary}
+                    kanji={data.kanji}
+                  />
+                </div>
+                <AudioButton
+                  text={sentenceContext.japanese}
+                  reading={sentenceContext.reading}
+                  id={`dict_ctx_${displayedWord.word}`}
+                  size="xs"
+                  variant="ghost"
+                  className="shrink-0"
+                  title="Өгүүлбэр сонсох"
+                />
+              </div>
               {sentenceContext.mongolian && (
-                <p className="text-[11px] text-stone-500 italic truncate">
+                <p className="text-[11px] text-stone-500 dark:text-stone-400 italic leading-snug">
                   {sentenceContext.mongolian}
                 </p>
               )}

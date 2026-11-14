@@ -488,6 +488,8 @@ export const SunnyAITutor: React.FC<SunnyAITutorProps> = ({
                           id={`sunny_msg_${msg.id}`}
                           size="xs"
                           variant="ghost"
+                          isConversation
+                          cacheable={false}
                           title="Япон хэсгийг сонсох"
                         />
                       )}

@@ -6,7 +6,6 @@ import path from 'path';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import { GoogleGenAI } from '@google/genai';
-import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import { initialSeedData } from '../data/seedData';
 import { DatabaseSchema, PaymentRequestItem, JLPTLevel, LevelCountDetails, RoleplaySessionRecord, RoleplayScenario, SunnyAIRoleplayFeedbackContext, RoleplayFeedbackReport, FreeChatFeedbackReport, PREMIUM_PRICE_YEN } from '../types';
 import {
@@ -60,7 +59,7 @@ if (!IS_VERCEL && !fs.existsSync(path.resolve(process.cwd(), 'data'))) {
 }
 
 // ----------------------------------------------------
-// NEURAL TTS (GEMINI 3.1 FLASH TTS) & AUDIO CACHING
+// NEURAL TTS (GEMINI 3.8 FLASH LITE TTS) & AUDIO CACHING
 // ----------------------------------------------------
 let geminiClient: GoogleGenAI | null = null;
 function getGeminiClient(): GoogleGenAI | null {
@@ -71,7 +70,11 @@ function getGeminiClient(): GoogleGenAI | null {
   if (!geminiClient) {
     geminiClient = new GoogleGenAI({
       apiKey,
-      httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
+      apiVersion: 'v1beta',
+      httpOptions: {
+        apiVersion: 'v1beta',
+        headers: { 'User-Agent': 'aistudio-build' }
+      }
     });
   }
   return geminiClient;
@@ -89,23 +92,31 @@ if (!fs.existsSync(AUDIO_CACHE_DIR)) {
 }
 
 const audioMemoryCache = new Map<string, string>();
+const MAX_SERVER_AUDIO_CACHE = 500;
 
-// Pre-load existing audio files from disk cache for instant playback with zero latency
+function setServerAudioCache(key: string, uri: string): void {
+  if (audioMemoryCache.has(key)) {
+    audioMemoryCache.delete(key);
+  } else if (audioMemoryCache.size >= MAX_SERVER_AUDIO_CACHE) {
+    const oldestKey = audioMemoryCache.keys().next().value;
+    if (oldestKey) audioMemoryCache.delete(oldestKey);
+  }
+  audioMemoryCache.set(key, uri);
+}
+
+// Pre-load only current v3 WAV audio files from disk cache (ignore legacy mp3 / stale wav files)
 try {
   if (fs.existsSync(AUDIO_CACHE_DIR)) {
     const cachedFiles = fs.readdirSync(AUDIO_CACHE_DIR);
     for (const file of cachedFiles) {
-      if (file.endsWith('.mp3')) {
-        const key = file.replace('.mp3', '');
-        const mp3Buffer = fs.readFileSync(path.join(AUDIO_CACHE_DIR, file));
-        audioMemoryCache.set(key, `data:audio/mp3;base64,${mp3Buffer.toString('base64')}`);
-      } else if (file.endsWith('.wav')) {
+      if (file.startsWith('tts_v3_') && file.endsWith('.wav')) {
+        if (audioMemoryCache.size >= MAX_SERVER_AUDIO_CACHE) break;
         const key = file.replace('.wav', '');
         const wavBuffer = fs.readFileSync(path.join(AUDIO_CACHE_DIR, file));
-        audioMemoryCache.set(key, `data:audio/wav;base64,${wavBuffer.toString('base64')}`);
+        setServerAudioCache(key, `data:audio/wav;base64,${wavBuffer.toString('base64')}`);
       }
     }
-    console.log(`[TTS] Loaded ${audioMemoryCache.size} cached audio items into memory`);
+    console.log(`[TTS] Loaded ${audioMemoryCache.size} v3 cached audio items into memory`);
   }
 } catch (cacheErr) {
   console.warn('[TTS] Failed loading audio cache from disk:', cacheErr);
@@ -937,23 +948,29 @@ app.get('/api/config/launch-mode', (_req, res) => {
 
 // ----------------------------------------------------
 // UNIFIED NEURAL JAPANESE TTS ENGINE & API
-// Primary: High-fidelity Microsoft Neural TTS (100-180ms warm latency, zero quota limits)
-// Fallback: Gemini 3.1 Flash TTS Preview (when available)
+// Single canonical neural voice pipeline via Gemini 3.8 Flash Lite TTS ('Kore' / 'Puck')
 // ----------------------------------------------------
 function stripFuriganaServer(text: string): string {
   if (!text) return '';
   let s = String(text);
 
-  // 1. Ruby tags: replace <ruby>X<rt>Y</rt></ruby> with reading Y
-  s = s.replace(/<ruby[^>]*>(?:(?!<rt).)*<rt[^>]*>([^<]+)<\/rt>.*?<\/ruby>/gi, '$1');
-  s = s.replace(/<rt[^>]*>([^<]+)<\/rt>/gi, '$1');
+  // 1. Ruby tags: keep BASE Japanese text from <ruby>BASE<rt>READING</rt></ruby> so neural TTS never reads both Kanji + reading twice
+  s = s.replace(/<ruby[^>]*>([\s\S]*?)<rt[^>]*>[\s\S]*?<\/rt>[\s\S]*?<\/ruby>/gi, '$1');
+  s = s.replace(/<rt[^>]*>[\s\S]*?<\/rt>/gi, '');
   s = s.replace(/<[^>]+>/g, '');
 
-  // 2. Bracketed/Parenthetical Furigana: e.g. 安全【あんぜん】 or 手続き【てつづき】 or 安全(あんぜん)
-  // Replace with reading ($2) so the neural voice pronounces the word naturally ONCE without repeating!
-  s = s.replace(/([\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]+[\u3041-\u3096]*)\s*[（\(\[【]\s*([ぁ-んァ-ヶー・\.\-]+)\s*[）\)\]】]/gu, (_, _kanji, kana) => {
-    return kana.replace(/[\(\)\[\]（）【】\.\-・~〜]/g, '').trim();
-  });
+  // 2. Bracketed/Parenthetical Furigana: e.g. 今日（きょう）は... or 安全【あんぜん】
+  // Detect isolated single bracketed vocab vs multi-word sentence/phrase
+  const trimmed = s.trim();
+  const isIsolatedBracketedVocab = /^[\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]+[\u3041-\u3096]*\s*[（\(\[【]\s*[ぁ-んァ-ヶー・\.\-]+\s*[）\)\]】]$/u.test(trimmed);
+  if (isIsolatedBracketedVocab) {
+    s = trimmed.replace(/^[\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]+[\u3041-\u3096]*\s*[（\(\[【]\s*([ぁ-んァ-ヶー・\.\-]+)\s*[）\)\]】]$/u, (_, kana) =>
+      kana.replace(/[\(\)\[\]（）【】\.\-・~〜]/g, '').trim()
+    );
+  } else {
+    // Sentence or mixed utterance: preserve base Kanji word ($1) cleanly
+    s = s.replace(/([\u4E00-\u9FFF々仝〆〇ヶ\u3400-\u4DBF]+[\u3041-\u3096]*)\s*[（\(\[【]\s*([ぁ-んァ-ヶー・\.\-]+)\s*[）\)\]】]/gu, '$1');
+  }
 
   // 3. Standalone bracketed kana: e.g. 【あんぜん】 or [あんぜん] or (あんぜん)
   s = s.replace(/^[（\(\[【]\s*([ぁ-んァ-ヶー]+)\s*[）\)\]】]$/u, '$1');
@@ -970,348 +987,154 @@ function stripFuriganaServer(text: string): string {
   // 7. Remove emoji characters
   s = s.replace(/[\u{1F300}-\u{1FAFF}]/gu, '');
 
-  // 8. Normalize whitespace
+  // 8. Normalize whitespace cleanly (keep contiguous Japanese text)
+  s = s.replace(/([\u3040-\u30ff\u4e00-\u9fa5])\s+([\u3040-\u30ff\u4e00-\u9fa5])/g, '$1$2');
   s = s.replace(/\s+/g, ' ').trim();
   return s;
 }
 
 // Circuit breaker for Gemini TTS rate limits
 let ttsQuotaCooldownUntil = 0;
-let ttsQuotaReason = '';
 
-/**
- * High-performance pooled Microsoft Neural TTS engine.
- * Maintains persistent warm WebSocket connection for 100-180ms response times.
- */
-class EdgeTTSConnectionManager {
-  private static isUnavailable = false;
-  private client: MsEdgeTTS | null = null;
-  private voice: string;
-  private initPromise: Promise<MsEdgeTTS | null> | null = null;
-
-  constructor(voice: string) {
-    this.voice = voice;
-  }
-
-  public static isDisabled(): boolean {
-    return EdgeTTSConnectionManager.isUnavailable;
-  }
-
-  private async getClient(): Promise<MsEdgeTTS | null> {
-    if (EdgeTTSConnectionManager.isUnavailable) return null;
-    if (this.client) return this.client;
-    if (this.initPromise) return this.initPromise;
-
-    this.initPromise = (async () => {
-      try {
-        const c = new MsEdgeTTS();
-        await c.setMetadata(this.voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-        this.client = c;
-        return c;
-      } catch (err: any) {
-        // Microsoft Edge TTS endpoint returns 403 in container/cloud IP environments
-        EdgeTTSConnectionManager.isUnavailable = true;
-        this.client = null;
-        return null;
-      } finally {
-        this.initPromise = null;
-      }
-    })();
-
-    return this.initPromise;
-  }
-
-  public async synthesize(cleanText: string): Promise<string | null> {
-    if (EdgeTTSConnectionManager.isUnavailable) return null;
-    // Attempt 1: Fast stream via warm pooled client
-    const pooled = await this.getClient();
-    if (pooled) {
-      try {
-        const res = await this.streamFrom(pooled, cleanText, 2500);
-        if (res) return res;
-      } catch {
-        try { pooled.close(); } catch {}
-        this.client = null;
-      }
-    }
-
-    // Attempt 2: Fresh one-shot client fallback
-    return this.synthesizeOneShot(cleanText);
-  }
-
-  private streamFrom(client: MsEdgeTTS, text: string, timeoutMs: number): Promise<string | null> {
-    return new Promise((resolve, reject) => {
-      let settled = false;
-      const chunks: Buffer[] = [];
-      const timer = setTimeout(() => {
-        if (!settled) {
-          settled = true;
-          reject(new Error(`Timeout after ${timeoutMs}ms`));
-        }
-      }, timeoutMs);
-
-      try {
-        const { audioStream } = client.toStream(text);
-        audioStream.on('data', (chunk: Buffer) => chunks.push(chunk));
-        audioStream.on('end', () => {
-          if (!settled) {
-            settled = true;
-            clearTimeout(timer);
-            const total = Buffer.concat(chunks);
-            if (total.length > 0) {
-              resolve(`data:audio/mp3;base64,${total.toString('base64')}`);
-            } else {
-              resolve(null);
-            }
-          }
-        });
-        audioStream.on('error', (err: any) => {
-          if (!settled) {
-            settled = true;
-            clearTimeout(timer);
-            reject(err);
-          }
-        });
-      } catch (err) {
-        if (!settled) {
-          settled = true;
-          clearTimeout(timer);
-          reject(err);
-        }
-      }
-    });
-  }
-
-  private synthesizeOneShot(text: string): Promise<string | null> {
-    if (EdgeTTSConnectionManager.isUnavailable) return Promise.resolve(null);
-    return new Promise((resolve) => {
-      let settled = false;
-      let ttsInstance: MsEdgeTTS | null = null;
-
-      const timer = setTimeout(() => {
-        if (!settled) {
-          settled = true;
-          try { ttsInstance?.close(); } catch {}
-          resolve(null);
-        }
-      }, 3500);
-
-      (async () => {
-        try {
-          ttsInstance = new MsEdgeTTS();
-          await ttsInstance.setMetadata(this.voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-          const { audioStream } = ttsInstance.toStream(text);
-          const chunks: Buffer[] = [];
-
-          audioStream.on('data', (chunk: Buffer) => chunks.push(chunk));
-          audioStream.on('end', () => {
-            if (!settled) {
-              settled = true;
-              clearTimeout(timer);
-              const total = Buffer.concat(chunks);
-              try { ttsInstance?.close(); } catch {}
-              if (total.length > 0) {
-                resolve(`data:audio/mp3;base64,${total.toString('base64')}`);
-              } else {
-                resolve(null);
-              }
-            }
-          });
-          audioStream.on('error', () => {
-            if (!settled) {
-              settled = true;
-              clearTimeout(timer);
-              try { ttsInstance?.close(); } catch {}
-              resolve(null);
-            }
-          });
-        } catch {
-          if (!settled) {
-            settled = true;
-            clearTimeout(timer);
-            try { ttsInstance?.close(); } catch {}
-            resolve(null);
-          }
-        }
-      })();
-    });
-  }
-}
-
-const femaleEdgeManager = new EdgeTTSConnectionManager('ja-JP-NanamiNeural');
-const maleEdgeManager = new EdgeTTSConnectionManager('ja-JP-KeitaNeural');
-
-/**
- * Direct Japanese speech synthesis stream via Google Translate TTS (MP3 24kHz).
- * Highly reliable, zero API key requirement, authentic native Japanese pronunciation.
- */
-async function fetchGoogleJapaneseTTS(cleanText: string): Promise<string | null> {
-  try {
-    const chunks: string[] = [];
-    if (cleanText.length <= 160) {
-      chunks.push(cleanText);
-    } else {
-      const parts = cleanText.split(/([。！？!?\n]+)/);
-      let current = '';
-      for (const p of parts) {
-        if ((current + p).length > 160) {
-          if (current.trim()) chunks.push(current.trim());
-          current = p;
-        } else {
-          current += p;
-        }
-      }
-      if (current.trim()) chunks.push(current.trim());
-    }
-
-    const buffers: Buffer[] = [];
-    for (const chunk of chunks) {
-      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=ja&client=tw-ob`;
-      const resp = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Referer': 'https://translate.google.com/'
-        }
-      });
-      if (!resp.ok) {
-        return null;
-      }
-      const arrayBuffer = await resp.arrayBuffer();
-      buffers.push(Buffer.from(arrayBuffer));
-    }
-
-    if (buffers.length === 0) return null;
-    const combined = Buffer.concat(buffers);
-    return `data:audio/mp3;base64,${combined.toString('base64')}`;
-  } catch (err) {
-    console.warn('[Google Japanese TTS Warning]', err);
-    return null;
-  }
+interface NeuralTTSOptions {
+  voiceName?: string;
+  isConversation?: boolean;
+  cacheable?: boolean;
 }
 
 /**
- * Main neural Japanese audio synthesizer.
- * Checks memory and disk cache first for instant 0ms playback,
- * synthesizes with Microsoft Neural TTS or Google Translate TTS stream,
- * and seamlessly falls back to Gemini 3.1 Flash TTS if needed.
+ * Unified Neural Japanese Audio Synthesizer.
+ * Uses Gemini 3.8 Flash Lite TTS ('gemini-3.8-flash-lite-tts') with one canonical native
+ * Japanese voice ('Kore', or 'Puck' when male persona is explicitly requested).
+ * Never falls back to Google Translate TTS or inconsistent secondary voice providers.
+ * Conversation audio is never cached to shared disk across users.
  */
-async function generateNeuralJapaneseAudio(text: string, voiceName: string = 'Aoede'): Promise<string | null> {
+async function generateNeuralJapaneseAudio(
+  text: string,
+  voiceOrOptions: string | NeuralTTSOptions = 'Kore'
+): Promise<string | null> {
+  const opts: NeuralTTSOptions =
+    typeof voiceOrOptions === 'string' ? { voiceName: voiceOrOptions } : (voiceOrOptions || {});
+
+  const voiceName = opts.voiceName || 'Kore';
+  const isConversation = Boolean(opts.isConversation);
+  const cacheable = opts.cacheable !== false && !isConversation;
+
   const clean = stripFuriganaServer(text);
   if (!clean || clean.length === 0) return null;
 
-  // Unified canonical voices:
-  // Default (Female, natural, smooth, conversational): 'ja-JP-NanamiNeural' (Aoede, Kore, Zephyr, default)
-  // Male persona: 'ja-JP-KeitaNeural' (Puck, Fenrir, Charon, male)
-  const isMale = voiceName === 'Puck' || voiceName === 'Fenrir' || voiceName === 'Charon' || voiceName === 'male';
-  const edgeVoice = isMale ? 'ja-JP-KeitaNeural' : 'ja-JP-NanamiNeural';
-  const geminiVoice = isMale ? 'Puck' : 'Aoede';
+  const isMale =
+    voiceName === 'Puck' ||
+    voiceName === 'Fenrir' ||
+    voiceName === 'Charon' ||
+    voiceName === 'Keita' ||
+    voiceName === 'male' ||
+    voiceName === 'ja-JP-KeitaNeural';
+  const geminiVoice = isMale ? 'Puck' : 'Kore';
 
-  // Cache key based on voice and text MD5
-  const hash = crypto.createHash('md5').update(`${edgeVoice}:${clean}`).digest('hex');
-  const cacheKey = `tts_${edgeVoice}_${hash}`;
-
-  // 1. In-memory Cache check
-  if (audioMemoryCache.has(cacheKey)) {
-    return audioMemoryCache.get(cacheKey)!;
-  }
-
-  // 2. Disk Cache check (.mp3 or .wav)
-  const diskPathMp3 = path.join(AUDIO_CACHE_DIR, `${cacheKey}.mp3`);
-  if (fs.existsSync(diskPathMp3)) {
-    try {
-      const mp3 = fs.readFileSync(diskPathMp3);
-      const uri = `data:audio/mp3;base64,${mp3.toString('base64')}`;
-      audioMemoryCache.set(cacheKey, uri);
-      return uri;
-    } catch {}
-  }
-
+  const hash = crypto.createHash('md5').update(`${geminiVoice}:${clean}`).digest('hex');
+  const cacheKey = `tts_v3_${geminiVoice}_${hash}`;
   const diskPathWav = path.join(AUDIO_CACHE_DIR, `${cacheKey}.wav`);
-  if (fs.existsSync(diskPathWav)) {
-    try {
-      const wav = fs.readFileSync(diskPathWav);
-      const uri = `data:audio/wav;base64,${wav.toString('base64')}`;
-      audioMemoryCache.set(cacheKey, uri);
-      return uri;
-    } catch {}
+
+  if (cacheable) {
+    if (audioMemoryCache.has(cacheKey)) {
+      return audioMemoryCache.get(cacheKey)!;
+    }
+
+    if (fs.existsSync(diskPathWav)) {
+      try {
+        const wav = fs.readFileSync(diskPathWav);
+        const uri = `data:audio/wav;base64,${wav.toString('base64')}`;
+        setServerAudioCache(cacheKey, uri);
+        return uri;
+      } catch {}
+    }
   }
 
-  // 3. Primary Engine: High-fidelity Gemini 3.8 / 3.1 Flash Neural TTS with conversational prosody
-  if (Date.now() >= ttsQuotaCooldownUntil) {
-    try {
-      const ai = getGeminiClient();
-      if (ai) {
-        for (const ttsModel of ['gemini-3.8-flash-tts', 'gemini-3.1-flash-tts-preview']) {
-          try {
-            const resp = await ai.models.generateContent({
-              model: ttsModel,
-              contents: clean,
-              config: {
-                responseModalities: ['AUDIO'],
-                speechConfig: {
-                  voiceConfig: {
-                    prebuiltVoiceConfig: {
-                      voiceName: geminiVoice
-                    }
-                  }
+  if (Date.now() < ttsQuotaCooldownUntil) {
+    return null;
+  }
+
+  const ai = getGeminiClient();
+  if (!ai) {
+    return null;
+  }
+
+  const stylePrompt = isConversation
+    ? 'Speak in a warm, natural conversational Japanese voice with native phrasing and natural pacing.'
+    : 'Speak clearly in a calm, warm, natural native Japanese instructor voice with accurate pitch accent.';
+
+  const buildRequest = (ttsModel: string, includeSpeechMetadata: boolean) => ({
+    model: ttsModel,
+    contents: [
+      {
+        role: 'user',
+        parts: [
+          includeSpeechMetadata
+            ? ({
+                text: clean,
+                speechMetadata: {
+                  style: stylePrompt
                 }
-              }
-            });
+              } as any)
+            : { text: clean }
+        ]
+      }
+    ],
+    config: {
+      responseModalities: ['AUDIO'],
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: {
+            voiceName: geminiVoice
+          }
+        }
+      }
+    }
+  });
 
-            const parts = resp.candidates?.[0]?.content?.parts || [];
-            const audioPart = parts.find((p: any) => p.inlineData?.mimeType?.startsWith('audio/'));
-            if (audioPart && audioPart.inlineData?.data) {
-              const pcmBuffer = Buffer.from(audioPart.inlineData.data, 'base64');
-              const wavBuffer = pcmToWavBuffer(pcmBuffer, 24000, 1, 16);
-              const uri = `data:audio/wav;base64,${wavBuffer.toString('base64')}`;
+  for (const ttsModel of ['gemini-3.8-flash-lite-tts', 'gemini-3.8-flash-tts']) {
+    try {
+      let resp;
+      try {
+        resp = await ai.models.generateContent(buildRequest(ttsModel, true));
+      } catch (innerErr: any) {
+        const innerMsg = innerErr?.message || String(innerErr);
+        if (innerMsg.includes('speechMetadata')) {
+          resp = await ai.models.generateContent(buildRequest(ttsModel, false));
+        } else {
+          throw innerErr;
+        }
+      }
 
-              audioMemoryCache.set(cacheKey, uri);
-              try {
-                fs.writeFileSync(diskPathWav, wavBuffer);
-              } catch {}
-              return uri;
-            }
+      const parts = resp.candidates?.[0]?.content?.parts || [];
+      const audioPart = parts.find((p: any) => p.inlineData?.mimeType?.startsWith('audio/'));
+      if (audioPart && audioPart.inlineData?.data) {
+        const rawBuf = Buffer.from(audioPart.inlineData.data, 'base64');
+        const isAlreadyWav =
+          rawBuf.length >= 12 &&
+          rawBuf.subarray(0, 4).toString('ascii') === 'RIFF' &&
+          rawBuf.subarray(8, 12).toString('ascii') === 'WAVE';
+        const wavBuffer = isAlreadyWav ? rawBuf : pcmToWavBuffer(rawBuf, 24000, 1, 16);
+        const uri = `data:audio/wav;base64,${wavBuffer.toString('base64')}`;
+
+        if (cacheable) {
+          setServerAudioCache(cacheKey, uri);
+          try {
+            fs.writeFileSync(diskPathWav, wavBuffer);
           } catch {}
         }
+        return uri;
       }
     } catch (err: any) {
       const errMsg = err?.message || String(err);
+      console.warn(`[TTS] Model ${ttsModel} error:`, errMsg);
       const isQuota429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED');
       if (isQuota429) {
         ttsQuotaCooldownUntil = Date.now() + 60 * 1000;
+        break;
       }
     }
-  }
-
-  // 3.5. Secondary Engine: Microsoft Neural TTS (if not 403-restricted)
-  if (!EdgeTTSConnectionManager.isDisabled()) {
-    try {
-      const manager = isMale ? maleEdgeManager : femaleEdgeManager;
-      const edgeAudio = await manager.synthesize(clean);
-      if (edgeAudio) {
-        audioMemoryCache.set(cacheKey, edgeAudio);
-        try {
-          const base64Data = edgeAudio.replace(/^data:audio\/mp3;base64,/, '');
-          fs.writeFileSync(diskPathMp3, Buffer.from(base64Data, 'base64'));
-        } catch {}
-        return edgeAudio;
-      }
-    } catch {}
-  }
-
-  // 4. Reliable Google Japanese Audio stream fallback
-  try {
-    const googleAudio = await fetchGoogleJapaneseTTS(clean);
-    if (googleAudio) {
-      audioMemoryCache.set(cacheKey, googleAudio);
-      try {
-        const base64Data = googleAudio.replace(/^data:audio\/mp3;base64,/, '');
-        fs.writeFileSync(diskPathMp3, Buffer.from(base64Data, 'base64'));
-      } catch {}
-      return googleAudio;
-    }
-  } catch (googleErr) {
-    console.warn('[Google Audio Warning]', googleErr);
   }
 
   return null;
@@ -1320,15 +1143,15 @@ async function generateNeuralJapaneseAudio(text: string, voiceName: string = 'Ao
 app.get('/api/tts/status', (_req, res) => {
   res.json({
     available: true,
-    engine: 'neural-unified',
-    primaryVoice: 'ja-JP-NanamiNeural',
-    maleVoice: 'ja-JP-KeitaNeural',
+    engine: 'gemini-3.8-flash-lite-tts',
+    primaryVoice: 'Kore',
+    maleVoice: 'Puck',
     cachedAudioCount: audioMemoryCache.size
   });
 });
 
 app.post('/api/tts', async (req: Request, res: Response) => {
-  const { text, voice = 'Aoede' } = req.body || {};
+  const { text, voice = 'Kore', isConversation = false, cacheable = true } = req.body || {};
   if (!text || typeof text !== 'string' || !text.trim()) {
     return res.status(400).json({ success: false, error: 'Япон текстийг оруулна уу.' });
   }
@@ -1339,7 +1162,11 @@ app.post('/api/tts', async (req: Request, res: Response) => {
   }
 
   try {
-    const audioUri = await generateNeuralJapaneseAudio(clean, voice);
+    const audioUri = await generateNeuralJapaneseAudio(clean, {
+      voiceName: voice,
+      isConversation: Boolean(isConversation),
+      cacheable: cacheable !== false && !isConversation
+    });
     if (audioUri) {
       return res.json({
         success: true,
@@ -1509,7 +1336,7 @@ app.post('/api/auth/register', async (req, res) => {
         settings: {
           targetLevel: 'N5',
           dailyGoalCount: 10,
-          speechRate: 0.9,
+          speechRate: 1.0,
           autoPlayAudio: false,
           showFurigana: true
         }
@@ -1692,7 +1519,7 @@ app.post('/api/auth/google', async (req, res) => {
           settings: {
             targetLevel: 'N5',
             dailyGoalCount: 10,
-            speechRate: 0.9,
+            speechRate: 1.0,
             autoPlayAudio: false,
             showFurigana: true
           }
@@ -1970,7 +1797,7 @@ app.get('/api/user/me', verifyUserToken, (req, res) => {
           settings: {
             targetLevel: 'N5',
             dailyGoalCount: 10,
-            speechRate: 0.9,
+            speechRate: 1.0,
             autoPlayAudio: false,
             showFurigana: true
           }
@@ -3546,7 +3373,7 @@ async function callGeminiFreeChatTurn(
   messages: { role: 'user' | 'assistant'; content: string }[],
   jlptLevel: JLPTLevel = 'N5',
   style: 'easy' | 'natural' = 'natural',
-  voiceName: string = 'Aoede'
+  voiceName: string = 'Kore'
 ): Promise<{
   reply: string;
   cleanReply: string;
@@ -3743,7 +3570,7 @@ app.post('/api/ai/free-chat', async (req: Request, res: Response) => {
     messages = [],
     jlptLevel = 'N5',
     style = 'natural',
-    voiceName = 'Aoede',
+    voiceName = 'Kore',
     generateAudio = true
   } = req.body || {};
 
@@ -3759,7 +3586,11 @@ app.post('/api/ai/free-chat', async (req: Request, res: Response) => {
 
     let audioDataUri: string | null = null;
     if (generateAudio) {
-      audioDataUri = await generateNeuralJapaneseAudio(turnResult.cleanReply, voiceName);
+      audioDataUri = await generateNeuralJapaneseAudio(turnResult.cleanReply, {
+        voiceName,
+        isConversation: true,
+        cacheable: false
+      });
     }
 
     res.json({
@@ -3782,13 +3613,17 @@ app.post('/api/ai/free-chat', async (req: Request, res: Response) => {
 
 // 8. POST /api/ai/free-chat/voice - Generate neural audio on demand
 app.post('/api/ai/free-chat/voice', async (req: Request, res: Response) => {
-  const { text, voiceName = 'Aoede' } = req.body || {};
+  const { text, voiceName = 'Kore' } = req.body || {};
   if (!text || !text.trim()) {
     return res.status(400).json({ error: 'Текст шаардлагатай.' });
   }
 
   try {
-    const audioDataUri = await generateNeuralJapaneseAudio(text, voiceName);
+    const audioDataUri = await generateNeuralJapaneseAudio(text, {
+      voiceName,
+      isConversation: true,
+      cacheable: false
+    });
     res.json({
       success: true,
       audio: audioDataUri,

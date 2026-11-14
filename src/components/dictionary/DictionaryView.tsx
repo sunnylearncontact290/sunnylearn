@@ -11,8 +11,9 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { LevelBadge } from '../common/LevelBadge';
+import { AudioButton } from '../common/AudioButton';
+import { JapaneseText } from '../common/JapaneseText';
 import { JLPTLevel, KanjiItem, VocabularyItem } from '../../types';
-import { speechService } from '../../services/speech';
 import { WordDictionaryModal } from '../learn/WordDictionaryModal';
 import { DetailedWordInfo, TokenKanjiInfo } from '../../utils/japaneseTokenizer';
 import { alignRubyParts, renderRubyHtml } from '../../utils/furiganaRenderer';
@@ -277,12 +278,7 @@ export const DictionaryView: React.FC = () => {
     setSelectedWordInfo(info);
   };
 
-  const handlePlayAudio = (text: string, reading?: string) => {
-    speechService.play(text, {
-      reading,
-      rate: userProgress.settings?.speechRate || 0.9
-    });
-  };
+  const showFurigana = userProgress.settings?.showFurigana ?? true;
 
   const activeLetter = browseMode === 'ja' ? selectedKana : selectedMnLetter;
   const hasAnyActiveFilter =
@@ -629,17 +625,13 @@ export const DictionaryView: React.FC = () => {
                             【{item.reading}】
                           </span>
                         )}
-                        <button
-                          type="button"
-                          onClick={e => {
-                            e.stopPropagation();
-                            handlePlayAudio(item.japanese, item.reading);
-                          }}
-                          className="p-1 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-[#CC0000] dark:text-[#FF6699] cursor-pointer"
+                        <AudioButton
+                          text={item.japanese}
+                          reading={item.reading}
+                          id={`dict_card_${item.id}`}
+                          size="xs"
                           title={`"${item.japanese}" дуудлага сонсох`}
-                        >
-                          <Volume2 className="w-3.5 h-3.5" />
-                        </button>
+                        />
                       </div>
 
                       {/* Mongolian Meaning */}
@@ -650,9 +642,15 @@ export const DictionaryView: React.FC = () => {
 
                     {/* Example Sentence preview if available */}
                     {item.exampleSentence && (
-                      <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/60 dark:border-stone-800 text-xs space-y-0.5">
+                      <div className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/60 dark:border-stone-800 text-xs space-y-1">
                         <div className="font-bold text-stone-800 dark:text-stone-200 font-jp">
-                          {item.exampleSentence}
+                          <JapaneseText
+                            text={item.exampleSentence}
+                            reading={item.exampleReading}
+                            showFurigana={showFurigana}
+                            vocabulary={data.vocabulary}
+                            kanji={data.kanji}
+                          />
                         </div>
                         {item.exampleMongolian && (
                           <div className="text-[11px] text-stone-500 dark:text-stone-400 italic">

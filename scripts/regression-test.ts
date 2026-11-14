@@ -6,6 +6,7 @@ import {
   getPrimaryMongolianMeaning,
   compareMongolianStrings
 } from '../src/utils/mongolianUtils';
+import { cleanJapaneseText } from '../src/services/speech';
 
 // Sample vocabulary items
 const mockVocab: any[] = [
@@ -497,6 +498,85 @@ if (compareMongolianStrings('орон', 'өрөө') < 0 && compareMongolianStrin
 } else {
   console.error('  [FAIL] Mongolian locale collation order incorrect.');
   totalFailed++;
+}
+
+// 10. Dictionary N5-N1 Furigana & Tokenization Edge Cases
+console.log('\nRUNNING: Dictionary Example Sentence Furigana Edge Cases');
+const edgeVocab: any[] = [
+  ...mockVocab,
+  { id: 'e1', japanese: '耳', reading: 'みみ', mongolian: 'Чих', jlptLevel: 'N5' },
+  { id: 'e2', japanese: '痛い', reading: 'いたい', mongolian: 'Өвдөх', jlptLevel: 'N5' },
+  { id: 'e3', japanese: '二人', reading: 'ふたり', mongolian: 'Хоёр хүн', jlptLevel: 'N5' },
+  { id: 'e4', japanese: '意見', reading: 'いけん', mongolian: 'Санал бодол', jlptLevel: 'N4' },
+  { id: 'e5', japanese: '一致', reading: 'いっち', mongolian: 'Тохирох, нэгдэх', jlptLevel: 'N2' },
+  { id: 'e6', japanese: '黒い', reading: 'くろい', mongolian: 'Хар', jlptLevel: 'N5' },
+  { id: 'e7', japanese: '車', reading: 'くるま', mongolian: 'Машин', jlptLevel: 'N5' },
+  { id: 'e8', japanese: '暇', reading: 'ひま', mongolian: 'Чөлөөт зав', jlptLevel: 'N5' },
+  { id: 'e9', japanese: '時', reading: 'とき', mongolian: 'Цаг үе', jlptLevel: 'N5' },
+  { id: 'e10', japanese: '読む', reading: 'よむ', mongolian: 'Унших', jlptLevel: 'N5' },
+  { id: 'e11', japanese: '毎年', reading: 'まいとし / まいねん', mongolian: 'Жил бүр', jlptLevel: 'N5' }
+];
+const edgeKanji: any[] = [
+  ...mockKanji,
+  { id: 'ek1', kanji: '痛', onyomi: 'ツウ', kunyomi: 'いた.い', mongolian: 'Өвдөх', jlptLevel: 'N4' },
+  { id: 'ek2', kanji: '致', onyomi: 'チ', kunyomi: 'いた.す', mongolian: 'Хүргэх', jlptLevel: 'N2' },
+  { id: 'ek3', kanji: '黒', onyomi: 'コク', kunyomi: 'くろ.い', mongolian: 'Хар', jlptLevel: 'N5' },
+  { id: 'ek4', kanji: '車', onyomi: 'シャ', kunyomi: 'くるま', mongolian: 'Машин', jlptLevel: 'N5' },
+  { id: 'ek5', kanji: '読', onyomi: 'ドク', kunyomi: 'よ.む', mongolian: 'Унших', jlptLevel: 'N5' }
+];
+
+const itaiTokens = tokenizeJapaneseSentence('耳が痛いです。', edgeVocab, edgeKanji, 'みみがいたいです。');
+const itaiTok = itaiTokens.find(t => t.surface.includes('痛'));
+if (!itaiTok || !itaiTok.reading.startsWith('いた') || itaiTok.rubyHtml !== '<ruby>痛<rt>いた</rt></ruby>い') {
+  console.error('  [FAIL] "耳が痛いです。" token failed:', itaiTok);
+  totalFailed++;
+} else {
+  console.log('  [PASS] "耳が痛いです。" -> "<ruby>痛<rt>いた</rt></ruby>い" + です');
+}
+
+const icchiTokens = tokenizeJapaneseSentence('二人の意見が一致しました。', edgeVocab, edgeKanji, 'ふたりのいけんがいっちしました。');
+const icchiHtml = icchiTokens.map(t => t.rubyHtml).join('');
+if (icchiHtml.includes('いっ致') || !icchiHtml.includes('<ruby>一致<rt>いっち</rt></ruby>')) {
+  console.error('  [FAIL] "一致しました" corrupted base Kanji:', icchiHtml);
+  totalFailed++;
+} else {
+  console.log(`  [PASS] "二人の意見が一致しました。" -> "${icchiHtml}"`);
+}
+
+const kuroTokens = tokenizeJapaneseSentence('黒い車です。', edgeVocab, edgeKanji, 'くろいくるまです。');
+const kuroTok = kuroTokens.find(t => t.surface === '黒い');
+const kurumaTok = kuroTokens.find(t => t.surface === '車');
+if (!kuroTok || kuroTok.reading !== 'くろい' || !kurumaTok || kurumaTok.reading !== 'くるま') {
+  console.error('  [FAIL] "黒い車です。" split/reading failed:', kuroTokens);
+  totalFailed++;
+} else {
+  console.log('  [PASS] "黒い車です。" cleanly separated "黒い(くろい)" + "車(くるま)"');
+}
+
+const multiParts = alignRubyParts('毎年', 'まいとし / まいねん');
+if (multiParts.length !== 1 || multiParts[0].ruby !== 'まいとし') {
+  console.error('  [FAIL] alignRubyParts failed on multi-reading:', multiParts);
+  totalFailed++;
+} else {
+  console.log('  [PASS] alignRubyParts resolved primary reading "まいとし" from "まいとし / まいねん".');
+}
+
+// 11. TTS Speech Text Cleaning Verification
+console.log('\nRUNNING: Unified Speech Text Cleaning Verification');
+const speechCases: Array<[string, string | undefined, string]> = [
+  ['飛行機で日本へ行きます。', 'ひこうきでにほんへいきます。', '飛行機で日本へ行きます。'],
+  ['<ruby>飛行機<rt>ひこうき</rt></ruby>で<ruby>日本<rt>にほん</rt></ruby>へ<ruby>行<rt>い</rt></ruby>きます。', undefined, '飛行機で日本へ行きます。'],
+  ['安全【あんぜん】', undefined, 'あんぜん'],
+  ['今日（きょう）はいい天気（てんき）だね。', undefined, '今日はいい天気だね。']
+];
+for (const [inp, read, exp] of speechCases) {
+  const got = cleanJapaneseText(inp, read);
+  if (got !== exp) {
+    console.error(`  [FAIL] cleanJapaneseText("${inp}") expected "${exp}", got "${got}"`);
+    totalFailed++;
+  } else {
+    console.log(`  [PASS] cleanJapaneseText("${inp}") -> "${got}"`);
+  }
 }
 
 console.log('=====================================================');

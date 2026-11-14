@@ -1045,6 +1045,8 @@ class ApiService {
   public async generateTTS(payload: {
     text: string;
     voice?: string;
+    isConversation?: boolean;
+    cacheable?: boolean;
   }): Promise<{
     success: boolean;
     audioUri?: string | null;

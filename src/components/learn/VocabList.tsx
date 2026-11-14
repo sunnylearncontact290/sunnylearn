@@ -182,11 +182,10 @@ export const VocabList: React.FC = () => {
     }
   };
 
+  const showFurigana = userProgress.settings?.showFurigana ?? true;
+
   const handlePlayAudio = (text: string, reading?: string) => {
-    speechService.play(text, {
-      reading,
-      rate: userProgress.settings?.speechRate || 0.9
-    });
+    speechService.play(text, { reading });
   };
 
   const totalInLevel = (data.vocabulary || []).filter(v => v.jlptLevel === effectiveLevel).length;
@@ -555,7 +554,9 @@ export const VocabList: React.FC = () => {
                     <JapaneseText
                       text={activeDetailItem.japanese}
                       reading={activeDetailItem.reading}
-                      showFurigana={true}
+                      showFurigana={showFurigana}
+                      vocabulary={data.vocabulary}
+                      kanji={data.kanji}
                     />
                   </h3>
                   <button
@@ -568,7 +569,7 @@ export const VocabList: React.FC = () => {
                   </button>
                 </div>
 
-                {activeDetailItem.reading && (
+                {!showFurigana && activeDetailItem.reading && activeDetailItem.reading !== activeDetailItem.japanese && (
                   <div className="text-xs font-mono text-stone-400 dark:text-stone-500 font-jp">
                     【 {activeDetailItem.reading} 】
                   </div>
@@ -597,26 +598,23 @@ export const VocabList: React.FC = () => {
               <div className="p-3.5 sm:p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200/70 dark:border-stone-800 flex flex-col justify-between space-y-2 text-left">
                 {activeDetailItem.exampleSentence ? (
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider">
-                        Жишээ өгүүлбэр:
-                      </span>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 font-jp leading-relaxed min-w-0 flex-1">
+                        <InteractiveJapaneseSentence
+                          sentence={activeDetailItem.exampleSentence}
+                          reading={activeDetailItem.exampleReading}
+                          mongolian={activeDetailItem.exampleMongolian}
+                          className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100"
+                        />
+                      </div>
                       <button
                         type="button"
                         onClick={() => handlePlayAudio(activeDetailItem.exampleSentence!)}
-                        className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-[#CC0000] dark:hover:text-[#FF6699] cursor-pointer shrink-0 mt-0.5"
                         title="Өгүүлбэр сонсох"
                       >
                         <Volume2 className="w-3.5 h-3.5" />
                       </button>
-                    </div>
-                    <div className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100 font-jp leading-relaxed">
-                      <InteractiveJapaneseSentence
-                        sentence={activeDetailItem.exampleSentence}
-                        reading={activeDetailItem.exampleReading}
-                        mongolian={activeDetailItem.exampleMongolian}
-                        className="text-xs sm:text-sm font-bold text-stone-900 dark:text-stone-100"
-                      />
                     </div>
                     {activeDetailItem.exampleMongolian && (
                       <div className="text-xs text-stone-600 dark:text-stone-400 font-medium pt-1 border-t border-stone-200/50 dark:border-stone-800/60 leading-relaxed">

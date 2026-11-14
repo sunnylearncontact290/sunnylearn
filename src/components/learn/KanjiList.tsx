@@ -201,8 +201,7 @@ export const KanjiList: React.FC = () => {
   const handlePlayAudio = (item: KanjiItem) => {
     const pron = extractKanjiPronunciation(item);
     speechService.play(pron.text, {
-      reading: pron.reading,
-      rate: userProgress.settings?.speechRate || 0.9
+      reading: pron.reading
     });
   };
 

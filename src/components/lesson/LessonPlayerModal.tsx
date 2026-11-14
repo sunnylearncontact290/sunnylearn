@@ -69,11 +69,11 @@ export const LessonPlayerModal: React.FC<LessonPlayerModalProps> = ({
       // Auto-pronounce Japanese word on intro card
       if (currentExercise.type === 'vocab_intro' && currentExercise.targetJapanese) {
         speechService.play(currentExercise.targetJapanese, {
-          rate: userProgress.settings?.speechRate || 0.9
+          reading: currentExercise.targetReading
         });
       }
     }
-  }, [currentIndex, currentExercise, userProgress.settings?.speechRate]);
+  }, [currentIndex, currentExercise]);
 
   if (!lesson || exercises.length === 0) return null;
 
@@ -81,9 +81,7 @@ export const LessonPlayerModal: React.FC<LessonPlayerModalProps> = ({
 
   const handlePlayAudio = (text: string) => {
     triggerHapticFeedback('light');
-    speechService.play(text, {
-      rate: userProgress.settings?.speechRate || 0.9
-    });
+    speechService.play(text);
   };
 
   // Scramble tile interaction

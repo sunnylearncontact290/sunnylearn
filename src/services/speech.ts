@@ -1,7 +1,15 @@
 import { apiService } from './api';
 
-export const DEFAULT_JAPANESE_VOICE = 'ja-JP-NanamiNeural';
-export const MALE_JAPANESE_VOICE = 'ja-JP-KeitaNeural';
+export const JAPANESE_TTS_CONFIG = {
+  locale: 'ja-JP',
+  defaultVoice: 'Kore',
+  maleVoice: 'Puck',
+  baselineRate: 1.0,
+  version: 'v3'
+} as const;
+
+export const DEFAULT_JAPANESE_VOICE = JAPANESE_TTS_CONFIG.defaultVoice;
+export const MALE_JAPANESE_VOICE = JAPANESE_TTS_CONFIG.maleVoice;
 
 export interface SpeechState {
   currentId: string | null;
@@ -19,6 +27,8 @@ export interface PlaySpeechOptions {
   voice?: string;
   rate?: number;
   audioUri?: string | null;
+  isConversation?: boolean;
+  cacheable?: boolean;
   onStart?: () => void;
   onEnd?: () => void;
   onError?: (err: any) => void;
@@ -146,9 +156,9 @@ export function cleanJapaneseText(text: any, reading?: string): string {
   if (!fullText) return '';
   let s = fullText;
 
-  // 2. Ruby tags: replace <ruby>X<rt>Y</rt></ruby> with reading Y
-  s = s.replace(/<ruby[^>]*>(?:(?!<rt).)*<rt[^>]*>([^<]+)<\/rt>.*?<\/ruby>/gi, '$1');
-  s = s.replace(/<rt[^>]*>([^<]+)<\/rt>/gi, '$1');
+  // 2. Ruby tags: strip <rt> reading cleanly while retaining base Japanese text
+  s = s.replace(/<ruby[^>]*>([\s\S]*?)<rt[^>]*>[\s\S]*?<\/rt>[\s\S]*?<\/ruby>/gi, '$1');
+  s = s.replace(/<rt[^>]*>[\s\S]*?<\/rt>/gi, '');
   s = s.replace(/<[^>]+>/g, '');
 
   // 3. Japanese reading inside brackets: e.g. 安全【あんぜん】 or 手続き【てつづき】 or 安全(あんぜん)
@@ -230,8 +240,9 @@ export function extractVocabPronunciation(vocab: { japanese: string; reading?: s
  * audio prefetching, and instant cached playback.
  */
 class CentralizedSpeechService {
-  // In-memory audio cache: cacheKey -> base64 data URI
+  // In-memory audio cache: versionedCacheKey -> base64 data URI (FIFO bounded)
   private audioCache = new Map<string, string>();
+  private readonly MAX_CACHE_ITEMS = 150;
   // In-flight request deduplication
   private pendingRequests = new Map<string, Promise<string | null>>();
   // Centralized single HTML audio instance to prevent overlapping playback
@@ -307,10 +318,27 @@ class CentralizedSpeechService {
    * Resolve canonical voice name.
    */
   private resolveVoice(voice?: string): string {
-    if (voice === 'Puck' || voice === 'Fenrir' || voice === 'Charon' || voice === 'male' || voice === MALE_JAPANESE_VOICE) {
+    if (
+      voice === 'Puck' ||
+      voice === 'Fenrir' ||
+      voice === 'Charon' ||
+      voice === 'Keita' ||
+      voice === 'male' ||
+      voice === 'ja-JP-KeitaNeural'
+    ) {
       return MALE_JAPANESE_VOICE;
     }
     return DEFAULT_JAPANESE_VOICE;
+  }
+
+  private setCache(key: string, uri: string): void {
+    if (this.audioCache.has(key)) {
+      this.audioCache.delete(key);
+    } else if (this.audioCache.size >= this.MAX_CACHE_ITEMS) {
+      const oldest = this.audioCache.keys().next().value;
+      if (oldest) this.audioCache.delete(oldest);
+    }
+    this.audioCache.set(key, uri);
   }
 
   /**
@@ -321,6 +349,12 @@ class CentralizedSpeechService {
       try {
         this.audioPlayer.pause();
         this.audioPlayer.currentTime = 0;
+      } catch {}
+    }
+
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
       } catch {}
     }
 
@@ -340,7 +374,7 @@ class CentralizedSpeechService {
     if (!clean) return;
 
     const canonicalVoice = this.resolveVoice(voice);
-    const cacheKey = `${canonicalVoice}:${clean}`;
+    const cacheKey = `${JAPANESE_TTS_CONFIG.version}:${canonicalVoice}:${clean}`;
 
     if (this.audioCache.has(cacheKey) || this.pendingRequests.has(cacheKey)) {
       return;
@@ -350,7 +384,7 @@ class CentralizedSpeechService {
       try {
         const res = await apiService.generateTTS({ text: clean, voice: canonicalVoice });
         if (res && res.success && res.audioUri) {
-          this.audioCache.set(cacheKey, res.audioUri);
+          this.setCache(cacheKey, res.audioUri);
           return res.audioUri;
         }
         return null;
@@ -366,16 +400,17 @@ class CentralizedSpeechService {
 
   /**
    * Main play method for natural Japanese speech across the entire website.
-   * Uses the single centralized neural voice engine.
-   * If TTS fails, reports error state rather than degrading to a robotic browser voice.
+   * Uses the single centralized neural voice engine ('Kore' / 'Puck') at unified baseline rate.
    */
   public async play(text: string, options: PlaySpeechOptions = {}): Promise<void> {
     const {
       id = text,
       reading,
       voice,
-      rate = 1.0,
+      rate = JAPANESE_TTS_CONFIG.baselineRate,
       audioUri: directAudioUri,
+      isConversation = false,
+      cacheable = !isConversation,
       onStart,
       onEnd,
       onError
@@ -385,8 +420,6 @@ class CentralizedSpeechService {
     if (!clean || clean.length === 0) {
       return;
     }
-
-    console.log('[TTS] Speaking text:', clean);
 
     // Toggle off if clicking the currently playing audio
     if (this.state.isPlaying && this.state.currentId === id) {
@@ -398,11 +431,13 @@ class CentralizedSpeechService {
     this.stop();
 
     const canonicalVoice = this.resolveVoice(voice);
-    const cacheKey = `${canonicalVoice}:${clean}`;
+    const cacheKey = `${JAPANESE_TTS_CONFIG.version}:${canonicalVoice}:${clean}`;
 
     // If a direct audio URI was passed in (e.g. pre-generated from server response)
     if (directAudioUri) {
-      this.audioCache.set(cacheKey, directAudioUri);
+      if (cacheable) {
+        this.setCache(cacheKey, directAudioUri);
+      }
       await this.playAudioUri(directAudioUri, id, rate, onStart, onEnd, onError);
       return;
     }
@@ -414,7 +449,7 @@ class CentralizedSpeechService {
     });
 
     try {
-      let audioUri = this.audioCache.get(cacheKey) || null;
+      let audioUri = cacheable ? (this.audioCache.get(cacheKey) || null) : null;
 
       if (!audioUri) {
         // In-flight request deduplication
@@ -422,7 +457,12 @@ class CentralizedSpeechService {
         if (!reqPromise) {
           reqPromise = (async () => {
             try {
-              const res = await apiService.generateTTS({ text: clean, voice: canonicalVoice });
+              const res = await apiService.generateTTS({
+                text: clean,
+                voice: canonicalVoice,
+                isConversation,
+                cacheable
+              });
               if (res && res.success && res.audioUri) {
                 return res.audioUri;
               }
@@ -438,8 +478,8 @@ class CentralizedSpeechService {
         }
 
         audioUri = await reqPromise;
-        if (audioUri) {
-          this.audioCache.set(cacheKey, audioUri);
+        if (audioUri && cacheable) {
+          this.setCache(cacheKey, audioUri);
         }
       }
 
@@ -448,7 +488,7 @@ class CentralizedSpeechService {
         return;
       }
 
-      // If network/server TTS failed, fallback to native ja-JP browser speech with best neural voice
+      // If network/server TTS failed, fallback to native ja-JP browser speech
       this.playBrowserSpeech(clean, id, rate, voice, onStart, onEnd, onError);
     } catch (err: any) {
       console.warn('[SpeechService] Play error, attempting browser speech:', err);

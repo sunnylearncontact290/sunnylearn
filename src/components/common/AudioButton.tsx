@@ -13,6 +13,8 @@ export interface AudioButtonProps {
   title?: string;
   voice?: string;
   rate?: number;
+  isConversation?: boolean;
+  cacheable?: boolean;
   onPlayStart?: () => void;
   onPlayEnd?: () => void;
 }
@@ -28,6 +30,8 @@ export const AudioButton: React.FC<AudioButtonProps> = ({
   title = 'Япон дуудлага сонсох',
   voice = DEFAULT_JAPANESE_VOICE,
   rate = 1.0,
+  isConversation = false,
+  cacheable,
   onPlayStart,
   onPlayEnd
 }) => {
@@ -52,7 +56,7 @@ export const AudioButton: React.FC<AudioButtonProps> = ({
   const hasError = speechState.errorId === effectiveId;
 
   const handlePrefetch = () => {
-    if (fullText || reading) {
+    if (!isConversation && cacheable !== false && (fullText || reading)) {
       speechService.prefetch(fullText, reading, voice);
     }
   };
@@ -73,6 +77,8 @@ export const AudioButton: React.FC<AudioButtonProps> = ({
       reading,
       voice,
       rate,
+      isConversation,
+      cacheable,
       onStart: onPlayStart,
       onEnd: onPlayEnd
     });

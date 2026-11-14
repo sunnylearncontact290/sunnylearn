@@ -45,7 +45,7 @@ export const RoleplayFeedback: React.FC<RoleplayFeedbackProps> = ({
   const { openSunnyAIWithRoleplayFeedback, openSunnyAI } = useApp();
 
   const handleSpeak = (text: string) => {
-    speechService.play(text, { rate: 0.95 });
+    speechService.play(text, { isConversation: true, cacheable: false });
   };
 
   const handleAskSunnyAI = (

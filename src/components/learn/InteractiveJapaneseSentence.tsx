@@ -17,8 +17,9 @@ export const InteractiveJapaneseSentence: React.FC<InteractiveJapaneseSentencePr
   mongolian,
   className = ''
 }) => {
-  const { data } = useApp();
+  const { data, userProgress } = useApp();
   const [selectedWord, setSelectedWord] = useState<DetailedWordInfo | null>(null);
+  const showFurigana = userProgress.settings?.showFurigana ?? true;
 
   const tokens = useMemo(() => {
     return tokenizeJapaneseSentence(sentence, data.vocabulary || [], data.kanji || [], reading);
@@ -28,13 +29,13 @@ export const InteractiveJapaneseSentence: React.FC<InteractiveJapaneseSentencePr
 
   return (
     <>
-      <div className={`font-jp leading-relaxed ${className}`}>
-        <p className="inline flex-wrap items-baseline">
+      <div className={`font-jp ${showFurigana ? 'leading-[2.2]' : 'leading-relaxed'} ${className}`}>
+        <p className="inline">
           {tokens.map((token, idx) => {
             const isKanjiWord = !token.isPunctuation && hasKanji(token.surface);
 
-            // Render accurate Furigana ruby elements
-            const rubyContent = token.rubyParts && token.rubyParts.length > 0 ? (
+            // Render accurate semantic HTML <ruby> elements only when Furigana is enabled
+            const rubyContent = showFurigana && token.rubyParts && token.rubyParts.length > 0 ? (
               token.rubyParts.map((chunk, cIdx) => {
                 if (chunk.kanji) {
                   return (
@@ -51,7 +52,6 @@ export const InteractiveJapaneseSentence: React.FC<InteractiveJapaneseSentencePr
             );
 
             // 1. NON-INTERACTIVE: Hiragana-only, Katakana-only, punctuation, particles
-            // Strictly NO click handlers, NO cursor-pointer, NO hover effect, NO underline, NO tooltip
             if (!isKanjiWord) {
               return (
                 <span
@@ -64,7 +64,6 @@ export const InteractiveJapaneseSentence: React.FC<InteractiveJapaneseSentencePr
             }
 
             // 2. INTERACTIVE: Strictly Kanji-containing words ONLY
-            // Displays interactive affordance and opens dictionary popup on click
             return (
               <button
                 type="button"
@@ -73,7 +72,7 @@ export const InteractiveJapaneseSentence: React.FC<InteractiveJapaneseSentencePr
                   e.stopPropagation();
                   setSelectedWord(token);
                 }}
-                className="inline-block px-0.5 py-0.5 mx-[0.5px] rounded transition-all duration-150 cursor-pointer text-stone-900 dark:text-stone-100 font-bold border-b border-dotted border-stone-300/80 dark:border-stone-700 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-600 dark:hover:text-red-400 active:scale-95 leading-[2.1] bg-transparent text-left font-jp focus:outline-none focus:ring-1 focus:ring-red-400/50"
+                className="inline px-0.5 mx-[0.5px] rounded transition-all duration-150 cursor-pointer text-stone-900 dark:text-stone-100 font-bold border-b border-dotted border-stone-300/80 dark:border-stone-700 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 hover:text-red-600 dark:hover:text-red-400 active:scale-95 leading-[2.2] bg-transparent text-left font-jp focus:outline-none focus:ring-1 focus:ring-red-400/50"
                 title={`"${token.surface}" толь бичиг, тайлбар, ханзны 書き順 харах`}
               >
                 {rubyContent}

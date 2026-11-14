@@ -799,13 +799,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       await speechService.play(text, {
         reading,
-        rate: userProgress.settings?.speechRate || 0.9,
         onStart
       });
     } catch (e) {
       console.warn('playAudio call error caught:', e);
     }
-  }, [userProgress.settings?.speechRate]);
+  }, []);
 
   const stopAudio = useCallback(() => {
     try {

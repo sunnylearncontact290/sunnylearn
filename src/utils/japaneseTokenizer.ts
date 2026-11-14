@@ -161,17 +161,36 @@ export function cleanSentenceForTokenization(sentence: string): string {
  * - Kanji verb stems + inflections (e.g. 降 + り + ました -> 降りました, 寝 + て + いる -> 寝ている)
  * - Compound kanji words and expressions (e.g. 今日 + 中 -> 今日中, 間 + に + 合う -> 間に合う)
  */
-function regroupTokens(rawSegments: string[]): string[] {
-  // 1. Normalize segments: split counters from accidentally glued verb/kana stems (e.g. "三人い" -> "三人", "い")
-  const normalized: string[] = [];
+function splitPunctuationFromSegments(rawSegments: string[]): string[] {
+  const out: string[] = [];
+  const puncSplitRegex = /([。、！？!?…・「」『』（）()[\]【】])/;
   for (const seg of rawSegments) {
+    if (!seg) continue;
+    const parts = seg.split(puncSplitRegex);
+    for (const p of parts) {
+      if (p) out.push(p);
+    }
+  }
+  return out;
+}
+
+function regroupTokens(rawSegments: string[]): string[] {
+  // 1. Separate glued punctuation and split counters from accidentally glued verb/kana stems (e.g. "三人い" -> "三人", "い")
+  const separated = splitPunctuationFromSegments(rawSegments);
+  const normalized: string[] = [];
+  for (const seg of separated) {
     const counterKanaMatch = seg.match(/^([一二三四五六七八九十何]+[人つ日月年回本匹枚個着冊杯歳])([ぁ-んァ-ヶ]+)$/);
     if (counterKanaMatch) {
       normalized.push(counterKanaMatch[1]);
       normalized.push(counterKanaMatch[2]);
-    } else {
-      normalized.push(seg);
+      continue;
     }
+    const naNounMatch = seg.match(/^([\u4E00-\u9FFF々]{1,4})な([\u4E00-\u9FFF々]{1,4})$/);
+    if (naNounMatch) {
+      normalized.push(naNounMatch[1], 'な', naNounMatch[2]);
+      continue;
+    }
+    normalized.push(seg);
   }
 
   const result: string[] = [];
@@ -185,6 +204,55 @@ function regroupTokens(rawSegments: string[]): string[] {
     // Case: 朝ご + はん -> 朝ごはん, 昼ご + はん -> 昼ごはん, 晩ご + はん -> 晩ごはん
     if ((cur.endsWith('ご') && hasKanji(cur)) && n1 === 'はん') {
       result.push(cur + 'はん');
+      i++;
+      continue;
+    }
+
+    // Case: Numeric Kanji split before counter+verb (e.g. "二" + "人います" -> "二人", "います", or "二" + "日" + "間休みます" -> "二日間", "休みます")
+    if (/^[一二三四五六七八九十何]+$/.test(cur) && n1) {
+      const counterVerbMatch = n1.match(/^([人つ日月年回本匹枚個着冊杯歳])(います|いました|いる|いた|あります|ありました|ある|休みます|休みました|かかりました|かかる)$/);
+      if (counterVerbMatch) {
+        result.push(cur + counterVerbMatch[1]);
+        result.push(counterVerbMatch[2]);
+        i++;
+        continue;
+      }
+      if (/^[人つ日月年回本匹枚個着冊杯歳]$/.test(n1) && n2 && /^間(.+)$/.test(n2)) {
+        const rest = n2.slice(1);
+        result.push(cur + n1 + '間');
+        if (rest) result.push(rest);
+        i += 2;
+        continue;
+      }
+    }
+
+    // Case: Single-Kanji i-adjective stem glued to following noun (e.g. "黒" + "い車" -> "黒い", "車")
+    if (
+      hasKanji(cur) &&
+      cur.length === 1 &&
+      n1 &&
+      /^い[\u4E00-\u9FFF々]/.test(n1)
+    ) {
+      result.push(cur + 'い');
+      const rest = n1.slice(1);
+      if (rest) {
+        // Re-segment remainder if long
+        if (rest.length > 2) {
+          const sub = getSegmenter().segment(rest);
+          result.push(...regroupTokens(sub));
+        } else {
+          result.push(rest);
+        }
+      }
+      i++;
+      continue;
+    }
+
+    // Case: Na-adjective glued with particle "な" to next Kanji (e.g. "暇" + "な時" -> "暇", "な", "時")
+    if (n1 && /^な[\u4E00-\u9FFF々]/.test(n1)) {
+      result.push(cur, 'な');
+      const rest = n1.slice(1);
+      if (rest) result.push(rest);
       i++;
       continue;
     }
@@ -572,6 +640,20 @@ function regroupTokens(rawSegments: string[]): string[] {
         continue;
       }
 
+      // cur ending with ん + で / だ (e.g. 読ん + で -> 読んで, 飲ん + だ -> 飲んだ)
+      if (cur.endsWith('ん') && (n1 === 'で' || n1 === 'だ' || n1 === 'でいる' || n1 === 'でいます' || n1 === 'だり')) {
+        result.push(cur + n1);
+        i++;
+        continue;
+      }
+
+      // cur ending with い or っ + て / た (e.g. 書い + て -> 書いて, 行っ + た -> 行った)
+      if ((cur.endsWith('い') || cur.endsWith('っ')) && (n1 === 'て' || n1 === 'た' || n1 === 'ている' || n1 === 'ています' || n1 === 'ていた')) {
+        result.push(cur + n1);
+        i++;
+        continue;
+      }
+
       // cur + ました / ません / ます / て / た
       if (n1 === 'まし' && n2 === 'た') {
         result.push(cur + 'ました');
@@ -740,45 +822,66 @@ function regroupTokens(rawSegments: string[]): string[] {
  * Accurately aligns authoritative curriculum sentence readings with segmented word tokens
  * using okurigana and particle anchoring.
  */
+function toHiragana(str: string): string {
+  return str.replace(/[\u30A1-\u30F6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+}
+
 function alignTokensWithSentenceReading(
   segments: string[],
   sentenceReading: string
 ): Record<string, string> {
-  if (!sentenceReading || !sentenceReading.trim()) return {};
+  if (!sentenceReading || !sentenceReading.trim() || hasKanji(sentenceReading)) return {};
 
-  let r = sentenceReading.replace(/[。\s、！？!?…・「」『』（）()[\]【】]/g, '');
+  let r = toHiragana(sentenceReading.replace(/[。\s、！？!?…・「」『』（）()[\]【】]/g, ''));
   const readings: Record<string, string> = {};
 
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i];
     if (PUNCTUATION_REGEX.test(seg)) continue;
 
-    // If seg is pure kana, match and advance reading stream
+    // If seg is pure kana, match and advance reading stream (normalize katakana -> hiragana)
     if (/^[ぁ-んァ-ヶー]+$/.test(seg)) {
-      if (r.startsWith(seg)) {
-        r = r.slice(seg.length);
+      const hiraSeg = toHiragana(seg);
+      if (r.startsWith(hiraSeg)) {
+        r = r.slice(hiraSeg.length);
+      } else {
+        const idx = r.indexOf(hiraSeg);
+        if (idx >= 0 && idx <= 6) {
+          r = r.slice(idx + hiraSeg.length);
+        }
       }
       continue;
     }
 
-    // seg contains Kanji: locate reading boundary using next kana anchor or trailing okurigana
+    // seg contains Kanji: prioritize trailing okurigana first so "新しい" stops at "しい" before next Kanji noun
     const trailingKanaMatch = seg.match(/[ぁ-んァ-ヶー]+$/);
-    const trailingKana = trailingKanaMatch ? trailingKanaMatch[0] : '';
-    const nextKanaSeg = segments.slice(i + 1).find(s => /^[ぁ-んァ-ヶー]+$/.test(s) && !PUNCTUATION_REGEX.test(s));
+    const trailingKana = trailingKanaMatch ? toHiragana(trailingKanaMatch[0]) : '';
+    const immediateNextSeg = segments[i + 1];
+    const nextIsPureKana = Boolean(
+      immediateNextSeg &&
+      /^[ぁ-んァ-ヶー]+$/.test(immediateNextSeg) &&
+      !PUNCTUATION_REGEX.test(immediateNextSeg)
+    );
+    const nextKanaSeg = nextIsPureKana ? toHiragana(immediateNextSeg) : '';
 
+    if (trailingKana) {
+      const minKanjiChars = seg.replace(/[ぁ-んァ-ヶー]+$/g, '').length;
+      const idx = r.indexOf(trailingKana, Math.max(1, minKanjiChars));
+      if (idx >= 1) {
+        readings[seg] = r.slice(0, idx + trailingKana.length);
+        r = r.slice(idx + trailingKana.length);
+        continue;
+      }
+    }
     if (nextKanaSeg) {
       const idx = r.indexOf(nextKanaSeg);
       if (idx > 0) {
         readings[seg] = r.slice(0, idx);
         r = r.slice(idx);
+        continue;
       }
-    } else if (trailingKana) {
-      const idx = r.indexOf(trailingKana);
-      if (idx >= 0) {
-        readings[seg] = r.slice(0, idx + trailingKana.length);
-        r = r.slice(idx + trailingKana.length);
-      }
-    } else {
+    }
+    if (i === segments.length - 1 || (segments[i + 1] && PUNCTUATION_REGEX.test(segments[i + 1]) && !segments.slice(i + 1).some(s => !PUNCTUATION_REGEX.test(s)))) {
       if (r.length > 0) {
         readings[seg] = r;
         r = '';
@@ -787,6 +890,110 @@ function alignTokensWithSentenceReading(
   }
 
   return readings;
+}
+
+/**
+ * Re-aligns segments against the vocabulary database & context lexicon so
+ * multi-kanji dictionary words split by TinySegmenter (e.g. 金+曜日 -> 金曜日,
+ * 一生+懸命 -> 一生懸命) are merged, and glued unknown Kanji compounds
+ * (e.g. 日映画 -> 日 + 映画, 部食 -> 部 + 食) are cleanly separated.
+ */
+function refineSegmentsWithDictionary(
+  segments: string[],
+  vocabMap: Map<string, VocabularyItem>
+): string[] {
+  const isKnown = (s: string) => vocabMap.has(s) || Boolean(CONTEXT_LEXICON[s]);
+  const merged: string[] = [];
+
+  for (let i = 0; i < segments.length; i++) {
+    const s0 = segments[i];
+    const s1 = segments[i + 1];
+    const s2 = segments[i + 2];
+
+    if (
+      s0 && s1 && s2 &&
+      !PUNCTUATION_REGEX.test(s0) && !PUNCTUATION_REGEX.test(s1) && !PUNCTUATION_REGEX.test(s2) &&
+      hasKanji(s0 + s1 + s2) &&
+      !(s0 in COMMON_GRAMMAR_MAP) &&
+      isKnown(s0 + s1 + s2)
+    ) {
+      merged.push(s0 + s1 + s2);
+      i += 2;
+      continue;
+    }
+
+    if (
+      s0 && s1 &&
+      !PUNCTUATION_REGEX.test(s0) && !PUNCTUATION_REGEX.test(s1) &&
+      hasKanji(s0 + s1) &&
+      !(s0 in COMMON_GRAMMAR_MAP) &&
+      !(s1 in COMMON_GRAMMAR_MAP) &&
+      isKnown(s0 + s1)
+    ) {
+      merged.push(s0 + s1);
+      i += 1;
+      continue;
+    }
+
+    // Handle glued compound like "日映画" or "部食" where s0 ends/starts with a known word boundary
+    if (s0 && !PUNCTUATION_REGEX.test(s0) && hasKanji(s0) && s0.length >= 2 && !isKnown(s0) && !(s0 in COMMON_GRAMMAR_MAP)) {
+      let didSplit = false;
+      for (let splitAt = s0.length - 1; splitAt >= 1; splitAt--) {
+        const left = s0.slice(0, splitAt);
+        const right = s0.slice(splitAt);
+        // Check if previous token + left forms a known word (e.g. 一昨 + 日映画 -> 一昨日 + 映画, 全 + 部食 -> 全部 + 食)
+        const prevMerged = merged.length > 0 ? merged[merged.length - 1] + left : '';
+        if (prevMerged && isKnown(prevMerged) && (isKnown(right) || hasKanji(right))) {
+          merged[merged.length - 1] = prevMerged;
+          merged.push(right);
+          didSplit = true;
+          break;
+        }
+        if (s0.length >= 3 && isKnown(left) && (isKnown(right) || right.length >= 2)) {
+          merged.push(left, right);
+          didSplit = true;
+          break;
+        }
+      }
+      if (didSplit) continue;
+    }
+
+    merged.push(s0);
+  }
+
+  // Final quick pass: re-attach verb stem + trailing okurigana if split during compound split (e.g. 食 + べました -> 食べました)
+  const finalSegs: string[] = [];
+  for (let i = 0; i < merged.length; i++) {
+    const cur = merged[i];
+    const next = merged[i + 1];
+    if (
+      cur &&
+      next &&
+      hasKanji(cur) &&
+      /^[ぁ-ん]+$/.test(next) &&
+      !(next in COMMON_GRAMMAR_MAP) &&
+      !isKnown(cur) &&
+      isKnown(cur + next)
+    ) {
+      finalSegs.push(cur + next);
+      i++;
+      continue;
+    }
+    if (
+      cur &&
+      next &&
+      hasKanji(cur) &&
+      cur.length === 1 &&
+      /^(べました|べます|べた|べて|すれます|すれません|すれた)$/.test(next)
+    ) {
+      finalSegs.push(cur + next);
+      i++;
+      continue;
+    }
+    finalSegs.push(cur);
+  }
+
+  return finalSegs;
 }
 
 /**
@@ -827,7 +1034,9 @@ export function tokenizeJapaneseSentence(
   const clean = cleanSentenceForTokenization(sentence);
   const segmenter = getSegmenter();
   const rawSegments: string[] = segmenter.segment(clean);
-  const segments = regroupTokens(rawSegments);
+  const regrouped = regroupTokens(rawSegments);
+  const vocabMap = getVocabMap(allVocab);
+  const segments = refineSegmentsWithDictionary(regrouped, vocabMap);
 
   // Align authoritative sentenceReading if provided
   const sentenceReadingsMap = sentenceReading
@@ -1165,7 +1374,11 @@ export function lookupWordDetail(
 
       // Only overwrite reading if neither disambiguation nor contextEntry nor deconjugated set a surface reading
       if (!disambiguatedReading && !contextEntry && !deconjugated) {
-        reading = vocabMatch.reading;
+        if (explicitReading && /^[ぁ-んァ-ヶー]+$/.test(explicitReading) && /[\/,、]/.test(vocabMatch.reading)) {
+          reading = explicitReading;
+        } else {
+          reading = vocabMatch.reading;
+        }
       }
     } else if (baseCandidates.length > 0) {
       // Fallback: check if CONTEXT_LEXICON contains the base dictionary form (e.g. 帰りました -> 帰る)
@@ -1282,6 +1495,10 @@ export function lookupWordDetail(
             break;
           }
         }
+      }
+      if (!matched && surface.startsWith(baseWord)) {
+        alignedReading = baseReading + surface.slice(baseWord.length);
+        matched = true;
       }
       if (!matched && baseWord.length > 1 && surface.startsWith(baseWord.slice(0, -1))) {
         alignedReading = baseReading.slice(0, -1) + surface.slice(baseWord.length - 1);

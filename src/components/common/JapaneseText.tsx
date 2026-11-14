@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { tokenizeJapaneseSentence, DetailedWordInfo } from '../../utils/japaneseTokenizer';
 import { hasKanji } from '../../utils/furiganaRenderer';
+import { VocabularyItem, KanjiItem } from '../../types';
 
 export interface JapaneseTextProps {
   /**
@@ -32,6 +33,12 @@ export interface JapaneseTextProps {
   onWordClick?: (word: DetailedWordInfo) => void;
 
   /**
+   * Optional vocabulary & kanji arrays for dictionary-accurate word tokenization.
+   */
+  vocabulary?: VocabularyItem[];
+  kanji?: KanjiItem[];
+
+  /**
    * Additional CSS classes.
    */
   className?: string;
@@ -56,8 +63,16 @@ export const JapaneseText: React.FC<JapaneseTextProps> = ({
   showFurigana = true,
   interactive = false,
   onWordClick,
+  vocabulary = [],
+  kanji = [],
   className = ''
 }) => {
+  // Always call hooks unconditionally before any early return
+  const tokens = useMemo(() => {
+    if (!text || !showFurigana) return [];
+    return tokenizeJapaneseSentence(text, vocabulary, kanji, reading);
+  }, [text, showFurigana, vocabulary, kanji, reading]);
+
   if (!text) return null;
 
   // When Furigana is toggled OFF, render pure Japanese text cleanly
@@ -74,11 +89,6 @@ export const JapaneseText: React.FC<JapaneseTextProps> = ({
       </span>
     );
   }
-
-  // Tokenize the sentence with optional authoritative reading
-  const tokens = useMemo(() => {
-    return tokenizeJapaneseSentence(text, [], [], reading);
-  }, [text, reading]);
 
   return (
     <span className={`font-jp select-text [overflow-wrap:anywhere] [word-break:break-word] leading-[2.1] ${className}`.trim()}>

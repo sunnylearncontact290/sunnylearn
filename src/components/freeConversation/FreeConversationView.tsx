@@ -101,7 +101,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
   // Settings State
   const [currentLevel, setCurrentLevel] = useState<JLPTLevel>(selectedLevel || 'N5');
   const [conversationStyle, setConversationStyle] = useState<ConversationStyle>('natural');
-  const [voicePersona, setVoicePersona] = useState<VoicePersona>('Aoede');
+  const [voicePersona, setVoicePersona] = useState<VoicePersona>('Kore');
   const [showFurigana, setShowFurigana] = useState<boolean>(true);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [selectedTopicId, setSelectedTopicId] = useState<string>('today');
@@ -358,8 +358,9 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
 
       await speechService.play(clean, {
         audioUri: audioDataUri,
-        voice: voicePersona === 'Puck' ? 'Puck' : 'Aoede',
-        rate: currentLevel === 'N5' || currentLevel === 'N4' ? 0.92 : 1.0,
+        voice: voicePersona === 'Puck' ? 'Puck' : 'Kore',
+        isConversation: true,
+        cacheable: false,
         onEnd: onSpeechComplete,
         onError: (err) => {
           console.warn('[FreeConversation] Speech error:', err);
@@ -367,7 +368,7 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
         }
       });
     },
-    [stopRecognition, stopAudio, voicePersona, currentLevel, startListening]
+    [stopRecognition, stopAudio, voicePersona, startListening]
   );
 
   // ----------------------------------------------------
@@ -1017,12 +1018,11 @@ export const FreeConversationView: React.FC<FreeConversationViewProps> = ({
               <span className="block font-bold text-stone-600 dark:text-stone-400">
                 AI дуу хоолой (Persona):
               </span>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {(
                   [
-                    { id: 'Aoede', name: 'Сакура', sub: 'Эмэгтэй' },
-                    { id: 'Puck', name: 'Кэн', sub: 'Эрэгтэй' },
-                    { id: 'Kore', name: 'Аой', sub: 'Тайван' }
+                    { id: 'Kore', name: 'Сакура', sub: 'Эмэгтэй' },
+                    { id: 'Puck', name: 'Кэн', sub: 'Эрэгтэй' }
                   ] as { id: VoicePersona; name: string; sub: string }[]
                 ).map(vp => (
                   <button

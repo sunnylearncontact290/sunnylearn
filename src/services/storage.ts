@@ -42,7 +42,7 @@ export const defaultProgress: UserProgress = {
   settings: {
     targetLevel: 'N5',
     dailyGoalCount: 10,
-    speechRate: 0.9,
+    speechRate: 1.0,
     autoPlayAudio: false,
     showFurigana: true
   }

@@ -66,13 +66,16 @@ export function alignRubyParts(surface: string, reading?: string): RubyChunk[] {
     return [{ text: surface }];
   }
 
+  // Normalize alternative-reading strings (e.g. "まいとし / まいねん") to primary reading
+  let candidateReading = reading ? reading.split(/[\/,、]/)[0].trim() : '';
+
   // If reading is missing, identical to surface, or contains no kana:
   // Cannot confidently align; display original text rather than guessing incorrectly.
-  if (!reading || reading === surface || !KANA_REGEX.test(reading)) {
+  if (!candidateReading || candidateReading === surface || !KANA_REGEX.test(candidateReading)) {
     return [{ text: surface }];
   }
 
-  const cleanReading = reading.replace(/\s+/g, '');
+  const cleanReading = candidateReading.replace(/\s+/g, '');
 
   // Special lexical compounds / honorific fused words where the full token takes the reading:
   // e.g. ご飯 (ごはん), お腹 (おなか), お土産 (おみやげ), お菓子 (おかし)

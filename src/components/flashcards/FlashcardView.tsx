@@ -238,8 +238,7 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
   const handlePlayAudio = (text: string, reading?: string) => {
     triggerHapticFeedback('light');
     speechService.play(text, {
-      reading,
-      rate: userProgress.settings?.speechRate || 0.9
+      reading
     });
   };
 

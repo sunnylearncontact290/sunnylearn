@@ -41,7 +41,7 @@ export const FreeConversationFeedbackModal: React.FC<FreeConversationFeedbackMod
   if (!isOpen) return null;
 
   const handleSpeak = (text: string) => {
-    speechService.play(text, { rate: 0.95 });
+    speechService.play(text, { isConversation: true, cacheable: false });
   };
 
   const score = feedback?.fluencyScore ?? 85;

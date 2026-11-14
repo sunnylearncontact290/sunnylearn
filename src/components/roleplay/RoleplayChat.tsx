@@ -374,8 +374,7 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
 
   // Speak Japanese audio via centralized Neural TTS service
   const handleSpeak = (text: string) => {
-    const rate = jlptLevel === 'N5' || jlptLevel === 'N4' ? 0.9 : 1.0;
-    speechService.play(text, { rate });
+    speechService.play(text, { isConversation: true, cacheable: false });
   };
 
   // Current starters for suggestions
@@ -608,6 +607,8 @@ export const RoleplayChat: React.FC<RoleplayChatProps> = ({
                     id={`rp_msg_${msg.id}`}
                     size="xs"
                     variant="ghost"
+                    isConversation
+                    cacheable={false}
                     className={!isAI ? 'text-white/80 hover:text-white hover:bg-white/20' : ''}
                     title="Япон дуудлага сонсох"
                   />
