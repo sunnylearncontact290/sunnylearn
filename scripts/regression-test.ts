@@ -1,5 +1,11 @@
 import { tokenizeJapaneseSentence } from '../src/utils/japaneseTokenizer';
 import { hasKanji, alignRubyParts, stripFurigana } from '../src/utils/furiganaRenderer';
+import {
+  MONGOLIAN_ALPHABET,
+  getPrimaryMongolianInitialLetter,
+  getPrimaryMongolianMeaning,
+  compareMongolianStrings
+} from '../src/utils/mongolianUtils';
 
 // Sample vocabulary items
 const mockVocab: any[] = [
@@ -21,7 +27,11 @@ const mockVocab: any[] = [
   { id: '16', japanese: '生徒', reading: 'せいと', mongolian: 'Сурагч', jlptLevel: 'N5' },
   { id: '17', japanese: '時間', reading: 'じかん', mongolian: 'Цаг хугацаа', jlptLevel: 'N5' },
   { id: '18', japanese: '生きる', reading: 'いきる', mongolian: 'Амьдрах', jlptLevel: 'N4' },
-  { id: '19', japanese: '生まれる', reading: 'うまれる', mongolian: 'Төрөх', jlptLevel: 'N4' }
+  { id: '19', japanese: '生まれる', reading: 'うまれる', mongolian: 'Төрөх', jlptLevel: 'N4' },
+  { id: '20', japanese: '飛行機', reading: 'ひこうき', mongolian: 'Онгоц', jlptLevel: 'N5' },
+  { id: '21', japanese: '日本', reading: 'にほん', mongolian: 'Япон', jlptLevel: 'N5' },
+  { id: '22', japanese: '行く', reading: 'いく', mongolian: 'Явах', jlptLevel: 'N5' },
+  { id: '23', japanese: '帰る', reading: 'かえる', mongolian: 'Буцах, харих', jlptLevel: 'N5' }
 ];
 
 const mockKanji: any[] = [
@@ -263,6 +273,23 @@ const testCases: TestCase[] = [
       '遊びます': '<ruby>遊<rt>あそ</rt></ruby>びます'
     },
     expectedFullRubyHtml: '<ruby>明日<rt>あした</rt></ruby>は<ruby>友達<rt>ともだち</rt></ruby>と<ruby>遊<rt>あそ</rt></ruby>びます。'
+  },
+  {
+    name: 'Test 17 — Dictionary Example Sentence (飛行機で日本へ行きます。)',
+    sentence: '飛行機で日本へ行きます。',
+    expectedInteractiveWords: ['飛行機', '日本', '行きます'],
+    expectedNonInteractiveWords: ['で', 'へ', '。'],
+    expectedReadings: {
+      '飛行機': 'ひこうき',
+      '日本': 'にほん',
+      '行きます': 'いきます'
+    },
+    expectedRubyParts: {
+      '飛行機': '<ruby>飛行機<rt>ひこうき</rt></ruby>',
+      '日本': '<ruby>日本<rt>にほん</rt></ruby>',
+      '行きます': '<ruby>行<rt>い</rt></ruby>きます'
+    },
+    expectedFullRubyHtml: '<ruby>飛行機<rt>ひこうき</rt></ruby>で<ruby>日本<rt>にほん</rt></ruby>へ<ruby>行<rt>い</rt></ruby>きます。'
   }
 ];
 
@@ -404,6 +431,71 @@ if (cleanStripped === '寝ている間に雨が降りました。') {
   console.log('  [PASS] stripFurigana correctly removed ruby tags to pure Japanese text.');
 } else {
   console.error(`  [FAIL] stripFurigana failed: "${cleanStripped}"`);
+  totalFailed++;
+}
+
+// 8. Conjugated base-form resolution verification
+console.log('\nRUNNING: Base-form Deconjugation Verification');
+const travelTokens = tokenizeJapaneseSentence('飛行機で日本へ行きます。', mockVocab, mockKanji);
+const ikimasuToken = travelTokens.find(t => t.surface === '行きます');
+if (ikimasuToken && ikimasuToken.word === '行く' && ikimasuToken.dictionaryReading === 'いく') {
+  console.log('  [PASS] "行きます" resolves base dictionary word "行く" (いく) while keeping surface reading "いきます".');
+} else {
+  console.error('  [FAIL] "行きます" base resolution mismatch:', ikimasuToken);
+  totalFailed++;
+}
+
+const kaeriTokens = tokenizeJapaneseSentence('家に帰りました。', mockVocab, mockKanji);
+const kaeriToken = kaeriTokens.find(t => t.surface === '帰りました');
+if (kaeriToken && kaeriToken.word === '帰る') {
+  console.log('  [PASS] "帰りました" resolves base dictionary word "帰る".');
+} else {
+  console.error('  [FAIL] "帰りました" base resolution mismatch:', kaeriToken);
+  totalFailed++;
+}
+
+const tabeteTokens = tokenizeJapaneseSentence('ご飯を食べて。', mockVocab, mockKanji);
+const tabeteToken = tabeteTokens.find(t => t.surface === '食べて');
+if (tabeteToken && tabeteToken.word === '食べる') {
+  console.log('  [PASS] "食べて" resolves base dictionary word "食べる".');
+} else {
+  console.error('  [FAIL] "食べて" base resolution mismatch:', tabeteToken);
+  totalFailed++;
+}
+
+// 9. Mongolian Cyrillic alphabet indexing & sorting verification
+console.log('\nRUNNING: Mongolian Alphabet Indexing & Sorting Verification');
+if (MONGOLIAN_ALPHABET.length !== 35 || !MONGOLIAN_ALPHABET.includes('Ө') || !MONGOLIAN_ALPHABET.includes('Ү') || !MONGOLIAN_ALPHABET.includes('Ё')) {
+  console.error(`  [FAIL] MONGOLIAN_ALPHABET incomplete (length ${MONGOLIAN_ALPHABET.length}).`);
+  totalFailed++;
+} else {
+  console.log('  [PASS] MONGOLIAN_ALPHABET contains all 35 Mongolian Cyrillic letters.');
+}
+
+const mnCases: Array<{ input: string; expectedLetter: string | null; expectedPrimary: string }> = [
+  { input: '  Ажил хийх', expectedLetter: 'А', expectedPrimary: 'ажил хийх' },
+  { input: '...-аас дээш', expectedLetter: 'А', expectedPrimary: 'аас дээш' },
+  { input: 'хайр; дурлал', expectedLetter: 'Х', expectedPrimary: 'хайр' },
+  { input: 'Өдөр бүр, өглөө', expectedLetter: 'Ө', expectedPrimary: 'өдөр бүр' },
+  { input: 'үзэсгэлэнтэй', expectedLetter: 'Ү', expectedPrimary: 'үзэсгэлэнтэй' },
+  { input: '10 минут', expectedLetter: null, expectedPrimary: '10 минут' }
+];
+
+for (const mc of mnCases) {
+  const gotLetter = getPrimaryMongolianInitialLetter(mc.input);
+  const gotPrimary = getPrimaryMongolianMeaning(mc.input);
+  if (gotLetter !== mc.expectedLetter || gotPrimary !== mc.expectedPrimary) {
+    console.error(`  [FAIL] Mongolian classification mismatch for "${mc.input}": got (${gotLetter}, "${gotPrimary}"), expected (${mc.expectedLetter}, "${mc.expectedPrimary}")`);
+    totalFailed++;
+  } else {
+    console.log(`  [PASS] "${mc.input}" -> letter=${gotLetter}, primary="${gotPrimary}"`);
+  }
+}
+
+if (compareMongolianStrings('орон', 'өрөө') < 0 && compareMongolianStrings('ус', 'үсэг') < 0) {
+  console.log('  [PASS] Mongolian locale collation orders О < Ө and У < Ү correctly.');
+} else {
+  console.error('  [FAIL] Mongolian locale collation order incorrect.');
   totalFailed++;
 }
 

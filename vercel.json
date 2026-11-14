@@ -42,6 +42,19 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.sunnylearn.online"
+        }
+      ],
+      "destination": "https://sunnylearn.online/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/api",
