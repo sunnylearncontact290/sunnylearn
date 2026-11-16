@@ -67,7 +67,7 @@ export const Footer: React.FC = () => {
                   <span>Instagram</span>
                 </a>
                 <a
-                  href="https://www.facebook.com/share/19rr87Fhqj/?mibextid=wwXIfr"
+                  href="https://www.facebook.com/share/1A1rpf1v2e/?mibextid=wwXIfr"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="SunnyLearn Facebook"
