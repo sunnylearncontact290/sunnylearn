@@ -993,8 +993,29 @@ function stripFuriganaServer(text: string): string {
   return s;
 }
 
-// Circuit breaker for Gemini TTS rate limits
-let ttsQuotaCooldownUntil = 0;
+// Per-model circuit breaker for Gemini TTS rate limits
+const ttsModelCooldownUntil = new Map<string, number>();
+
+function parseTtsRetryDelayMs(errMsg: string): number {
+  const secMatch = errMsg.match(/"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"/);
+  if (secMatch) {
+    return Math.ceil(parseFloat(secMatch[1]) * 1000);
+  }
+  if (errMsg.includes('PerDay') || errMsg.includes('requests per day')) {
+    return 10 * 60 * 1000;
+  }
+  return 90 * 1000;
+}
+
+function getRemainingTtsCooldownMs(): number {
+  const now = Date.now();
+  const models = ['gemini-3.8-flash-lite-tts', 'gemini-3.8-flash-tts'];
+  const remaining = models.map(m => Math.max(0, (ttsModelCooldownUntil.get(m) || 0) - now));
+  if (remaining.every(r => r > 0)) {
+    return Math.min(...remaining);
+  }
+  return 0;
+}
 
 interface NeuralTTSOptions {
   voiceName?: string;
@@ -1051,10 +1072,6 @@ async function generateNeuralJapaneseAudio(
     }
   }
 
-  if (Date.now() < ttsQuotaCooldownUntil) {
-    return null;
-  }
-
   const ai = getGeminiClient();
   if (!ai) {
     return null;
@@ -1094,6 +1111,11 @@ async function generateNeuralJapaneseAudio(
   });
 
   for (const ttsModel of ['gemini-3.8-flash-lite-tts', 'gemini-3.8-flash-tts']) {
+    const cooldownUntil = ttsModelCooldownUntil.get(ttsModel) || 0;
+    if (Date.now() < cooldownUntil) {
+      continue;
+    }
+
     try {
       let resp;
       try {
@@ -1128,12 +1150,14 @@ async function generateNeuralJapaneseAudio(
       }
     } catch (err: any) {
       const errMsg = err?.message || String(err);
-      console.warn(`[TTS] Model ${ttsModel} error:`, errMsg);
       const isQuota429 = errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED');
       if (isQuota429) {
-        ttsQuotaCooldownUntil = Date.now() + 60 * 1000;
-        break;
+        const cooldownMs = parseTtsRetryDelayMs(errMsg);
+        ttsModelCooldownUntil.set(ttsModel, Date.now() + cooldownMs);
+        console.info(`[TTS] ${ttsModel} quota reached; cooling down for ${Math.round(cooldownMs / 1000)}s`);
+        continue;
       }
+      console.warn(`[TTS] Model ${ttsModel} error:`, errMsg);
     }
   }
 
@@ -1146,7 +1170,8 @@ app.get('/api/tts/status', (_req, res) => {
     engine: 'gemini-3.8-flash-lite-tts',
     primaryVoice: 'Kore',
     maleVoice: 'Puck',
-    cachedAudioCount: audioMemoryCache.size
+    cachedAudioCount: audioMemoryCache.size,
+    retryAfterMs: getRemainingTtsCooldownMs()
   });
 });
 
@@ -1176,11 +1201,14 @@ app.post('/api/tts', async (req: Request, res: Response) => {
       });
     }
 
-    return res.status(503).json({
+    const retryAfterMs = getRemainingTtsCooldownMs();
+    return res.json({
       success: false,
-      fallback: false,
+      fallback: true,
+      quotaLimited: retryAfterMs > 0,
+      retryAfterMs,
       cleanText: clean,
-      message: 'Түр зуур сүлжээ ачаалалтай байна. Дахин оролдоно уу.'
+      message: 'Түр зуур хөтчийн Япон дуудлага ашиглаж байна.'
     });
   } catch (err: any) {
     console.error('[API TTS Error]', err);

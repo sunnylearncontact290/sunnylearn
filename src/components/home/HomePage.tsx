@@ -173,25 +173,8 @@ export const HomePage: React.FC = () => {
     }
   }, [vocabOfTheDay, kanjiOfTheDay]);
 
-  // SMART CONTINUE LEARNING ACTION (Phase 6.1)
+  // SMART CONTINUE LEARNING ACTION: Prioritizes guided Learning Path ("Зам")
   const handleSmartContinue = () => {
-    // 1. If due SRS reviews exist, prioritize review
-    if (dueReviews > 0) {
-      setLearnSubTab('vocab');
-      setActiveTab('learn');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
-    // 2. If user studied recently, resume that subTab
-    if (userProgress.lastStudied?.subTab) {
-      setLearnSubTab(userProgress.lastStudied.subTab);
-      setActiveTab('learn');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-
-    // 3. Default to the Learning Path
     setLearnSubTab('path');
     setActiveTab('learn');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -318,8 +301,8 @@ export const HomePage: React.FC = () => {
         {/* Due Reviews */}
         <div
           onClick={() => {
-            setLearnSubTab('vocab');
-            setActiveTab('learn');
+            setActiveTab('practice');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           className="p-4 rounded-2xl bg-white dark:bg-[#150F12] border border-stone-200 dark:border-stone-800 shadow-2xs hover:border-red-400 transition-all cursor-pointer space-y-1"
         >

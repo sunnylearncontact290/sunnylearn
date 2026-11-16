@@ -247,6 +247,8 @@ class CentralizedSpeechService {
   private pendingRequests = new Map<string, Promise<string | null>>();
   // Centralized single HTML audio instance to prevent overlapping playback
   private audioPlayer: HTMLAudioElement | null = null;
+  // Server TTS cooldown timestamp when API quota is temporarily exhausted
+  private serverTtsCooldownUntil = 0;
 
   // Global state
   private state: SpeechState = {
@@ -366,36 +368,11 @@ class CentralizedSpeechService {
   }
 
   /**
-   * Prefetches audio in the background for high-priority items
-   * (e.g. Daily Vocabulary, Daily Kanji) so clicking starts instantly in 0ms.
+   * Warm-up hook kept for API compatibility. Avoids firing unclicked background
+   * /api/tts requests so Gemini TTS Free Tier quota is only used on actual clicks.
    */
-  public async prefetch(text: string, reading?: string, voice?: string): Promise<void> {
-    const clean = cleanJapaneseText(text, reading);
-    if (!clean) return;
-
-    const canonicalVoice = this.resolveVoice(voice);
-    const cacheKey = `${JAPANESE_TTS_CONFIG.version}:${canonicalVoice}:${clean}`;
-
-    if (this.audioCache.has(cacheKey) || this.pendingRequests.has(cacheKey)) {
-      return;
-    }
-
-    const reqPromise = (async () => {
-      try {
-        const res = await apiService.generateTTS({ text: clean, voice: canonicalVoice });
-        if (res && res.success && res.audioUri) {
-          this.setCache(cacheKey, res.audioUri);
-          return res.audioUri;
-        }
-        return null;
-      } catch {
-        return null;
-      } finally {
-        this.pendingRequests.delete(cacheKey);
-      }
-    })();
-
-    this.pendingRequests.set(cacheKey, reqPromise);
+  public async prefetch(_text: string, _reading?: string, _voice?: string): Promise<void> {
+    return;
   }
 
   /**
@@ -451,7 +428,7 @@ class CentralizedSpeechService {
     try {
       let audioUri = cacheable ? (this.audioCache.get(cacheKey) || null) : null;
 
-      if (!audioUri) {
+      if (!audioUri && Date.now() >= this.serverTtsCooldownUntil) {
         // In-flight request deduplication
         let reqPromise = this.pendingRequests.get(cacheKey);
         if (!reqPromise) {
@@ -465,6 +442,9 @@ class CentralizedSpeechService {
               });
               if (res && res.success && res.audioUri) {
                 return res.audioUri;
+              }
+              if (res && res.quotaLimited && res.retryAfterMs && res.retryAfterMs > 0) {
+                this.serverTtsCooldownUntil = Date.now() + Math.min(res.retryAfterMs, 5 * 60 * 1000);
               }
               return null;
             } catch (err) {
@@ -488,7 +468,7 @@ class CentralizedSpeechService {
         return;
       }
 
-      // If network/server TTS failed, fallback to native ja-JP browser speech
+      // If network/server TTS is unavailable or in cooldown, fallback to native ja-JP browser speech
       this.playBrowserSpeech(clean, id, rate, voice, onStart, onEnd, onError);
     } catch (err: any) {
       console.warn('[SpeechService] Play error, attempting browser speech:', err);

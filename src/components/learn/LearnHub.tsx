@@ -21,16 +21,15 @@ export const LearnHub: React.FC = () => {
   } = useApp();
 
   const effectiveLevel = selectedLevel || 'N5';
-  
-  // Default to 'path' if learnSubTab is 'flashcards' or undefined
+
+  // Default to 'path' (guided learning roadmap)
   const effectiveSubTab: LearnSubTab = (learnSubTab === 'flashcards' ? 'vocab' : learnSubTab) || 'path';
 
-  const subTabs: { id: LearnSubTab; label: string; icon: React.ElementType; count?: number; badge?: string }[] = [
+  const subTabs: { id: LearnSubTab; label: string; icon: React.ElementType; count?: number }[] = [
     {
       id: 'path',
       label: 'Зам',
-      icon: Compass,
-      badge: '2.0'
+      icon: Compass
     },
     {
       id: 'vocab',
@@ -53,22 +52,10 @@ export const LearnHub: React.FC = () => {
   ];
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6 animate-fade-in">
-      {/* Top Header */}
-      <div className="bg-white dark:bg-stone-900 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-stone-200 dark:border-stone-800 shadow-xs space-y-4 sm:space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight">
-              Сургалтын танхим
-            </h1>
-            <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-0.5">
-              JLPT {effectiveLevel} түвшний сургалтын хөтөлбөр
-            </p>
-          </div>
-        </div>
-
-        {/* 4 Clean Sub-tabs Navigation (Responsive Grid on Mobile, Flex on Desktop) */}
-        <div className="grid grid-cols-4 sm:flex sm:flex-wrap items-center gap-1.5 sm:gap-2 border-t border-stone-100 dark:border-stone-800 pt-3 sm:pt-4 w-full">
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6 space-y-4 sm:space-y-5 animate-fade-in">
+      {/* Compact Sub-tabs Navigation Bar */}
+      <div className="bg-white dark:bg-stone-900 p-2 sm:p-3 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+        <div className="grid grid-cols-4 sm:flex sm:flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
           {subTabs.map(tab => {
             const Icon = tab.icon;
             const isActive = effectiveSubTab === tab.id;
@@ -77,9 +64,9 @@ export const LearnHub: React.FC = () => {
                 key={tab.id}
                 type="button"
                 onClick={() => setLearnSubTab(tab.id)}
-                className={`flex sm:inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                className={`min-h-[44px] flex sm:inline-flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-sm font-bold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] text-white shadow-md shadow-[#FF0000]/25'
+                    ? 'bg-gradient-to-r from-[#CC0000] via-[#FF0000] to-[#FF3366] text-white shadow-sm shadow-[#FF0000]/20'
                     : 'bg-stone-50 dark:bg-stone-800/50 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200/60 dark:border-stone-700/60'
                 }`}
               >
@@ -87,10 +74,8 @@ export const LearnHub: React.FC = () => {
                 <span className="truncate">{tab.label}</span>
                 {tab.count !== undefined && (
                   <span
-                    className={`hidden sm:inline-block text-[10px] sm:text-[11px] px-1.5 sm:px-2 py-0.5 rounded-full font-mono ${
-                      isActive
-                        ? 'bg-white/20 text-white'
-                        : 'bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300'
+                    className={`hidden md:inline-block text-[11px] font-mono tabular-nums ${
+                      isActive ? 'text-white/85' : 'text-stone-400 dark:text-stone-400'
                     }`}
                   >
                     {tab.count}
@@ -99,6 +84,13 @@ export const LearnHub: React.FC = () => {
               </button>
             );
           })}
+        </div>
+
+        <div className="hidden sm:flex items-center gap-2 px-2 text-xs font-bold text-stone-500 dark:text-stone-400 shrink-0">
+          <span>Түвшин:</span>
+          <span className="font-mono font-black text-[#CC0000] dark:text-[#FF6699]">
+            JLPT {effectiveLevel}
+          </span>
         </div>
       </div>
 

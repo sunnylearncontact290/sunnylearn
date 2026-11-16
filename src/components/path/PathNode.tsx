@@ -2,10 +2,9 @@ import React from 'react';
 import {
   Check,
   Lock,
-  Star,
   Trophy,
   Play,
-  Zap
+  RotateCcw
 } from 'lucide-react';
 import { CurriculumLesson, PathNodeStatus } from '../../types';
 import { triggerHapticFeedback } from '../../services/nativePlatform';
@@ -23,19 +22,29 @@ export const PathNode: React.FC<PathNodeProps> = ({
   lesson,
   status,
   index,
-  totalInUnit,
-  unitThemeColor = '#CC0000',
   onSelectLesson
 }) => {
-  // Gentle, stable winding horizontal offset pattern:
-  // Stays within safe bounds on 320px–430px mobile screens without clipping or colliding
-  const offsetPattern = [0, -18, -8, 12, 20, 8, -12];
+  // Subtle mobile-safe winding offset (never exceeds +/-16px so 320px viewports stay centered)
+  const offsetPattern = [0, -14, -8, 10, 14, 8, -10];
   const xOffset = offsetPattern[index % offsetPattern.length];
 
   const isCompleted = status === 'completed';
   const isActive = status === 'active';
   const isLocked = status === 'locked';
   const isBoss = lesson.type === 'boss_challenge';
+  const isReview = lesson.type === 'review';
+
+  const shortTitle = isBoss
+    ? 'Бүлгийн сорил'
+    : isReview
+    ? 'Дунд давтлага'
+    : `Хичээл ${lesson.lessonNumber}`;
+
+  const statusText = isCompleted
+    ? 'Дууссан'
+    : isActive
+    ? 'Одоо сурах'
+    : 'Түгжээтэй';
 
   const handleClick = () => {
     triggerHapticFeedback('light');
@@ -44,80 +53,88 @@ export const PathNode: React.FC<PathNodeProps> = ({
 
   return (
     <div
-      className="relative flex flex-col items-center justify-center my-4 sm:my-5 min-h-[105px] transition-transform duration-300 select-none"
+      className="relative flex flex-col items-center justify-center my-3 sm:my-4 select-none max-w-full"
       style={{
         transform: `translateX(${xOffset}px)`
       }}
     >
-      {/* Active node encouragement badge - cleanly spaced above the node */}
+      {/* Clear "Одоо сурах" indicator above the single current lesson */}
       {isActive && (
-        <div className="mb-2 animate-bounce flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-[#CC0000] to-[#FF3366] text-white text-[11px] font-black uppercase tracking-wider shadow-md shadow-red-500/30 z-10 whitespace-nowrap">
-          <Zap className="w-3 h-3 fill-current text-amber-300" />
-          <span>Эхлэх цэг</span>
+        <div className="mb-1.5 px-3 py-1 rounded-xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 text-[11px] font-black tracking-wide shadow-md whitespace-nowrap">
+          Одоо сурах
         </div>
       )}
 
-      {/* Main Node Button */}
+      {/* Main Accessible Node Button (>= 64px hit target) */}
       <button
         type="button"
         onClick={handleClick}
-        aria-label={`${lesson.title} - ${isCompleted ? 'Дууссан' : isActive ? 'Идэвхтэй' : 'Түгжээтэй'}`}
-        className={`relative flex items-center justify-center transition-all duration-300 cursor-pointer ${
+        aria-label={`${lesson.title} (${statusText})`}
+        className={`relative flex items-center justify-center transition-all duration-200 cursor-pointer ${
           isBoss
-            ? 'w-18 h-18 sm:w-20 sm:h-20 rounded-3xl'
-            : 'w-16 h-16 sm:w-17 sm:h-17 rounded-full'
+            ? 'w-[72px] h-[72px] sm:w-[78px] sm:h-[78px] rounded-2xl'
+            : isReview
+            ? 'w-[66px] h-[66px] sm:w-[70px] sm:h-[70px] rounded-2xl'
+            : 'w-[64px] h-[64px] sm:w-[68px] sm:h-[68px] rounded-full'
         } ${
           isActive
-            ? 'scale-105 shadow-[0_0_24px_rgba(255,0,0,0.35)] ring-4 ring-[#FF3366]/40 dark:ring-[#FF3366]/60'
-            : isLocked
-            ? 'opacity-85 hover:opacity-100 hover:scale-102'
-            : 'hover:scale-105 active:scale-95'
-        } ${
-          isCompleted
-            ? 'bg-gradient-to-br from-[#CC0000] via-[#E11D48] to-[#FF3366] text-white shadow-md shadow-red-500/25'
-            : isActive
-            ? 'bg-gradient-to-br from-[#FF1A1A] via-[#CC0000] to-[#990000] text-white shadow-lg shadow-red-500/30'
-            : 'bg-stone-200 dark:bg-stone-800 text-stone-400 dark:text-stone-500 border-2 border-stone-300/80 dark:border-stone-700/80 shadow-xs'
+            ? 'bg-gradient-to-br from-[#FF1A1A] via-[#CC0000] to-[#990000] text-white shadow-lg shadow-red-500/35 ring-4 ring-[#FF3366]/35 dark:ring-[#FF3366]/55 scale-105'
+            : isCompleted
+            ? 'bg-gradient-to-br from-[#CC0000] via-[#E11D48] to-[#FF3366] text-white shadow-sm shadow-red-500/20 hover:scale-105 active:scale-95'
+            : 'bg-stone-100 dark:bg-stone-800/80 text-stone-400 dark:text-stone-500 border-2 border-stone-200 dark:border-stone-700/80 opacity-85 hover:opacity-100'
         }`}
       >
-        {/* Subtle inner highlight border for active/completed */}
         <span
           className={`absolute inset-0.5 ${
-            isBoss ? 'rounded-3xl' : 'rounded-full'
-          } pointer-events-none opacity-40 border ${
-            isCompleted || isActive ? 'border-white/70' : 'border-stone-400/20'
+            isBoss || isReview ? 'rounded-2xl' : 'rounded-full'
+          } pointer-events-none border ${
+            isCompleted || isActive ? 'border-white/50 opacity-50' : 'border-stone-300/30 dark:border-stone-700/30'
           }`}
         />
 
-        {/* Node Center Icon */}
         {isCompleted ? (
-          <Check className="w-7 h-7 sm:w-8 sm:h-8 stroke-[3.5] text-white drop-shadow-xs" />
+          <Check className="w-7 h-7 stroke-[3.2] text-white" />
         ) : isActive ? (
           isBoss ? (
-            <Trophy className="w-7 h-7 text-amber-300 fill-amber-300/20 animate-spin-slow" />
+            <Trophy className="w-7 h-7 text-amber-300" />
+          ) : isReview ? (
+            <RotateCcw className="w-6 h-6 text-white stroke-[2.5]" />
           ) : (
-            <Play className="w-6 h-6 sm:w-7 sm:h-7 fill-current text-white ml-0.5" />
+            <Play className="w-6 h-6 fill-current text-white ml-0.5" />
           )
-        ) : isLocked ? (
-          <Lock className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.2] text-stone-400 dark:text-stone-500" />
+        ) : isBoss ? (
+          <Trophy className="w-6 h-6 text-stone-400 dark:text-stone-500" />
+        ) : isReview ? (
+          <RotateCcw className="w-5 h-5 text-stone-400 dark:text-stone-500" />
         ) : (
-          <Star className="w-6 h-6 text-white" />
+          <Lock className="w-5 h-5 text-stone-400 dark:text-stone-500" />
         )}
       </button>
 
-      {/* Clean XP badge positioned directly below the button in natural flow */}
-      <div className="mt-2 flex items-center justify-center">
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black border shadow-2xs whitespace-nowrap transition-colors ${
-            isCompleted
-              ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
-              : isActive
-              ? 'bg-amber-400 text-stone-900 border-amber-300 font-extrabold'
-              : 'bg-stone-100 dark:bg-stone-800/90 text-stone-400 dark:text-stone-500 border-stone-200 dark:border-stone-700/80'
+      {/* Clean Dual-Coded Text Label Below Node (Icon/Color + Clear Label) */}
+      <div className="mt-2 text-center space-y-0.5 max-w-[180px]">
+        <div
+          className={`text-xs font-extrabold leading-tight truncate ${
+            isActive
+              ? 'text-[#CC0000] dark:text-[#FF6699]'
+              : isCompleted
+              ? 'text-stone-800 dark:text-stone-200'
+              : 'text-stone-400 dark:text-stone-500'
           }`}
         >
-          {isCompleted ? '✓ Дууссан' : `+${lesson.xpReward} XP`}
-        </span>
+          {shortTitle}
+        </div>
+        <div
+          className={`text-[11px] font-semibold tabular-nums ${
+            isCompleted
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : isActive
+              ? 'text-amber-600 dark:text-amber-400 font-bold'
+              : 'text-stone-400 dark:text-stone-500'
+          }`}
+        >
+          {isCompleted ? '✓ Дууссан' : isActive ? `+${lesson.xpReward} XP · ${lesson.estimatedMinutes || 5} мин` : 'Түгжээтэй'}
+        </div>
       </div>
     </div>
   );

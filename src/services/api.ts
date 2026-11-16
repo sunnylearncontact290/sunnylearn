@@ -1052,6 +1052,8 @@ class ApiService {
     audioUri?: string | null;
     cleanText?: string;
     fallback?: boolean;
+    quotaLimited?: boolean;
+    retryAfterMs?: number;
     message?: string;
   }> {
     const res = await fetch(`${API_BASE_URL}/api/tts`, {

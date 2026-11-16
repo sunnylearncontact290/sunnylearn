@@ -7,6 +7,15 @@ import {
   compareMongolianStrings
 } from '../src/utils/mongolianUtils';
 import { cleanJapaneseText } from '../src/services/speech';
+import { initialSeedData } from '../src/data/seedData';
+import {
+  generateCurriculumForLevel,
+  auditCurriculumCoverage,
+  computeLevelPathState,
+  generateExercisesForLesson,
+  calculateLessonStatus
+} from '../src/data/curriculumGenerator';
+import { JLPTLevel } from '../src/types';
 
 // Sample vocabulary items
 const mockVocab: any[] = [
@@ -577,6 +586,131 @@ for (const [inp, read, exp] of speechCases) {
   } else {
     console.log(`  [PASS] cleanJapaneseText("${inp}") -> "${got}"`);
   }
+}
+
+// 12. JLPT N5-N1 Guided Learning Path ("Зам") Curriculum & State Engine Verification
+console.log('\nRUNNING: JLPT N5-N1 Learning Path Curriculum & State Verification');
+const allLevels: JLPTLevel[] = ['N5', 'N4', 'N3', 'N2', 'N1'];
+const levelUnitCounts: Record<string, number> = {};
+
+for (const lvl of allLevels) {
+  const units = generateCurriculumForLevel(
+    lvl,
+    initialSeedData.vocabulary,
+    initialSeedData.kanji,
+    initialSeedData.grammar
+  );
+  const audit = auditCurriculumCoverage(
+    lvl,
+    initialSeedData.vocabulary,
+    initialSeedData.kanji,
+    initialSeedData.grammar,
+    units
+  );
+
+  levelUnitCounts[lvl] = audit.unitCount;
+
+  if (!audit.isComplete) {
+    console.error(`  [FAIL] ${lvl} curriculum coverage incomplete or duplicated:`, audit);
+    totalFailed++;
+  } else {
+    console.log(
+      `  [PASS] ${lvl} 100% lossless coverage (${audit.unitCount} units, ${audit.teachingLessonCount} teaching lessons, ${audit.totalNodeCount} total nodes): V=${audit.usedVocabCount}/${audit.expectedVocabCount}, K=${audit.usedKanjiCount}/${audit.expectedKanjiCount}, G=${audit.usedGrammarCount}/${audit.expectedGrammarCount}`
+    );
+  }
+
+  // Verify initial state, mid-progress transition, and full completion state
+  const emptyState = computeLevelPathState(units, {
+    completedLessonIds: [],
+    learnedVocabIds: [],
+    learnedKanjiIds: [],
+    learnedGrammarIds: []
+  });
+  const firstLesson = units[0]?.lessons[0];
+  if (!firstLesson || emptyState.lessonStatusMap[firstLesson.id] !== 'active' || emptyState.completedCount !== 0) {
+    console.error(`  [FAIL] ${lvl} initial state invalid: first node should be active`);
+    totalFailed++;
+  }
+
+  // Complete first two lessons -> third becomes active
+  const allLessonsFlat = units.flatMap(u => u.lessons);
+  if (allLessonsFlat.length >= 3) {
+    const midState = computeLevelPathState(units, {
+      completedLessonIds: [allLessonsFlat[0].id, allLessonsFlat[1].id],
+      learnedVocabIds: [],
+      learnedKanjiIds: [],
+      learnedGrammarIds: []
+    });
+    if (
+      midState.lessonStatusMap[allLessonsFlat[0].id] !== 'completed' ||
+      midState.lessonStatusMap[allLessonsFlat[1].id] !== 'completed' ||
+      midState.lessonStatusMap[allLessonsFlat[2].id] !== 'active' ||
+      midState.nextActiveLesson?.id !== allLessonsFlat[2].id
+    ) {
+      console.error(`  [FAIL] ${lvl} sequential lesson progression transition failed`);
+      totalFailed++;
+    }
+  }
+
+  // Auto-completion compatibility via learned item >= 75%
+  if (firstLesson) {
+    const totalItems = firstLesson.vocabIds.length + firstLesson.kanjiIds.length + firstLesson.grammarIds.length;
+    if (totalItems > 0) {
+      const legacyStatus = calculateLessonStatus(
+        firstLesson,
+        firstLesson.vocabIds,
+        firstLesson.kanjiIds,
+        [],
+        true,
+        undefined,
+        firstLesson.grammarIds
+      );
+      if (legacyStatus !== 'completed') {
+        console.error(`  [FAIL] ${lvl} calculateLessonStatus legacy item auto-complete failed`);
+        totalFailed++;
+      }
+    }
+  }
+
+  // Verify exercises for first teaching lesson, mid review, and final unit boss challenge
+  const sampleLessons = [
+    allLessonsFlat.find(l => l.type === 'lesson'),
+    allLessonsFlat.find(l => l.type === 'review'),
+    allLessonsFlat[allLessonsFlat.length - 1]
+  ].filter(Boolean);
+
+  for (const sample of sampleLessons) {
+    if (!sample) continue;
+    const exs = generateExercisesForLesson(
+      sample,
+      initialSeedData.vocabulary,
+      initialSeedData.kanji,
+      initialSeedData.grammar
+    );
+    if (exs.length < 4) {
+      console.error(`  [FAIL] ${lvl} lesson "${sample.id}" (${sample.type}) generated only ${exs.length} exercises`);
+      totalFailed++;
+    }
+    for (const ex of exs) {
+      if (ex.type === 'multiple_choice') {
+        if (!ex.options || ex.options.length < 2 || !ex.options.includes(ex.correctAnswer)) {
+          console.error(`  [FAIL] ${lvl} exercise "${ex.id}" has invalid MC options:`, ex.options);
+          totalFailed++;
+        }
+        if (ex.options.includes('Ус') && ex.options.includes('Гал') && ex.options.includes('Мод') && ex.targetJapanese !== '水' && ex.targetJapanese !== '火' && ex.targetJapanese !== '木') {
+          console.error(`  [FAIL] ${lvl} exercise "${ex.id}" contains hardcoded fake distractors`);
+          totalFailed++;
+        }
+      }
+    }
+  }
+}
+
+if (!(levelUnitCounts['N5'] < levelUnitCounts['N4'] && levelUnitCounts['N4'] < levelUnitCounts['N3'] && levelUnitCounts['N3'] < levelUnitCounts['N2'] && levelUnitCounts['N2'] < levelUnitCounts['N1'] && levelUnitCounts['N1'] >= 30)) {
+  console.error('  [FAIL] Curriculum scaling across N5->N1 unexpected:', levelUnitCounts);
+  totalFailed++;
+} else {
+  console.log(`  [PASS] Unit scaling across levels verified: ${allLevels.map(l => `${l}=${levelUnitCounts[l]}`).join(' < ')}`);
 }
 
 console.log('=====================================================');

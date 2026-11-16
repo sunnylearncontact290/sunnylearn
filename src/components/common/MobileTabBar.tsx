@@ -12,7 +12,7 @@ import { MainTab } from '../../types';
 import { triggerHapticFeedback } from '../../services/nativePlatform';
 
 export const MobileTabBar: React.FC = () => {
-  const { activeTab, setActiveTab, userProgress } = useApp();
+  const { activeTab, setActiveTab, setLearnSubTab, userProgress } = useApp();
 
   const streakCount = userProgress.streak?.current || userProgress.gamification?.currentStreak || 0;
 
@@ -46,12 +46,15 @@ export const MobileTabBar: React.FC = () => {
       id: 'profile',
       label: 'Профайл',
       icon: streakCount > 0 ? Flame : User,
-      badge: streakCount > 0 ? `${streakCount}🔥` : undefined
+      badge: streakCount > 0 ? `${streakCount}` : undefined
     }
   ];
 
   const handleTabClick = (tabId: MainTab) => {
     triggerHapticFeedback('light');
+    if (tabId === 'learn') {
+      setLearnSubTab('path');
+    }
     setActiveTab(tabId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

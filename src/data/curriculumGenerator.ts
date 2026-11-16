@@ -6,361 +6,627 @@ import {
   CurriculumUnit,
   CurriculumLesson,
   CurriculumExercise,
-  PathNodeStatus
+  PathNodeStatus,
+  UserProgress,
+  ItemStudyRecord
 } from '../types';
+import {
+  CurriculumTopic,
+  getTopicsForLevel,
+  getOrderedItemsForTopic,
+  classifyVocabItem
+} from './curriculumTopics';
+import {
+  getDistractors,
+  assembleOptions,
+  shuffleArray,
+  learningEngine
+} from '../services/learningEngine';
 
-export interface UnitMetadata {
-  title: string;
-  mongolianDescription: string;
-  themeColor: string;
-  iconName: string;
-  categoryKeywords?: string[];
+// ============================================================================
+// PEDAGOGICAL STREAM BUILDERS (100% COVERAGE, ZERO DROPS, ZERO DUPLICATES)
+// ============================================================================
+
+interface OrderedVocabEntry {
+  item: VocabularyItem;
+  topic: CurriculumTopic | null;
 }
 
-const UNIT_BLUEPRINTS: Record<JLPTLevel, UnitMetadata[]> = {
-  N5: [
-    {
-      title: 'Мэндчилгээ ба Эхлэл',
-      mongolianDescription: 'Өдөр тутмын анхны мэндчилгээ, өөрийгөө танилцуулах болон үндсэн үгс',
-      themeColor: '#CC0000',
-      iconName: 'Sparkles',
-      categoryKeywords: ['Мэндчилгээ', 'Танилцуулга', 'Өдөр тутмын яриа', 'Эхлэл']
-    },
-    {
-      title: 'Гэр бүл ба Өдөр тутам',
-      mongolianDescription: 'Гэр бүлийн гишүүд, өдөр тутмын хэвшил болон хүмүүсийн тухай',
-      themeColor: '#DC2626',
-      iconName: 'Users',
-      categoryKeywords: ['Гэр бүл', 'Хүмүүс', 'Өдөр тутмын яриа']
-    },
-    {
-      title: 'Хоол хүнс ба Зоогийн газар',
-      mongolianDescription: 'Япон хоол, ногоо жимс, ундаа болон захиалга өгөх хэллэгүүд',
-      themeColor: '#EA580C',
-      iconName: 'Utensils',
-      categoryKeywords: ['Хоол хүнс', 'Ундаа', 'Зоог']
-    },
-    {
-      title: 'Цаг хугацаа ба Байршил',
-      mongolianDescription: 'Цаг тоолол, гаригууд, байрлал заах үгс болон хаана байгааг асуух',
-      themeColor: '#7C3AED',
-      iconName: 'Clock',
-      categoryKeywords: ['Цаг хугацаа', 'Байрлал', 'Газар']
-    },
-    {
-      title: 'Хөдөлгөөн ба Тээвэр',
-      mongolianDescription: 'Явах, ирэх, буцах үйл үгс, тээврийн хэрэгсэл болон замын чиглэл',
-      themeColor: '#2563EB',
-      iconName: 'Navigation',
-      categoryKeywords: ['Тээвэр', 'Хөдөлгөөн', 'Аялал']
-    },
-    {
-      title: 'Сургууль ба Хичээл',
-      mongolianDescription: 'Хичээлийн хэрэгсэл, суралцах үйл үгс болон танхимын яриа',
-      themeColor: '#059669',
-      iconName: 'BookOpen',
-      categoryKeywords: ['Сургууль', 'Хичээл', 'Боловсрол']
-    },
-    {
-      title: 'Дэлгүүр ба Худалдан авалт',
-      mongolianDescription: 'Үнэ асуух, бараа бүтээгдэхүүн сонгох, тоо ширхэг тоолох',
-      themeColor: '#DB2777',
-      iconName: 'ShoppingBag',
-      categoryKeywords: ['Дэлгүүр', 'Худалдаа', 'Үнэ']
-    },
-    {
-      title: 'Байгаль ба Цаг агаар',
-      mongolianDescription: 'Дөрвөн улирал, бороо цас, цаг агаарын төлөв байдал',
-      themeColor: '#0284C7',
-      iconName: 'CloudSun',
-      categoryKeywords: ['Цаг агаар', 'Байгаль', 'Улирал']
+interface OrderedKanjiEntry {
+  item: KanjiItem;
+  topic: CurriculumTopic | null;
+}
+
+function buildOrderedVocabStream(
+  level: JLPTLevel,
+  levelVocab: VocabularyItem[]
+): OrderedVocabEntry[] {
+  const topics = getTopicsForLevel(level, 'vocab', levelVocab);
+  const seen = new Set<string>();
+  const stream: OrderedVocabEntry[] = [];
+
+  for (const topic of topics) {
+    const items = getOrderedItemsForTopic(topic, levelVocab);
+    for (const item of items) {
+      if (!seen.has(item.id)) {
+        seen.add(item.id);
+        stream.push({ item, topic });
+      }
     }
-  ],
-  N4: [
-    {
-      title: 'Өдөр тутмын харилцаа',
-      mongolianDescription: 'Ажил, сургууль, найз нөхөдтэйгөө чөлөөтэй харилцах үгс',
-      themeColor: '#CC0000',
-      iconName: 'MessageSquare'
-    },
-    {
-      title: 'Хүсэлт ба Зөвшөөрөл',
-      mongolianDescription: 'Бусдаас тусламж гуйх, зөвшөөрөл авах болон хориглох хэлбэрүүд',
-      themeColor: '#E11D48',
-      iconName: 'CheckCircle'
-    },
-    {
-      title: 'Төлөвлөгөө ба Цагийн хуваарь',
-      mongolianDescription: 'Ирээдүйн төлөвлөгөө, цаг товлох, урилга хүлээн авах',
-      themeColor: '#D97706',
-      iconName: 'Calendar'
-    },
-    {
-      title: 'Эрүүл мэнд ба Эмнэлэг',
-      mongolianDescription: 'Өвдөлт, шинж тэмдэг тайлбарлах, эмчийн заавар сонсох',
-      themeColor: '#059669',
-      iconName: 'HeartPulse'
-    },
-    {
-      title: 'Аялал жуулчлал & Соёл',
-      mongolianDescription: 'Японы уламжлалт баяр, зочид буудал, үзвэр үйлчилгээ',
-      themeColor: '#4F46E5',
-      iconName: 'MapPin'
+  }
+
+  // Safety sweep for any custom/admin/unmapped items
+  for (const item of levelVocab) {
+    if (!seen.has(item.id)) {
+      seen.add(item.id);
+      const fallbackTopicId = classifyVocabItem(item);
+      const matchedTopic = topics.find(t => t.id === fallbackTopicId) || null;
+      stream.push({ item, topic: matchedTopic });
     }
-  ],
-  N3: [
-    {
-      title: 'Нийгэм ба Өдөр тутмын мэдээ',
-      mongolianDescription: 'Мэдээ мэдээлэл, сонин, нийгмийн үйл явдлын тайлбар',
-      themeColor: '#990000',
-      iconName: 'Newspaper'
-    },
-    {
-      title: 'Ажлын байрны соёл',
-      mongolianDescription: 'Японы бизнесийн ёс зүй, имэйл бичих, даргатайгаа харилцах',
-      themeColor: '#7C2D12',
-      iconName: 'Briefcase'
-    },
-    {
-      title: 'Сэтгэл хөдлөл ба Үзэл бодол',
-      mongolianDescription: 'Өөрийн байр суурийг нарийвчлан илэрхийлэх, харьцуулах',
-      themeColor: '#9333EA',
-      iconName: 'Smile'
-    },
-    {
-      title: 'Шинжлэх ухаан ба Технологи',
-      mongolianDescription: 'Интернэт, тоног төхөөрөмж, хөгжил дэвшлийн тухай үгс',
-      themeColor: '#0284C7',
-      iconName: 'Cpu'
+  }
+
+  return stream;
+}
+
+function buildOrderedKanjiStream(
+  level: JLPTLevel,
+  levelKanji: KanjiItem[]
+): OrderedKanjiEntry[] {
+  const topics = getTopicsForLevel(level, 'kanji', levelKanji);
+  const seen = new Set<string>();
+  const stream: OrderedKanjiEntry[] = [];
+
+  for (const topic of topics) {
+    const items = getOrderedItemsForTopic(topic, levelKanji);
+    for (const item of items) {
+      if (!seen.has(item.id)) {
+        seen.add(item.id);
+        stream.push({ item, topic });
+      }
     }
-  ],
-  N2: [
-    {
-      title: 'Мэргэжлийн харилцаа ба Бизнес',
-      mongolianDescription: 'Албан харилцаа, хурал уулзалт, бизнесийн гэрээ хэлэлцээр',
-      themeColor: '#990000',
-      iconName: 'Award'
-    },
-    {
-      title: 'Эдийн засаг ба Нийгмийн асуудал',
-      mongolianDescription: 'Зах зээл, санхүү, нийгмийн өөрчлөлт, дүн шинжилгээ',
-      themeColor: '#4338CA',
-      iconName: 'TrendingUp'
-    },
-    {
-      title: 'Шүүмж ба Эссэ бичлэг',
-      mongolianDescription: 'Уран зохиол, нийтлэл, шүүмж бичвэрийн нарийн илэрхийллүүд',
-      themeColor: '#0F766E',
-      iconName: 'Feather'
+  }
+
+  // Safety sweep for any remaining kanji
+  for (const item of levelKanji) {
+    if (!seen.has(item.id)) {
+      seen.add(item.id);
+      stream.push({ item, topic: null });
     }
-  ],
-  N1: [
-    {
-      title: 'Академик ба Гүнзгийрүүлсэн яриа',
-      mongolianDescription: 'Эрдэм шинжилгээний өгүүлэл, дээд түвшний нийтлэлийн үгс',
-      themeColor: '#7F1D1D',
-      iconName: 'GraduationCap'
-    },
-    {
-      title: 'Дээд төвшний Соёл ба Түүх',
-      mongolianDescription: 'Гүн ухаан, түүхэн уламжлал, соёлын өвийн тухай хэллэгүүд',
-      themeColor: '#312E81',
-      iconName: 'Bookmark'
-    }
-  ]
+  }
+
+  return stream;
+}
+
+function toRomanSuffix(num: number): string {
+  const numerals = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'];
+  return numerals[num] || String(num);
+}
+
+// ============================================================================
+// SCALED CURRICULUM GENERATOR ACROSS JLPT N5 – N1
+// ============================================================================
+
+const TARGET_VOCAB_PER_LESSON: Record<JLPTLevel, number> = {
+  N5: 7,
+  N4: 7,
+  N3: 8,
+  N2: 8,
+  N1: 8
 };
 
-/**
- * Pedagogical priority scoring for Japanese vocabulary (N5–N1).
- * Foundational concepts (greetings, numbers, pronouns, basic verbs) appear first.
- */
-function getVocabPedagogicalScore(item: VocabularyItem): number {
-  const text = `${item.japanese} ${item.reading || ''} ${item.mongolian || ''}`;
-  
-  if (/(こんにちは|おはよう|ありがとう|すみません|はい|いいえ|はじめまして|どうぞ|さようなら|よろしく)/.test(text)) return 100;
-  if (/(わたし|私|あなた|だれ|何|これ|それ|あれ|どれ|ここ|そこ|どこ)/.test(text)) return 90;
-  if (/(一|二|三|四|五|六|七|八|九|十|百|千|万|ひとつ|ふたつ|みっつ|円|歳)/.test(text)) return 85;
-  if (/(今日|明日|昨日|今|毎日|朝|昼|晩|夜|月|火|水|木|金|土|日|年|時|分|週)/.test(text)) return 80;
-  if (/(父|母|兄|弟|姉|妹|家族|友だち|友達|先生|学生|人)/.test(text)) return 75;
-  if (/(食べる|飲む|行く|来る|帰る|見る|聞く|読む|書く|話す|する|寝る|起きる|買う|会う)/.test(text)) return 70;
-  if (/(大きい|小さい|いい|良い|悪い|高い|安い|新しい|古い|暑い|寒い|近い|遠い|おいしい)/.test(text)) return 65;
-  if (/(家|学校|駅|店|レストラン|部屋|ご飯|水|お茶|パン|肉|魚)/.test(text)) return 60;
-  
-  return 50;
-}
+const TEACHING_LESSONS_PER_UNIT: Record<JLPTLevel, number> = {
+  N5: 7,
+  N4: 7,
+  N3: 8,
+  N2: 8,
+  N1: 8
+};
 
-/**
- * Pedagogical priority scoring for Kanji.
- */
-function getKanjiPedagogicalScore(item: KanjiItem): number {
-  const char = item.kanji;
-  if (/[一二三四五六七八九十百千万]/.test(char)) return 100;
-  if (/[日月火水木金土]/.test(char)) return 90;
-  if (/[人男女子上中下左右大小]/.test(char)) return 80;
-  if (/[年時分今先生学校]/.test(char)) return 70;
-  if (/[見行来食飲書読話買]/.test(char)) return 60;
-  return 50;
-}
+const LEVEL_DEFAULT_THEME: Record<JLPTLevel, string> = {
+  N5: '#CC0000',
+  N4: '#E11D48',
+  N3: '#B91C1C',
+  N2: '#990000',
+  N1: '#7F1D1D'
+};
 
-/**
- * Deterministically synthesizes curated units and lessons from the existing N5–N1 database.
- * Guarantees zero data loss: uses existing vocabulary, kanji, and grammar datasets directly.
- */
 export function generateCurriculumForLevel(
   level: JLPTLevel,
   allVocab: VocabularyItem[],
   allKanji: KanjiItem[],
   allGrammar: GrammarItem[]
 ): CurriculumUnit[] {
-  // Pedagogically sort vocabulary and kanji within the chosen level
-  const levelVocab = allVocab
-    .filter(v => v.jlptLevel === level)
-    .sort((a, b) => getVocabPedagogicalScore(b) - getVocabPedagogicalScore(a));
+  // Deduplicate level items preserving original seed/admin order
+  const levelVocab: VocabularyItem[] = [];
+  const vSeen = new Set<string>();
+  for (const v of allVocab) {
+    if (v.jlptLevel === level && !vSeen.has(v.id)) {
+      vSeen.add(v.id);
+      levelVocab.push(v);
+    }
+  }
 
-  const levelKanji = allKanji
-    .filter(k => k.jlptLevel === level)
-    .sort((a, b) => getKanjiPedagogicalScore(b) - getKanjiPedagogicalScore(a));
+  const levelKanji: KanjiItem[] = [];
+  const kSeen = new Set<string>();
+  for (const k of allKanji) {
+    if (k.jlptLevel === level && !kSeen.has(k.id)) {
+      kSeen.add(k.id);
+      levelKanji.push(k);
+    }
+  }
 
-  const levelGrammar = allGrammar.filter(g => g.jlptLevel === level);
+  const levelGrammar: GrammarItem[] = [];
+  const gSeen = new Set<string>();
+  for (const g of allGrammar) {
+    if (g.jlptLevel === level && !gSeen.has(g.id)) {
+      gSeen.add(g.id);
+      levelGrammar.push(g);
+    }
+  }
 
-  const blueprints = UNIT_BLUEPRINTS[level] || UNIT_BLUEPRINTS.N5;
+  if (levelVocab.length === 0 && levelKanji.length === 0 && levelGrammar.length === 0) {
+    return [];
+  }
+
+  const orderedVocab = buildOrderedVocabStream(level, levelVocab);
+  const orderedKanji = buildOrderedKanjiStream(level, levelKanji);
+  const orderedGrammar = levelGrammar;
+
+  const targetVocabPerLesson = TARGET_VOCAB_PER_LESSON[level] || 7;
+  const lessonsPerUnitTarget = TEACHING_LESSONS_PER_UNIT[level] || 7;
+
+  // Total achievable teaching lessons scales directly with dataset size
+  const totalTeachingLessons = Math.max(
+    1,
+    Math.ceil(orderedVocab.length / targetVocabPerLesson),
+    Math.ceil(orderedKanji.length / 8),
+    Math.ceil(orderedGrammar.length / 4)
+  );
+
+  // Build exact contiguous partitions covering 100% of Vocab, Kanji, Grammar
+  interface TeachingBucket {
+    vocabEntries: OrderedVocabEntry[];
+    kanjiEntries: OrderedKanjiEntry[];
+    grammarItems: GrammarItem[];
+  }
+
+  const buckets: TeachingBucket[] = [];
+  for (let i = 0; i < totalTeachingLessons; i++) {
+    const vStart = Math.floor((i * orderedVocab.length) / totalTeachingLessons);
+    const vEnd = Math.floor(((i + 1) * orderedVocab.length) / totalTeachingLessons);
+
+    const kStart = Math.floor((i * orderedKanji.length) / totalTeachingLessons);
+    const kEnd = Math.floor(((i + 1) * orderedKanji.length) / totalTeachingLessons);
+
+    const gStart = Math.floor((i * orderedGrammar.length) / totalTeachingLessons);
+    const gEnd = Math.floor(((i + 1) * orderedGrammar.length) / totalTeachingLessons);
+
+    buckets.push({
+      vocabEntries: orderedVocab.slice(vStart, vEnd),
+      kanjiEntries: orderedKanji.slice(kStart, kEnd),
+      grammarItems: orderedGrammar.slice(gStart, gEnd)
+    });
+  }
+
+  // Group teaching buckets into digestible Units (7-8 teaching lessons + 1 review + 1 checkpoint)
+  const totalUnits = Math.max(1, Math.ceil(totalTeachingLessons / lessonsPerUnitTarget));
   const units: CurriculumUnit[] = [];
+  const topicUsageCounter = new Map<string, number>();
 
-  const vocabChunkSize = Math.max(15, Math.ceil(levelVocab.length / blueprints.length));
-  const kanjiChunkSize = Math.max(4, Math.ceil((levelKanji.length || 1) / blueprints.length));
-  const grammarChunkSize = Math.max(3, Math.ceil((levelGrammar.length || 1) / blueprints.length));
+  for (let uIdx = 0; uIdx < totalUnits; uIdx++) {
+    const unitNumber = uIdx + 1;
+    const unitId = `unit-${level.toLowerCase()}-${unitNumber}`;
+    const bStart = Math.floor((uIdx * buckets.length) / totalUnits);
+    const bEnd = Math.floor(((uIdx + 1) * buckets.length) / totalUnits);
+    const unitBuckets = buckets.slice(bStart, bEnd);
 
-  blueprints.forEach((bp, unitIdx) => {
-    const unitId = `unit-${level.toLowerCase()}-${unitIdx + 1}`;
-    const unitVocab = levelVocab.slice(unitIdx * vocabChunkSize, (unitIdx + 1) * vocabChunkSize);
-    const unitKanji = levelKanji.slice(unitIdx * kanjiChunkSize, (unitIdx + 1) * kanjiChunkSize);
-    const unitGrammar = levelGrammar.slice(unitIdx * grammarChunkSize, (unitIdx + 1) * grammarChunkSize);
+    if (unitBuckets.length === 0) continue;
 
-    // Create 4 standard learning lessons + 1 review + 1 boss challenge
-    const lessonChunkSize = Math.max(3, Math.ceil(unitVocab.length / 4));
+    // Determine dominant semantic topic for the unit header
+    const topicCounts = new Map<string, { topic: CurriculumTopic; count: number }>();
+    for (const b of unitBuckets) {
+      for (const ve of b.vocabEntries) {
+        if (ve.topic) {
+          const existing = topicCounts.get(ve.topic.id);
+          if (existing) {
+            existing.count++;
+          } else {
+            topicCounts.set(ve.topic.id, { topic: ve.topic, count: 1 });
+          }
+        }
+      }
+    }
+
+    let dominantTopic: CurriculumTopic | null = null;
+    let bestScore = -1;
+    for (const entry of topicCounts.values()) {
+      // Prefer specific semantic topics over generic review catch-all when others are sizeable
+      const score = entry.topic.isFlaggedForReview ? entry.count * 0.65 : entry.count;
+      if (score > bestScore) {
+        bestScore = score;
+        dominantTopic = entry.topic;
+      }
+    }
+
+    // Track repeated topic headings across multiple consecutive units so titles feel distinct
+    const rawBaseTitle = dominantTopic?.titleMongolian || `JLPT ${level} Цогц хөтөлбөр`;
+    const prevCount = topicUsageCounter.get(rawBaseTitle) || 0;
+    const occurrence = prevCount + 1;
+    topicUsageCounter.set(rawBaseTitle, occurrence);
+
+    // Collect kanji topics if fallback vocab topic was used for clearer labeling
+    let unitTitle = rawBaseTitle;
+    if (occurrence > 1) {
+      unitTitle = `${rawBaseTitle} (${toRomanSuffix(occurrence)})`;
+    }
+
+    const unitVocabIds: string[] = [];
+    const unitKanjiIds: string[] = [];
+    const unitGrammarIds: string[] = [];
+
+    for (const b of unitBuckets) {
+      b.vocabEntries.forEach(e => unitVocabIds.push(e.item.id));
+      b.kanjiEntries.forEach(e => unitKanjiIds.push(e.item.id));
+      b.grammarItems.forEach(g => unitGrammarIds.push(g.id));
+    }
+
+    // Build lessons inside this Unit:
+    // Lessons 1..mid -> Mid-Unit Review -> Lessons mid+1..end -> Unit Checkpoint
     const lessons: CurriculumLesson[] = [];
+    const midIndex = unitBuckets.length >= 4 ? Math.ceil(unitBuckets.length / 2) : -1;
+    const firstHalfVocabIds: string[] = [];
+    const firstHalfKanjiIds: string[] = [];
+    const firstHalfGrammarIds: string[] = [];
 
-    // Lesson 1: Vocabulary Foundation
-    const l1Vocab = unitVocab.slice(0, lessonChunkSize);
-    lessons.push({
-      id: `${unitId}-l1`,
-      unitId,
-      lessonNumber: 1,
-      title: `${bp.title} — Үгсийн сан I`,
-      description: `${l1Vocab.length} шинэ үг, жишээ өгүүлбэрүүдтэй танилцах`,
-      type: 'lesson',
-      jlptLevel: level,
-      vocabIds: l1Vocab.map(v => v.id),
-      kanjiIds: unitKanji.slice(0, 2).map(k => k.id),
-      grammarIds: [],
-      xpReward: 15,
-      totalExercises: Math.min(10, Math.max(6, l1Vocab.length * 2))
+    let nodeNumber = 1;
+
+    unitBuckets.forEach((b, bIdx) => {
+      const vIds = b.vocabEntries.map(e => e.item.id);
+      const kIds = b.kanjiEntries.map(e => e.item.id);
+      const gIds = b.grammarItems.map(g => g.id);
+
+      if (midIndex === -1 || bIdx < midIndex) {
+        firstHalfVocabIds.push(...vIds);
+        firstHalfKanjiIds.push(...kIds);
+        firstHalfGrammarIds.push(...gIds);
+      }
+
+      // Compute lesson focus and concise description
+      const focusParts: string[] = [];
+      if (vIds.length > 0) focusParts.push(`${vIds.length} үг`);
+      if (kIds.length > 0) focusParts.push(`${kIds.length} ханз`);
+      if (gIds.length > 0) focusParts.push(`${gIds.length} дүрэм`);
+
+      let lessonFocus: CurriculumLesson['lessonFocus'] = 'vocab';
+      if (kIds.length > 0 && gIds.length > 0) lessonFocus = 'mixed';
+      else if (kIds.length > 0) lessonFocus = 'vocab_kanji';
+      else if (gIds.length > 0) lessonFocus = 'vocab_grammar';
+
+      const sampleWords = b.vocabEntries
+        .slice(0, 3)
+        .map(e => e.item.japanese)
+        .join(' · ');
+
+      const lessonNumInUnit = bIdx + 1;
+      const estimatedExercises = Math.min(10, Math.max(6, Math.min(4, vIds.length) + kIds.length + gIds.length + 3));
+
+      lessons.push({
+        id: `${unitId}-l${lessonNumInUnit}`,
+        unitId,
+        unitNumber,
+        lessonNumber: nodeNumber++,
+        title: `Хичээл ${lessonNumInUnit}: ${rawBaseTitle}`,
+        description: sampleWords
+          ? `${sampleWords} — ${focusParts.join(', ')} ба идэвхтэй дасгал`
+          : `${focusParts.join(', ')} ба идэвхтэй дасгал`,
+        type: 'lesson',
+        lessonFocus,
+        jlptLevel: level,
+        vocabIds: vIds,
+        kanjiIds: kIds,
+        grammarIds: gIds,
+        xpReward: 15,
+        totalExercises: estimatedExercises,
+        estimatedMinutes: Math.max(4, Math.min(8, Math.round(estimatedExercises * 0.7)))
+      });
+
+      // Insert Mid-Unit Review after first half
+      if (midIndex !== -1 && bIdx === midIndex - 1) {
+        lessons.push({
+          id: `${unitId}-review`,
+          unitId,
+          unitNumber,
+          lessonNumber: nodeNumber++,
+          title: `${unitTitle} — Дунд давтлага`,
+          description: `Эхний хэсэгт үзсэн ${firstHalfVocabIds.length} үг, ханз, дүрмийг бататгах давтлага`,
+          type: 'review',
+          lessonFocus: 'review',
+          jlptLevel: level,
+          vocabIds: [...firstHalfVocabIds],
+          kanjiIds: [...firstHalfKanjiIds],
+          grammarIds: [...firstHalfGrammarIds],
+          xpReward: 20,
+          totalExercises: 8,
+          estimatedMinutes: 5
+        });
+      }
     });
 
-    // Lesson 2: Vocabulary & Kanji
-    const l2Vocab = unitVocab.slice(lessonChunkSize, lessonChunkSize * 2);
-    const l2Kanji = unitKanji.slice(2, 4);
-    lessons.push({
-      id: `${unitId}-l2`,
-      unitId,
-      lessonNumber: 2,
-      title: `${bp.title} — Үг ба Ханз`,
-      description: `Ханзны дуудлага, шинэ үгс, сонсох дасгалууд`,
-      type: 'lesson',
-      jlptLevel: level,
-      vocabIds: l2Vocab.map(v => v.id),
-      kanjiIds: l2Kanji.map(k => k.id),
-      grammarIds: [],
-      xpReward: 15,
-      totalExercises: Math.min(10, Math.max(6, (l2Vocab.length + l2Kanji.length) * 2))
-    });
-
-    // Lesson 3: Grammar & Sentence Structure
-    const l3Vocab = unitVocab.slice(lessonChunkSize * 2, lessonChunkSize * 3);
-    const l3Grammar = unitGrammar.slice(0, 2);
-    lessons.push({
-      id: `${unitId}-l3`,
-      unitId,
-      lessonNumber: 3,
-      title: `${bp.title} — Өгүүлбэр зүй`,
-      description: `Үгсийн холбоо, өгүүлбэр эвлүүлэх болон дүрмийн хэрэглээ`,
-      type: 'lesson',
-      jlptLevel: level,
-      vocabIds: l3Vocab.map(v => v.id),
-      kanjiIds: [],
-      grammarIds: l3Grammar.map(g => g.id),
-      xpReward: 15,
-      totalExercises: Math.min(10, Math.max(6, l3Vocab.length * 2))
-    });
-
-    // Lesson 4: Everyday Application
-    const l4Vocab = unitVocab.slice(lessonChunkSize * 3);
-    const l4Grammar = unitGrammar.slice(2, 4);
-    lessons.push({
-      id: `${unitId}-l4`,
-      unitId,
-      lessonNumber: 4,
-      title: `${bp.title} — Бодит хэрэглээ`,
-      description: `Амьдралд хэрэглэгдэх өгүүлбэрүүд ба сонсох чадвар`,
-      type: 'lesson',
-      jlptLevel: level,
-      vocabIds: l4Vocab.map(v => v.id),
-      kanjiIds: unitKanji.slice(4).map(k => k.id),
-      grammarIds: l4Grammar.map(g => g.id),
-      xpReward: 15,
-      totalExercises: Math.min(10, Math.max(6, l4Vocab.length * 2))
-    });
-
-    // Lesson 5: Unit Review & Practice
-    lessons.push({
-      id: `${unitId}-review`,
-      unitId,
-      lessonNumber: 5,
-      title: `${bp.title} — Нэгдсэн Давтлага`,
-      description: `Тухайн бүлгийн бүх үг, ханз, дүрмийн цогц бататгал`,
-      type: 'review',
-      jlptLevel: level,
-      vocabIds: unitVocab.map(v => v.id),
-      kanjiIds: unitKanji.map(k => k.id),
-      grammarIds: unitGrammar.map(g => g.id),
-      xpReward: 20,
-      totalExercises: 10
-    });
-
-    // Lesson 6: Unit Challenge (Boss Milestone)
+    // End-of-Unit Checkpoint (Boss Challenge)
     lessons.push({
       id: `${unitId}-challenge`,
       unitId,
-      lessonNumber: 6,
-      title: `${bp.title} — Бүлгийн Сорил 🏆`,
-      description: `Бүлгийг бүрэн дуусгаж, дараагийн шатыг нээх сорилт`,
+      unitNumber,
+      lessonNumber: nodeNumber++,
+      title: `${unitTitle} — Бүлгийн Сорил`,
+      description: `Бүлгийн ${unitVocabIds.length} үг, ${unitKanjiIds.length} ханз, ${unitGrammarIds.length} дүрмийг шалгах нэгдсэн сорил`,
       type: 'boss_challenge',
+      lessonFocus: 'checkpoint',
       jlptLevel: level,
-      vocabIds: unitVocab.map(v => v.id),
-      kanjiIds: unitKanji.map(k => k.id),
-      grammarIds: unitGrammar.map(g => g.id),
+      vocabIds: unitVocabIds,
+      kanjiIds: unitKanjiIds,
+      grammarIds: unitGrammarIds,
       xpReward: 30,
-      totalExercises: 12
+      totalExercises: 10,
+      estimatedMinutes: 7
     });
+
+    const summaryStats = [
+      unitVocabIds.length > 0 ? `${unitVocabIds.length} үг` : null,
+      unitKanjiIds.length > 0 ? `${unitKanjiIds.length} ханз` : null,
+      unitGrammarIds.length > 0 ? `${unitGrammarIds.length} дүрэм` : null
+    ]
+      .filter(Boolean)
+      .join(' · ');
 
     units.push({
       id: unitId,
-      unitNumber: unitIdx + 1,
-      title: bp.title,
-      mongolianDescription: bp.mongolianDescription,
+      unitNumber,
+      title: unitTitle,
+      japaneseTitle: dominantTopic?.titleJapanese,
+      mongolianDescription: dominantTopic?.descriptionMongolian
+        ? `${dominantTopic.descriptionMongolian} (${summaryStats})`
+        : summaryStats,
       jlptLevel: level,
-      themeColor: bp.themeColor,
-      iconName: bp.iconName,
+      themeColor: dominantTopic?.themeColor || LEVEL_DEFAULT_THEME[level] || '#CC0000',
+      iconName: dominantTopic?.iconName || 'BookOpen',
+      vocabCount: unitVocabIds.length,
+      kanjiCount: unitKanjiIds.length,
+      grammarCount: unitGrammarIds.length,
       lessons
     });
-  });
+  }
 
   return units;
 }
 
+// ============================================================================
+// COVERAGE AUDITOR FOR AUTOMATED & RUNTIME VERIFICATION
+// ============================================================================
+
+export interface CurriculumCoverageAudit {
+  level: JLPTLevel;
+  expectedVocabCount: number;
+  usedVocabCount: number;
+  duplicateVocabCount: number;
+  expectedKanjiCount: number;
+  usedKanjiCount: number;
+  duplicateKanjiCount: number;
+  expectedGrammarCount: number;
+  usedGrammarCount: number;
+  duplicateGrammarCount: number;
+  unitCount: number;
+  teachingLessonCount: number;
+  totalNodeCount: number;
+  isComplete: boolean;
+}
+
+export function auditCurriculumCoverage(
+  level: JLPTLevel,
+  allVocab: VocabularyItem[],
+  allKanji: KanjiItem[],
+  allGrammar: GrammarItem[],
+  units?: CurriculumUnit[]
+): CurriculumCoverageAudit {
+  const builtUnits = units || generateCurriculumForLevel(level, allVocab, allKanji, allGrammar);
+  const expectedVocabIds = new Set(allVocab.filter(v => v.jlptLevel === level).map(v => v.id));
+  const expectedKanjiIds = new Set(allKanji.filter(k => k.jlptLevel === level).map(k => k.id));
+  const expectedGrammarIds = new Set(allGrammar.filter(g => g.jlptLevel === level).map(g => g.id));
+
+  const usedVocab = new Set<string>();
+  const usedKanji = new Set<string>();
+  const usedGrammar = new Set<string>();
+  let dupV = 0;
+  let dupK = 0;
+  let dupG = 0;
+  let teachingLessonCount = 0;
+  let totalNodeCount = 0;
+
+  for (const u of builtUnits) {
+    for (const l of u.lessons) {
+      totalNodeCount++;
+      if (l.type === 'lesson') {
+        teachingLessonCount++;
+        for (const id of l.vocabIds) {
+          if (usedVocab.has(id)) dupV++;
+          usedVocab.add(id);
+        }
+        for (const id of l.kanjiIds) {
+          if (usedKanji.has(id)) dupK++;
+          usedKanji.add(id);
+        }
+        for (const id of l.grammarIds) {
+          if (usedGrammar.has(id)) dupG++;
+          usedGrammar.add(id);
+        }
+      }
+    }
+  }
+
+  const isComplete =
+    usedVocab.size === expectedVocabIds.size &&
+    usedKanji.size === expectedKanjiIds.size &&
+    usedGrammar.size === expectedGrammarIds.size &&
+    dupV === 0 &&
+    dupK === 0 &&
+    dupG === 0;
+
+  return {
+    level,
+    expectedVocabCount: expectedVocabIds.size,
+    usedVocabCount: usedVocab.size,
+    duplicateVocabCount: dupV,
+    expectedKanjiCount: expectedKanjiIds.size,
+    usedKanjiCount: usedKanji.size,
+    duplicateKanjiCount: dupK,
+    expectedGrammarCount: expectedGrammarIds.size,
+    usedGrammarCount: usedGrammar.size,
+    duplicateGrammarCount: dupG,
+    unitCount: builtUnits.length,
+    teachingLessonCount,
+    totalNodeCount,
+    isComplete
+  };
+}
+
+// ============================================================================
+// FAST O(N) LESSON & UNIT PATH STATE ENGINE
+// ============================================================================
+
+export interface UnitPathStats {
+  completedCount: number;
+  totalCount: number;
+  isCompleted: boolean;
+  hasActive: boolean;
+  progressPercent: number;
+}
+
+export interface LevelPathState {
+  lessonStatusMap: Record<string, PathNodeStatus>;
+  unitStatsMap: Record<string, UnitPathStats>;
+  nextActiveLesson: CurriculumLesson | null;
+  nextActiveUnit: CurriculumUnit | null;
+  completedCount: number;
+  totalCount: number;
+  progressPercent: number;
+}
+
+function isLessonCompletedByItems(
+  lesson: CurriculumLesson,
+  completedSet: Set<string>,
+  learnedVocabSet: Set<string>,
+  learnedKanjiSet: Set<string>,
+  learnedGrammarSet: Set<string>
+): boolean {
+  if (completedSet.has(lesson.id)) {
+    return true;
+  }
+
+  // Only teaching lessons auto-complete from independent dictionary/flashcard study (>= 75% of lesson items learned)
+  if (lesson.type === 'lesson') {
+    const totalItems = lesson.vocabIds.length + lesson.kanjiIds.length + lesson.grammarIds.length;
+    if (totalItems > 0) {
+      let learnedCount = 0;
+      for (const id of lesson.vocabIds) if (learnedVocabSet.has(id)) learnedCount++;
+      for (const id of lesson.kanjiIds) if (learnedKanjiSet.has(id)) learnedCount++;
+      for (const id of lesson.grammarIds) if (learnedGrammarSet.has(id)) learnedCount++;
+
+      if (learnedCount >= Math.ceil(totalItems * 0.75)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+export function computeLevelPathState(
+  units: CurriculumUnit[],
+  userProgress: Pick<
+    UserProgress,
+    'completedLessonIds' | 'learnedVocabIds' | 'learnedKanjiIds' | 'learnedGrammarIds'
+  >
+): LevelPathState {
+  const completedSet = new Set(userProgress.completedLessonIds || []);
+  const learnedVocabSet = new Set(userProgress.learnedVocabIds || []);
+  const learnedKanjiSet = new Set(userProgress.learnedKanjiIds || []);
+  const learnedGrammarSet = new Set(userProgress.learnedGrammarIds || []);
+
+  const lessonStatusMap: Record<string, PathNodeStatus> = {};
+  const unitStatsMap: Record<string, UnitPathStats> = {};
+
+  let nextActiveLesson: CurriculumLesson | null = null;
+  let nextActiveUnit: CurriculumUnit | null = null;
+  let totalCount = 0;
+  let completedCount = 0;
+
+  // Determine linear completion & guarantee the very first uncompleted node is always 'active'
+  let foundCurrentActive = false;
+
+  for (const unit of units) {
+    let unitCompleted = 0;
+    let unitHasActive = false;
+
+    for (const lesson of unit.lessons) {
+      totalCount++;
+      const done = isLessonCompletedByItems(
+        lesson,
+        completedSet,
+        learnedVocabSet,
+        learnedKanjiSet,
+        learnedGrammarSet
+      );
+
+      let status: PathNodeStatus;
+      if (done) {
+        status = 'completed';
+        completedCount++;
+        unitCompleted++;
+      } else if (!foundCurrentActive) {
+        status = 'active';
+        foundCurrentActive = true;
+        unitHasActive = true;
+        nextActiveLesson = lesson;
+        nextActiveUnit = unit;
+      } else {
+        status = 'locked';
+      }
+
+      lessonStatusMap[lesson.id] = status;
+    }
+
+    const unitTotal = unit.lessons.length;
+    unitStatsMap[unit.id] = {
+      completedCount: unitCompleted,
+      totalCount: unitTotal,
+      isCompleted: unitTotal > 0 && unitCompleted >= unitTotal,
+      hasActive: unitHasActive,
+      progressPercent: unitTotal > 0 ? Math.min(100, Math.round((unitCompleted / unitTotal) * 100)) : 0
+    };
+  }
+
+  // If 100% completed in this level, fallback nextActiveLesson to the final checkpoint for replay
+  if (!nextActiveLesson && units.length > 0) {
+    const lastUnit = units[units.length - 1];
+    nextActiveUnit = lastUnit;
+    nextActiveLesson = lastUnit.lessons[lastUnit.lessons.length - 1] || null;
+  }
+
+  const progressPercent = totalCount > 0 ? Math.min(100, Math.round((completedCount / totalCount) * 100)) : 0;
+
+  return {
+    lessonStatusMap,
+    unitStatsMap,
+    nextActiveLesson,
+    nextActiveUnit,
+    completedCount,
+    totalCount,
+    progressPercent
+  };
+}
+
 /**
- * Computes the real-time status of a lesson node based on the user's actual learning history.
- * Guarantees zero progress loss: previously learned vocabulary automatically marks nodes as completed!
+ * Backwards-compatible single-node status helper.
  */
 export function calculateLessonStatus(
   lesson: CurriculumLesson,
@@ -368,126 +634,452 @@ export function calculateLessonStatus(
   learnedKanjiIds: string[] = [],
   completedLessonIds: string[] = [],
   isFirstLesson: boolean = false,
-  previousLessonStatus?: PathNodeStatus
+  previousLessonStatus?: PathNodeStatus,
+  learnedGrammarIds: string[] = []
 ): PathNodeStatus {
-  // 1. Explicitly marked as completed in progress state
-  if (completedLessonIds.includes(lesson.id)) {
-    return 'completed';
-  }
-
-  // 2. Check if a high percentage (>= 75%) of this lesson's vocab has already been learned
-  if (lesson.vocabIds.length > 0) {
-    const learnedCount = lesson.vocabIds.filter(id => learnedVocabIds.includes(id)).length;
-    if (learnedCount >= Math.ceil(lesson.vocabIds.length * 0.75)) {
-      return 'completed';
-    }
-  }
-
-  // 3. First lesson of the entire level is always unlocked and active
-  if (isFirstLesson) {
-    return 'active';
-  }
-
-  // 4. If previous lesson in sequence is completed, this lesson is now active
-  if (previousLessonStatus === 'completed') {
-    return 'active';
-  }
-
-  // 5. Default locked state
+  const done = isLessonCompletedByItems(
+    lesson,
+    new Set(completedLessonIds),
+    new Set(learnedVocabIds),
+    new Set(learnedKanjiIds),
+    new Set(learnedGrammarIds)
+  );
+  if (done) return 'completed';
+  if (isFirstLesson || previousLessonStatus === 'completed') return 'active';
   return 'locked';
 }
 
-/**
- * Generates an interactive exercise deck for a lesson session.
- * Supports: Vocab intro cards, word scramble tiles, multiple choice, and audio listening.
- */
+// ============================================================================
+// SENTENCE SEGMENTATION & REAL EXERCISE GENERATION (VOCAB + KANJI + GRAMMAR)
+// ============================================================================
+
+function tokenizeSentenceForScramble(sentence: string): string[] {
+  const trimmed = sentence.trim().replace(/[。．\.!！?？]+$/, '');
+  if (!trimmed) return [];
+
+  // Split by whitespace first if pre-spaced, otherwise split around common particles & auxiliaries
+  let parts: string[];
+  if (/\s+/.test(trimmed)) {
+    parts = trimmed.split(/\s+/).filter(Boolean);
+  } else {
+    parts = trimmed
+      .split(/(は|が|を|に|で|へ|と|も|から|まで|より|ので|のに|けど|て|です|ます|でした|ました|ません|ください)/)
+      .filter(p => p.trim().length > 0);
+  }
+
+  // Merge tiny trailing 1-char particles onto the preceding chunk if too many pieces (> 6)
+  while (parts.length > 6) {
+    let shortestIdx = 1;
+    for (let i = 1; i < parts.length; i++) {
+      if (parts[i].length < parts[shortestIdx].length) {
+        shortestIdx = i;
+      }
+    }
+    parts[shortestIdx - 1] = `${parts[shortestIdx - 1]}${parts[shortestIdx]}`;
+    parts.splice(shortestIdx, 1);
+  }
+
+  return parts;
+}
+
+function buildSentenceScrambleExercise(
+  id: string,
+  japanese: string,
+  mongolian: string,
+  reading: string | undefined,
+  itemId: string,
+  itemType: 'vocab' | 'grammar'
+): CurriculumExercise | null {
+  if (!japanese || !mongolian) return null;
+
+  let cleanJp = japanese.trim();
+  let cleanMn = mongolian.trim();
+
+  // Support legacy "日本語 (Монгол)" combined field if mongolian not passed cleanly
+  const inlineMatch = cleanJp.match(/^([^\(（]+)[\(（]([^\)）]+)[\)）]/);
+  if (inlineMatch) {
+    cleanJp = inlineMatch[1].trim();
+    cleanMn = inlineMatch[2].trim();
+  }
+
+  const chunks = tokenizeSentenceForScramble(cleanJp);
+  if (chunks.length < 3 || chunks.length > 6) return null;
+
+  const tiles = chunks.map((text, i) => ({ id: `tile-${id}-${i}`, text }));
+  let scrambled = shuffleArray(tiles);
+  if (scrambled.map(t => t.text).join('') === tiles.map(t => t.text).join('') && tiles.length >= 2) {
+    [scrambled[0], scrambled[1]] = [scrambled[1], scrambled[0]];
+  }
+
+  return {
+    id,
+    type: 'sentence_scramble',
+    prompt: 'Өгүүлбэрийг зөв дарааллаар эвлүүлнэ үү',
+    targetJapanese: cleanJp,
+    targetReading: reading,
+    targetMongolian: cleanMn,
+    itemId,
+    itemType,
+    correctAnswer: cleanJp.replace(/[。．\.!！?？\s]+/g, ''),
+    wordTiles: scrambled,
+    explanation: `Зөв өгүүлбэр: ${cleanJp} — ${cleanMn}`
+  };
+}
+
+function getReviewPriorityScore(
+  itemId: string,
+  studyRecords: Record<string, ItemStudyRecord> = {}
+): number {
+  const rec = studyRecords[itemId];
+  if (!rec) return 50;
+  if (rec.masteryStatus === 'review_needed' || rec.incorrectCount > rec.correctCount) return 100;
+  if (rec.masteryStatus === 'learning') return 70;
+  return 20;
+}
+
 export function generateExercisesForLesson(
   lesson: CurriculumLesson,
   allVocab: VocabularyItem[],
   allKanji: KanjiItem[],
-  allGrammar: GrammarItem[]
+  allGrammar: GrammarItem[],
+  itemStudyRecords: Record<string, ItemStudyRecord> = {}
 ): CurriculumExercise[] {
   const exercises: CurriculumExercise[] = [];
-  const vocabItems = allVocab.filter(v => lesson.vocabIds.includes(v.id));
-  const kanjiItems = allKanji.filter(k => lesson.kanjiIds.includes(k.id));
-  const poolVocab = allVocab.filter(v => v.jlptLevel === lesson.jlptLevel);
 
-  // 1. Vocab Introductions & Recognition
-  vocabItems.forEach((vocab, idx) => {
-    // A. Intro Card
+  const vocabIdSet = new Set(lesson.vocabIds);
+  const kanjiIdSet = new Set(lesson.kanjiIds);
+  const grammarIdSet = new Set(lesson.grammarIds);
+
+  let lessonVocab = allVocab.filter(v => vocabIdSet.has(v.id));
+  let lessonKanji = allKanji.filter(k => kanjiIdSet.has(k.id));
+  let lessonGrammar = allGrammar.filter(g => grammarIdSet.has(g.id));
+
+  const levelVocab = allVocab.filter(v => v.jlptLevel === lesson.jlptLevel);
+  const levelKanji = allKanji.filter(k => k.jlptLevel === lesson.jlptLevel);
+  const levelGrammar = allGrammar.filter(g => g.jlptLevel === lesson.jlptLevel);
+
+  const poolVocab = levelVocab.length >= 4 ? levelVocab : allVocab;
+  const poolKanji = levelKanji.length >= 4 ? levelKanji : allKanji;
+  const poolGrammar = levelGrammar.length >= 4 ? levelGrammar : allGrammar;
+
+  const isReviewOrChallenge = lesson.type === 'review' || lesson.type === 'boss_challenge';
+
+  if (isReviewOrChallenge) {
+    // Prioritize items with errors or weak SRS records first, then mix
+    lessonVocab = [...lessonVocab].sort(
+      (a, b) => getReviewPriorityScore(b.id, itemStudyRecords) - getReviewPriorityScore(a.id, itemStudyRecords)
+    );
+    lessonKanji = [...lessonKanji].sort(
+      (a, b) => getReviewPriorityScore(b.id, itemStudyRecords) - getReviewPriorityScore(a.id, itemStudyRecords)
+    );
+    lessonGrammar = [...lessonGrammar].sort(
+      (a, b) => getReviewPriorityScore(b.id, itemStudyRecords) - getReviewPriorityScore(a.id, itemStudyRecords)
+    );
+
+    // Build focused active recall session (up to totalExercises)
+    const targetCount = lesson.totalExercises || (lesson.type === 'boss_challenge' ? 10 : 8);
+    let vIdx = 0;
+    let kIdx = 0;
+    let gIdx = 0;
+    let scrambleAdded = false;
+    let guard = 0;
+
+    while (exercises.length < targetCount && guard < 40) {
+      guard++;
+      const slot = guard % 4;
+
+      if (slot === 0 && lessonVocab[vIdx]) {
+        const vocab = lessonVocab[vIdx++];
+        const distractors = getDistractors(poolVocab.map(p => p.mongolian), vocab.mongolian, 3);
+        if (distractors.length >= 1) {
+          const { options } = assembleOptions(vocab.mongolian, distractors);
+          exercises.push({
+            id: `ex-${lesson.id}-rv-v-${vocab.id}`,
+            type: 'multiple_choice',
+            prompt: 'Үгийн зөв монгол утгыг сонгоно уу',
+            targetJapanese: vocab.japanese,
+            targetReading: vocab.reading,
+            targetMongolian: vocab.mongolian,
+            itemId: vocab.id,
+            itemType: 'vocab',
+            options,
+            correctAnswer: vocab.mongolian,
+            explanation: `「${vocab.japanese}」${vocab.reading ? `(${vocab.reading})` : ''} — ${vocab.mongolian}`
+          });
+        }
+      } else if (slot === 1 && lessonKanji[kIdx]) {
+        const kanji = lessonKanji[kIdx++];
+        const distractors = getDistractors(poolKanji.map(p => p.mongolian), kanji.mongolian, 3);
+        if (distractors.length >= 1) {
+          const { options } = assembleOptions(kanji.mongolian, distractors);
+          exercises.push({
+            id: `ex-${lesson.id}-rv-k-${kanji.id}`,
+            type: 'multiple_choice',
+            prompt: 'Энэ ханзны зөв утгыг сонгоно уу',
+            targetJapanese: kanji.kanji,
+            targetReading: kanji.onyomi || kanji.kunyomi || '',
+            targetMongolian: kanji.mongolian,
+            itemId: kanji.id,
+            itemType: 'kanji',
+            onyomi: kanji.onyomi,
+            kunyomi: kanji.kunyomi,
+            options,
+            correctAnswer: kanji.mongolian,
+            explanation: `「${kanji.kanji}」ханз — ${kanji.mongolian}`
+          });
+        }
+      } else if (slot === 2 && lessonGrammar[gIdx]) {
+        const grammar = lessonGrammar[gIdx++];
+        const gq = learningEngine.buildGrammarQuestion(grammar, poolGrammar);
+        if (gq && gq.options.length >= 2) {
+          exercises.push({
+            id: `ex-${lesson.id}-rv-g-${grammar.id}`,
+            type: 'multiple_choice',
+            prompt: gq.promptInstruction || 'Зөв дүрмийн утгыг сонгоно уу',
+            targetJapanese: gq.prompt,
+            targetReading: gq.reading,
+            targetMongolian: grammar.mongolian,
+            itemId: grammar.id,
+            itemType: 'grammar',
+            structure: grammar.structure,
+            options: gq.options,
+            correctAnswer: gq.options[gq.correctIndex],
+            explanation: gq.explanation
+          });
+        }
+      } else if (slot === 3 && !scrambleAdded) {
+        const candidateVocab = lessonVocab.find(v => v.exampleSentence && v.exampleMongolian);
+        if (candidateVocab && candidateVocab.exampleSentence && candidateVocab.exampleMongolian) {
+          const scramble = buildSentenceScrambleExercise(
+            `ex-${lesson.id}-rv-scr-${candidateVocab.id}`,
+            candidateVocab.exampleSentence,
+            candidateVocab.exampleMongolian,
+            candidateVocab.exampleReading,
+            candidateVocab.id,
+            'vocab'
+          );
+          if (scramble) {
+            exercises.push(scramble);
+            scrambleAdded = true;
+          }
+        }
+      } else if (lessonVocab[vIdx]) {
+        // Fallback fill with remaining vocab questions if kanji/grammar exhausted
+        const vocab = lessonVocab[vIdx++];
+        const distractors = getDistractors(poolVocab.map(p => p.mongolian), vocab.mongolian, 3);
+        if (distractors.length >= 1) {
+          const { options } = assembleOptions(vocab.mongolian, distractors);
+          exercises.push({
+            id: `ex-${lesson.id}-rv-vf-${vocab.id}`,
+            type: 'multiple_choice',
+            prompt: 'Үгийн зөв монгол утгыг сонгоно уу',
+            targetJapanese: vocab.japanese,
+            targetReading: vocab.reading,
+            targetMongolian: vocab.mongolian,
+            itemId: vocab.id,
+            itemType: 'vocab',
+            options,
+            correctAnswer: vocab.mongolian,
+            explanation: `「${vocab.japanese}」${vocab.reading ? `(${vocab.reading})` : ''} — ${vocab.mongolian}`
+          });
+        }
+      }
+    }
+
+    return exercises.slice(0, targetCount);
+  }
+
+  // ==========================================================================
+  // STANDARD TEACHING LESSON: TEACH -> TEST VOCAB / KANJI / GRAMMAR -> APPLY
+  // Balanced 6-10 exercise session (~5-8 mins) preserving all domains
+  // ==========================================================================
+
+  // Budget allocation inside max 10 exercises
+  const hasKanji = lessonKanji.length > 0;
+  const hasGrammar = lessonGrammar.length > 0;
+  const hasScrambleCandidate =
+    lessonVocab.some(v => Boolean(v.exampleSentence)) ||
+    lessonGrammar.some(g => Boolean(g.examples?.some(e => e.japanese && e.mongolian)));
+
+  const reservedForGrammar = hasGrammar ? 2 : 0; // 1 intro + 1 mc
+  const reservedForKanji = hasKanji ? 2 : 0; // 1 intro + 1 mc
+  const reservedForScramble = hasScrambleCandidate ? 1 : 0;
+  const remainingBudget = Math.max(4, 10 - reservedForGrammar - reservedForKanji - reservedForScramble);
+
+  const vocabIntroLimit = Math.min(lessonVocab.length, hasKanji && hasGrammar ? 2 : 3);
+  const vocabMcLimit = Math.max(1, remainingBudget - vocabIntroLimit);
+
+  // 1. Teach key vocabulary items (2-3 intro cards)
+  lessonVocab.slice(0, vocabIntroLimit).forEach((vocab, idx) => {
     exercises.push({
-      id: `ex-${lesson.id}-intro-${idx}`,
+      id: `ex-${lesson.id}-v-intro-${idx}`,
       type: 'vocab_intro',
       prompt: 'Шинэ үгтэй танилцаарай',
       targetJapanese: vocab.japanese,
       targetReading: vocab.reading,
       targetMongolian: vocab.mongolian,
+      itemId: vocab.id,
+      itemType: 'vocab',
+      exampleJapanese: vocab.exampleSentence,
+      exampleReading: vocab.exampleReading,
+      exampleMongolian: vocab.exampleMongolian,
       correctAnswer: vocab.mongolian,
-      explanation: vocab.explanation || `Тайлбар: ${vocab.partOfSpeech}`
+      explanation: vocab.explanation || `Үгийн аймаг: ${vocab.partOfSpeech}`
     });
+  });
 
-    // B. Multiple Choice Translation
-    const distractors = poolVocab
-      .filter(v => v.id !== vocab.id && v.mongolian !== vocab.mongolian)
-      .slice(0, 3)
-      .map(v => v.mongolian);
-
-    const options = [...distractors, vocab.mongolian].sort(() => Math.random() - 0.5);
-
+  // 2. Teach key Kanji if assigned (1 intro card)
+  if (hasKanji) {
+    const primaryKanji = lessonKanji[0];
+    const exWord = primaryKanji.exampleWords?.[0];
     exercises.push({
-      id: `ex-${lesson.id}-mc-${idx}`,
-      type: 'multiple_choice',
-      prompt: 'Зөв монгол утгыг сонгоно уу',
-      targetJapanese: vocab.japanese,
-      targetReading: vocab.reading,
-      targetMongolian: vocab.mongolian,
-      options,
-      correctAnswer: vocab.mongolian,
-      explanation: `「${vocab.japanese}」(${vocab.reading}) — ${vocab.mongolian}`
+      id: `ex-${lesson.id}-k-intro-0`,
+      type: 'kanji_intro',
+      prompt: 'Шинэ ханзтай танилцаарай',
+      targetJapanese: primaryKanji.kanji,
+      targetReading: primaryKanji.onyomi || primaryKanji.kunyomi || '',
+      targetMongolian: primaryKanji.mongolian,
+      itemId: primaryKanji.id,
+      itemType: 'kanji',
+      onyomi: primaryKanji.onyomi,
+      kunyomi: primaryKanji.kunyomi,
+      exampleJapanese: exWord?.word,
+      exampleReading: exWord?.reading,
+      exampleMongolian: exWord?.mongolian,
+      correctAnswer: primaryKanji.mongolian,
+      explanation: `Оньёми: ${primaryKanji.onyomi || '—'} · Күньёми: ${primaryKanji.kunyomi || '—'}`
     });
+  }
 
-    // C. Sentence Word Scramble (if example sentence is present)
-    if (vocab.exampleSentence && vocab.exampleSentence.includes('(')) {
-      // Parse Japanese part and Mongolian part from: "私は学生です。(Би оюутан.)"
-      const match = vocab.exampleSentence.match(/^([^\(（]+)[\(（]([^\)）]+)[\)）]/);
-      if (match) {
-        const japaneseSentence = match[1].trim();
-        const mongolianSentence = match[2].trim();
+  // 3. Teach key Grammar if assigned (1 intro card)
+  if (hasGrammar) {
+    const primaryGrammar = lessonGrammar[0];
+    const ex = primaryGrammar.examples?.[0];
+    exercises.push({
+      id: `ex-${lesson.id}-g-intro-0`,
+      type: 'grammar_intro',
+      prompt: 'Дүрмийн бүтэцтэй танилцаарай',
+      targetJapanese: primaryGrammar.pattern,
+      targetMongolian: primaryGrammar.mongolian,
+      itemId: primaryGrammar.id,
+      itemType: 'grammar',
+      structure: primaryGrammar.structure,
+      exampleJapanese: ex?.japanese,
+      exampleReading: ex?.reading,
+      exampleMongolian: ex?.mongolian,
+      correctAnswer: primaryGrammar.mongolian,
+      explanation: primaryGrammar.explanation
+    });
+  }
 
-        // Split Japanese sentence into word chunks using spaces or natural segments
-        const chunks = japaneseSentence.split(/(\s+|は|が|を|に|で|と|も|です|ます|でした|ました)/).filter(c => c.trim().length > 0);
-        if (chunks.length >= 3 && chunks.length <= 8) {
-          const tiles = chunks.map((c, i) => ({ id: `tile-${i}`, text: c }));
-          exercises.push({
-            id: `ex-${lesson.id}-scramble-${idx}`,
-            type: 'sentence_scramble',
-            prompt: 'Өгүүлбэрийг зөв дарааллаар эвлүүлнэ үү',
-            targetJapanese: japaneseSentence,
-            targetMongolian: mongolianSentence,
-            correctAnswer: japaneseSentence.replace(/\s+/g, ''),
-            wordTiles: [...tiles].sort(() => Math.random() - 0.5),
-            explanation: `Зөв өгүүлбэр: ${japaneseSentence} — ${mongolianSentence}`
-          });
-        }
-      }
+  // 4. Active Recall: Vocabulary Multiple Choice (mix new + remaining lesson vocab)
+  const mcVocabPool =
+    lessonVocab.length > vocabIntroLimit
+      ? [...lessonVocab.slice(vocabIntroLimit), ...lessonVocab.slice(0, vocabIntroLimit)]
+      : lessonVocab;
+  mcVocabPool.slice(0, vocabMcLimit).forEach((vocab, idx) => {
+    const distractors = getDistractors(poolVocab.map(v => v.mongolian), vocab.mongolian, 3);
+    if (distractors.length >= 1) {
+      const { options } = assembleOptions(vocab.mongolian, distractors);
+      exercises.push({
+        id: `ex-${lesson.id}-v-mc-${idx}`,
+        type: 'multiple_choice',
+        prompt: 'Зөв монгол утгыг сонгоно уу',
+        targetJapanese: vocab.japanese,
+        targetReading: vocab.reading,
+        targetMongolian: vocab.mongolian,
+        itemId: vocab.id,
+        itemType: 'vocab',
+        options,
+        correctAnswer: vocab.mongolian,
+        explanation: `「${vocab.japanese}」${vocab.reading ? `(${vocab.reading})` : ''} — ${vocab.mongolian}`
+      });
     }
   });
 
-  // 2. Kanji Recognition
-  kanjiItems.forEach((kanji, idx) => {
-    exercises.push({
-      id: `ex-${lesson.id}-kanji-${idx}`,
-      type: 'multiple_choice',
-      prompt: `Энэ ханзны утга юу вэ?`,
-      targetJapanese: kanji.kanji,
-      targetReading: kanji.onyomi || kanji.kunyomi || '',
-      targetMongolian: kanji.mongolian,
-      options: [kanji.mongolian, 'Ус', 'Гал', 'Мод'].sort(() => Math.random() - 0.5),
-      correctAnswer: kanji.mongolian,
-      explanation: `「${kanji.kanji}」ханз нь 「${kanji.mongolian}」утгатай.`
-    });
+  // 5. Active Recall: Kanji Check (using real pool distractors)
+  lessonKanji.slice(0, hasKanji ? 1 : 0).forEach((kanji, idx) => {
+    const distractors = getDistractors(poolKanji.map(k => k.mongolian), kanji.mongolian, 3);
+    if (distractors.length >= 1) {
+      const { options } = assembleOptions(kanji.mongolian, distractors);
+      exercises.push({
+        id: `ex-${lesson.id}-k-mc-${idx}`,
+        type: 'multiple_choice',
+        prompt: 'Энэ ханзны утга юу вэ?',
+        targetJapanese: kanji.kanji,
+        targetReading: kanji.onyomi || kanji.kunyomi || '',
+        targetMongolian: kanji.mongolian,
+        itemId: kanji.id,
+        itemType: 'kanji',
+        onyomi: kanji.onyomi,
+        kunyomi: kanji.kunyomi,
+        options,
+        correctAnswer: kanji.mongolian,
+        explanation: `「${kanji.kanji}」ханз нь 「${kanji.mongolian}」утгатай.`
+      });
+    }
   });
 
-  // Limit to target total exercises
-  return exercises.slice(0, lesson.totalExercises || 10);
+  // 6. Active Recall: Grammar Check
+  lessonGrammar.slice(0, hasGrammar ? 1 : 0).forEach((grammar, idx) => {
+    const gq = learningEngine.buildGrammarQuestion(grammar, poolGrammar);
+    if (gq && gq.options.length >= 2) {
+      exercises.push({
+        id: `ex-${lesson.id}-g-mc-${idx}`,
+        type: 'multiple_choice',
+        prompt: gq.promptInstruction || 'Дүрмийн зөв утгыг сонгоно уу',
+        targetJapanese: gq.prompt,
+        targetReading: gq.reading,
+        targetMongolian: grammar.mongolian,
+        itemId: grammar.id,
+        itemType: 'grammar',
+        structure: grammar.structure,
+        options: gq.options,
+        correctAnswer: gq.options[gq.correctIndex],
+        explanation: gq.explanation
+      });
+    }
+  });
+
+  // 7. Contextual Sentence Scramble (1 sentence from vocab or grammar examples)
+  let addedScramble = false;
+  for (const v of lessonVocab) {
+    if (v.exampleSentence) {
+      const scramble = buildSentenceScrambleExercise(
+        `ex-${lesson.id}-scr-v-${v.id}`,
+        v.exampleSentence,
+        v.exampleMongolian || '',
+        v.exampleReading,
+        v.id,
+        'vocab'
+      );
+      if (scramble) {
+        exercises.push(scramble);
+        addedScramble = true;
+        break;
+      }
+    }
+  }
+
+  if (!addedScramble) {
+    for (const g of lessonGrammar) {
+      const ex = g.examples?.find(e => e.japanese && e.mongolian);
+      if (ex) {
+        const scramble = buildSentenceScrambleExercise(
+          `ex-${lesson.id}-scr-g-${g.id}`,
+          ex.japanese,
+          ex.mongolian,
+          ex.reading,
+          g.id,
+          'grammar'
+        );
+        if (scramble) {
+          exercises.push(scramble);
+          break;
+        }
+      }
+    }
+  }
+
+  return exercises.slice(0, 10);
 }

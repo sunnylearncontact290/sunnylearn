@@ -41,8 +41,24 @@ import {
 import {
   awardItemLearned,
   awardQuizCompleted,
-  getTokyoDateString
+  getTokyoDateString,
+  ensureGamificationProgress,
+  calculateLearnerLevel,
+  calculateStreakFromDates,
+  DAILY_GOAL_XP
 } from '../services/gamificationEngine';
+
+export interface CompleteCurriculumLessonDetails {
+  lessonTitle?: string;
+  level?: JLPTLevel;
+  vocabIds?: string[];
+  kanjiIds?: string[];
+  grammarIds?: string[];
+  correctItems?: Array<{ id: string; type: ContentType; level?: JLPTLevel }>;
+  missedItems?: Array<{ id: string; type: ContentType; level?: JLPTLevel }>;
+  accuracyPercent?: number;
+  isReviewOrCheckpoint?: boolean;
+}
 
 interface ToastMessage {
   id: string;
@@ -117,7 +133,11 @@ interface AppContextType {
   updateSettings: (settings: Partial<UserProgress['settings']>) => void;
   resetProgress: () => void;
   markDailyCelebrationSeen: () => void;
-  completeCurriculumLesson: (lessonId: string, earnedXP: number) => void;
+  completeCurriculumLesson: (
+    lessonId: string,
+    earnedXP: number,
+    details?: CompleteCurriculumLessonDetails
+  ) => void;
 
   // Audio Speech
   playAudio: (text: string, onStart?: () => void) => Promise<void> | void;
@@ -238,7 +258,7 @@ const AppContext = createContext<AppContextType | null>(null);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [data, setData] = useState<DatabaseSchema>(freeTierSeedData);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [learnSubTab, setLearnSubTab] = useState<LearnSubTab>('vocab');
+  const [learnSubTab, setLearnSubTab] = useState<LearnSubTab>('path');
   
   // JLPT Level Selection (Can be null if not selected yet)
   const [selectedLevel, setSelectedLevelState] = useState<JLPTLevel | null>(() => {
@@ -983,67 +1003,167 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     showToast('Таны сургалтын явц амжилттай шинэчлэгдлээ.', 'info');
   }, [showToast]);
 
-  const completeCurriculumLesson = useCallback((lessonId: string, earnedXP: number) => {
+  const completeCurriculumLesson = useCallback((
+    lessonId: string,
+    earnedXP: number,
+    details?: CompleteCurriculumLessonDetails
+  ) => {
     setUserProgress(prev => {
-      const alreadyCompleted = (prev.completedLessonIds || []).includes(lessonId);
-      const completedIds = alreadyCompleted ? prev.completedLessonIds : [...(prev.completedLessonIds || []), lessonId];
+      const normalized = ensureGamificationProgress(prev);
+      const alreadyCompleted = (normalized.completedLessonIds || []).includes(lessonId);
+      const completedIds = alreadyCompleted
+        ? normalized.completedLessonIds
+        : [...(normalized.completedLessonIds || []), lessonId];
 
-      // Anti-farming protection: award full XP only once upon genuine completion
+      // Anti-farming protection: award lesson XP once per lesson completion
       const effectiveXP = alreadyCompleted ? 0 : earnedXP;
+      const g = normalized.gamification!;
+      const todayTokyo = getTokyoDateString();
+      const targetLevel: JLPTLevel = details?.level || selectedLevel || 'N5';
 
-      const currentGamification = prev.gamification || {
-        totalXP: 0,
-        level: 1,
-        dailyDate: new Date().toISOString().split('T')[0],
-        dailyXP: 0,
-        dailyGoalXP: 20,
-        dailyGoalCompleted: false,
-        dailyTaskProgress: {} as any,
-        awardedItemIds: [],
-        awardedQuizIds: [],
-        completedGoalDates: [],
-        currentStreak: prev.streak?.current || 0,
-        longestStreak: prev.streak?.longest || prev.streak?.current || 0,
-        unlockedBadgeIds: []
+      let workingProgress: UserProgress = {
+        ...normalized,
+        completedLessonIds: completedIds
       };
 
-      const newDailyXP = (currentGamification.dailyXP || 0) + effectiveXP;
-      const newTotalXP = (currentGamification.totalXP || 0) + effectiveXP;
-      const newlyReached = !currentGamification.dailyGoalCompleted && newDailyXP >= (currentGamification.dailyGoalXP || 20);
-      const updatedStreak = newlyReached ? (currentGamification.currentStreak || 0) + 1 : currentGamification.currentStreak;
+      // Update SRS study records for items practiced during this lesson
+      if (details?.correctItems) {
+        for (const item of details.correctItems) {
+          workingProgress = learningEngine.recordAnswer(
+            workingProgress,
+            item.id,
+            item.type,
+            item.level || targetLevel,
+            true
+          );
+        }
+      }
+      if (details?.missedItems) {
+        for (const item of details.missedItems) {
+          workingProgress = learningEngine.recordAnswer(
+            workingProgress,
+            item.id,
+            item.type,
+            item.level || targetLevel,
+            false
+          );
+        }
+      }
+
+      // Batch-mark lesson's vocabulary, kanji, and grammar items as learned without spamming toasts
+      const vocabSet = new Set(workingProgress.learnedVocabIds || []);
+      let newlyAddedVocab = 0;
+      for (const id of details?.vocabIds || []) {
+        if (!vocabSet.has(id)) {
+          vocabSet.add(id);
+          newlyAddedVocab++;
+        }
+      }
+
+      const kanjiSet = new Set(workingProgress.learnedKanjiIds || []);
+      let newlyAddedKanji = 0;
+      for (const id of details?.kanjiIds || []) {
+        if (!kanjiSet.has(id)) {
+          kanjiSet.add(id);
+          newlyAddedKanji++;
+        }
+      }
+
+      const grammarSet = new Set(workingProgress.learnedGrammarIds || []);
+      let newlyAddedGrammar = 0;
+      for (const id of details?.grammarIds || []) {
+        if (!grammarSet.has(id)) {
+          grammarSet.add(id);
+          newlyAddedGrammar++;
+        }
+      }
+
+      const newDailyXP = (g.dailyXP || 0) + effectiveXP;
+      const newTotalXP = (g.totalXP || 0) + effectiveXP;
+      const goalXP = g.dailyGoalXP || DAILY_GOAL_XP;
+      const isGoalCompletedNow = g.dailyGoalCompleted || newDailyXP >= goalXP;
+      const newlyReachedDailyGoal = !g.dailyGoalCompleted && isGoalCompletedNow;
+
+      const completedDates = [...(g.completedGoalDates || [])];
+      if (newlyReachedDailyGoal && !completedDates.includes(todayTokyo)) {
+        completedDates.push(todayTokyo);
+      }
+
+      const streakInfo = calculateStreakFromDates(completedDates, todayTokyo);
+      const levelInfo = calculateLearnerLevel(newTotalXP);
+
+      const safeLevel = (['N5', 'N4', 'N3', 'N2', 'N1'].includes(targetLevel) ? targetLevel : 'N5') as JLPTLevel;
+      const prevLevelTask = g.dailyTaskProgress?.[safeLevel] || {
+        vocabCount: 0,
+        kanjiCount: 0,
+        grammarCount: 0,
+        quizCount: 0
+      };
+
+      const todayIso = new Date().toISOString().split('T')[0];
+      const dailyActivity = { ...(workingProgress.dailyActivity || {}) };
+      const prevTodayAct = dailyActivity[todayIso] || { date: todayIso, itemCount: 0, quizCount: 0, practiceCount: 0 };
+      dailyActivity[todayIso] = {
+        ...prevTodayAct,
+        itemCount: prevTodayAct.itemCount + newlyAddedVocab + newlyAddedKanji + newlyAddedGrammar,
+        quizCount: prevTodayAct.quizCount + (details?.isReviewOrCheckpoint ? 1 : 0),
+        practiceCount: prevTodayAct.practiceCount + 1
+      };
 
       const updated: UserProgress = {
-        ...prev,
-        completedLessonIds: completedIds,
+        ...workingProgress,
+        learnedVocabIds: Array.from(vocabSet),
+        learnedKanjiIds: Array.from(kanjiSet),
+        learnedGrammarIds: Array.from(grammarSet),
+        dailyActivity,
+        lastStudied: {
+          type: 'lesson',
+          id: lessonId,
+          title: details?.lessonTitle,
+          level: safeLevel,
+          subTab: 'path',
+          date: new Date().toISOString()
+        },
         streak: {
-          ...prev.streak,
-          current: updatedStreak,
-          longest: Math.max(prev.streak?.longest || 0, updatedStreak),
-          lastActiveDate: new Date().toISOString().split('T')[0]
+          current: streakInfo.currentStreak,
+          longest: Math.max(workingProgress.streak?.longest || 0, streakInfo.longestStreak),
+          lastActiveDate: todayTokyo
         },
         gamification: {
-          ...currentGamification,
+          ...g,
           dailyXP: newDailyXP,
           totalXP: newTotalXP,
-          dailyGoalCompleted: currentGamification.dailyGoalCompleted || newlyReached,
-          currentStreak: updatedStreak,
-          longestStreak: Math.max(currentGamification.longestStreak || 0, updatedStreak)
-        }
+          level: levelInfo.level,
+          dailyGoalCompleted: isGoalCompletedNow,
+          completedGoalDates: completedDates,
+          currentStreak: streakInfo.currentStreak,
+          longestStreak: Math.max(g.longestStreak || 0, streakInfo.longestStreak),
+          dailyTaskProgress: {
+            ...g.dailyTaskProgress,
+            [safeLevel]: {
+              vocabCount: prevLevelTask.vocabCount + newlyAddedVocab,
+              kanjiCount: prevLevelTask.kanjiCount + newlyAddedKanji,
+              grammarCount: prevLevelTask.grammarCount + newlyAddedGrammar,
+              quizCount: prevLevelTask.quizCount + (details?.isReviewOrCheckpoint ? 1 : 0)
+            }
+          }
+        },
+        updatedAt: new Date().toISOString()
       };
 
       storageService.saveProgress(updated);
 
       if (alreadyCompleted) {
-        showToast('Хичээлийг амжилттай давтлаа! (Өмнө нь суралцсан тул давтан XP олгогдохгүй)', 'info');
-      } else if (newlyReached) {
-        showToast('🎉 Өнөөдрийн 20 XP зорилго биеллээ! 🔥 Streak нэмэгдлээ!', 'success');
+        showToast('Хичээлийг амжилттай давтлаа (өмнө нь дууссан тул нэмэлт XP тооцогдохгүй)', 'info');
+      } else if (newlyReachedDailyGoal) {
+        showToast(`+${effectiveXP} XP · Өнөөдрийн зорилго биеллээ!`, 'success');
       } else {
-        showToast(`+${earnedXP} XP • Хичээл амжилттай дууслаа!`, 'success');
+        showToast(`+${effectiveXP} XP · Хичээл амжилттай дууслаа!`, 'success');
       }
 
       return updated;
     });
-  }, [showToast]);
+  }, [selectedLevel, showToast]);
 
   const adminLogin = useCallback(async (email: string, password: string): Promise<boolean> => {
     try {

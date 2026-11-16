@@ -620,11 +620,26 @@ export type PathNodeStatus = 'completed' | 'active' | 'locked';
 
 export interface CurriculumExercise {
   id: string;
-  type: 'vocab_intro' | 'multiple_choice' | 'sentence_scramble' | 'word_matching' | 'listening';
+  type:
+    | 'vocab_intro'
+    | 'kanji_intro'
+    | 'grammar_intro'
+    | 'multiple_choice'
+    | 'sentence_scramble'
+    | 'word_matching'
+    | 'listening';
   prompt: string;
   targetJapanese: string;
   targetReading?: string;
   targetMongolian: string;
+  itemId?: string;
+  itemType?: ContentType;
+  onyomi?: string;
+  kunyomi?: string;
+  structure?: string;
+  exampleJapanese?: string;
+  exampleReading?: string;
+  exampleMongolian?: string;
   options?: string[];
   correctAnswer: string;
   explanation?: string;
@@ -634,26 +649,33 @@ export interface CurriculumExercise {
 export interface CurriculumLesson {
   id: string;
   unitId: string;
+  unitNumber?: number;
   lessonNumber: number;
   title: string;
   description: string;
   type: PathNodeType;
+  lessonFocus?: 'vocab' | 'vocab_kanji' | 'vocab_grammar' | 'mixed' | 'review' | 'checkpoint';
   jlptLevel: JLPTLevel;
   vocabIds: string[];
   kanjiIds: string[];
   grammarIds: string[];
   xpReward: number;
   totalExercises: number;
+  estimatedMinutes?: number;
 }
 
 export interface CurriculumUnit {
   id: string;
   unitNumber: number;
   title: string;
+  japaneseTitle?: string;
   mongolianDescription: string;
   jlptLevel: JLPTLevel;
   themeColor: string;
   iconName: string;
+  vocabCount?: number;
+  kanjiCount?: number;
+  grammarCount?: number;
   lessons: CurriculumLesson[];
 }
 
