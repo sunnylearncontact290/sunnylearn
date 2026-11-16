@@ -502,6 +502,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             if (res.user.selectedLevel) {
               setSelectedLevelState(res.user.selectedLevel);
               storageService.setSelectedLevel(res.user.selectedLevel);
+              storageService.setOnboardingCompleted(true);
             } else if (localProgress.selectedLevel) {
               apiService.syncUserProgress({ selectedLevel: localProgress.selectedLevel }).catch(() => {});
             }
@@ -592,6 +593,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (res.user.selectedLevel) {
           setSelectedLevelState(res.user.selectedLevel);
           storageService.setSelectedLevel(res.user.selectedLevel);
+          storageService.setOnboardingCompleted(true);
         }
         setSyncStatus('synced');
         setIsAuthModalOpen(false);
@@ -630,6 +632,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (res.user.selectedLevel) {
           setSelectedLevelState(res.user.selectedLevel);
           storageService.setSelectedLevel(res.user.selectedLevel);
+          storageService.setOnboardingCompleted(true);
         }
         setSyncStatus('synced');
         setIsAuthModalOpen(false);
@@ -667,6 +670,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (res.user.selectedLevel) {
           setSelectedLevelState(res.user.selectedLevel);
           storageService.setSelectedLevel(res.user.selectedLevel);
+          storageService.setOnboardingCompleted(true);
         }
         setSyncStatus('synced');
         setIsAuthModalOpen(false);

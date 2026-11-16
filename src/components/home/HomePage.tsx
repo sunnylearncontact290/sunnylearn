@@ -243,7 +243,7 @@ export const HomePage: React.FC = () => {
               Сайн уу! Өнөөдөр япон хэлээ үргэлжлүүлцгээе.
             </h1>
             <p className="text-stone-300 text-xs sm:text-sm leading-relaxed max-w-2xl">
-              Таны сонгосон JLPT {effectiveLevel} түвшний үгийн сан, ханз, дүрмийн агуулга бэлэн байна.
+              JLPT {effectiveLevel} — Өнөөдрийн хичээлээ үргэлжлүүлээрэй.
             </p>
           </div>
 

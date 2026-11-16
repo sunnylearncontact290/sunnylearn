@@ -134891,6 +134891,49 @@
       "entitlement": "complimentary_premium",
       "passwordHash": "cc746f7b8075d4a79bdb1b1556102af3:34761b3757f00b4078c7c6fd09a29697d29514d83e12afe9ffe9ce0a5a4db2b9afc43e9756fa90d78f4d5d63e30daeed53a5fd5dc8139860a9fc796552fd579b",
       "authProvider": "email"
+    },
+    {
+      "id": "usr-1794837011529-033f64a9",
+      "email": "onboard_test_1794837011467@example.com",
+      "name": "TestUser",
+      "authProvider": "email",
+      "passwordHash": "11ba9b1a4447b95169b3b1f0d1d9bc6f:82e39f14e6a0f7f5b8622accb4a234862f3606e1ab1b19f6a5fea6d63d3a8481004ce6f3cc5cb09545a9956ab28e036c3120c2a988bb73da790351b09a7f840b",
+      "selectedLevel": "N3",
+      "progress": {
+        "selectedLevel": null,
+        "learnedVocabIds": [],
+        "learnedKanjiIds": [],
+        "learnedGrammarIds": [],
+        "completedLessonIds": [],
+        "completedReadingIds": [],
+        "completedListeningIds": [],
+        "quizResults": [],
+        "favorites": {
+          "vocabIds": [],
+          "kanjiIds": [],
+          "grammarIds": [],
+          "sentenceIds": []
+        },
+        "streak": {
+          "current": 0,
+          "longest": 0,
+          "lastActiveDate": ""
+        },
+        "updatedAt": "2026-11-16T13:50:11.536Z",
+        "settings": {
+          "targetLevel": "N5",
+          "dailyGoalCount": 10,
+          "speechRate": 1,
+          "autoPlayAudio": false,
+          "showFurigana": true
+        }
+      },
+      "createdAt": "2026.11.16 21:50:11",
+      "updatedAt": "2026-11-16T13:50:12.642Z",
+      "timezone": "Asia/Ulaanbaatar",
+      "notifiedAdmin": false,
+      "isPremium": false,
+      "premiumExpiresAt": null
     }
   ],
   "payments": [
@@ -134927,7 +134970,11 @@
       1790074445788,
       1790074659544
     ],
-    "anon:anon_h77cyt77u_mvqm5910": []
+    "anon:anon_h77cyt77u_mvqm5910": [],
+    "anon:anon_60ng9sfeu_mwjbm1cg": [],
+    "anon:anon_qp5es4co2_mwjbm2hx": [],
+    "anon:anon_t6t2zhlm4_mwjbm4p2": [],
+    "user:usr-1794837011529-033f64a9": []
   },
   "roleplaySessions": []
 }

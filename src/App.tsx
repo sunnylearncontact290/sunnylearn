@@ -21,20 +21,32 @@ import { RoleplayView } from './components/roleplay/RoleplayView';
 import { QuizExplanationModal } from './components/quiz/QuizExplanationModal';
 import { FeedbackModal } from './components/common/FeedbackModal';
 import { MobileTabBar } from './components/common/MobileTabBar';
-import { OnboardingModal } from './components/common/OnboardingModal';
+import { OnboardingFlow } from './components/common/OnboardingFlow';
+import { SunnyLogo } from './components/common/SunnyLogo';
 import { storageService } from './services/storage';
 import { Analytics } from '@vercel/analytics/react';
 import { configureNativeSystemUI, hideNativeSplashScreen } from './services/nativePlatform';
 
 const MainContent: React.FC = () => {
-  const { activeTab, setActiveTab, selectedLevel, isAdmin, inAppNotification, dismissInAppNotification, isDarkMode } = useApp();
-  const [isOnboardingOpen, setIsOnboardingOpen] = React.useState(false);
+  const {
+    activeTab,
+    setActiveTab,
+    selectedLevel,
+    isUserLoading,
+    isAdmin,
+    inAppNotification,
+    dismissInAppNotification,
+    isDarkMode
+  } = useApp();
+  const [hasCompletedOnboardingSession, setHasCompletedOnboardingSession] = React.useState(false);
 
-  useEffect(() => {
-    if (!selectedLevel && !storageService.isOnboardingCompleted()) {
-      setIsOnboardingOpen(true);
-    }
-  }, [selectedLevel]);
+  const shouldShowOnboarding =
+    !hasCompletedOnboardingSession &&
+    !isUserLoading &&
+    !isAdmin &&
+    activeTab !== 'tokushoho' &&
+    !selectedLevel &&
+    !storageService.isOnboardingCompleted();
 
   // Native iOS / mobile system UI setup
   useEffect(() => {
@@ -58,6 +70,27 @@ const MainContent: React.FC = () => {
   // If in admin mode and user is strictly authenticated as sanaa0419z@gmail.com, show full Admin Dashboard
   if (activeTab === 'admin' && isAdmin) {
     return <AdminDashboard />;
+  }
+
+  // Wait briefly while authenticated user's saved JLPT level hydrates before deciding onboarding visibility
+  if (isUserLoading && !selectedLevel && !storageService.isOnboardingCompleted() && activeTab !== 'tokushoho') {
+    return (
+      <div className="min-h-[100dvh] w-full flex items-center justify-center bg-transparent">
+        <div className="w-12 h-12 rounded-[22%] overflow-hidden shadow-md animate-pulse">
+          <SunnyLogo className="block w-full h-full object-cover" />
+        </div>
+      </div>
+    );
+  }
+
+  // Dedicated full-screen first-time onboarding (hides homepage, Navbar, Footer, MobileTabBar)
+  if (shouldShowOnboarding) {
+    return (
+      <div className="w-full max-w-full overflow-x-hidden relative min-h-[100dvh] flex flex-col bg-transparent text-stone-900 dark:text-stone-100 font-sans transition-colors duration-200">
+        <OnboardingFlow onComplete={() => setHasCompletedOnboardingSession(true)} />
+        <ToastContainer />
+      </div>
+    );
   }
 
   // Normal public pages - NO LOGIN required
@@ -101,7 +134,6 @@ const MainContent: React.FC = () => {
       <AuthModal />
       <FeedbackModal />
       <QuizExplanationModal />
-      <OnboardingModal isOpen={isOnboardingOpen} onClose={() => setIsOnboardingOpen(false)} />
       <ToastContainer />
     </div>
   );
