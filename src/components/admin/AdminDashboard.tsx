@@ -302,8 +302,8 @@ export const AdminDashboard: React.FC = () => {
       {/* Admin Top Navbar */}
       <header className="sticky top-0 z-40 bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 px-6 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl overflow-hidden border border-stone-200 dark:border-stone-700 bg-transparent shrink-0 shadow-sm">
-            <SunnyLogo className="w-full h-full object-cover" />
+          <div className="w-9 h-9 rounded-[22%] overflow-hidden bg-transparent shrink-0 shadow-sm">
+            <SunnyLogo className="block w-full h-full object-cover" />
           </div>
           <div>
             <div className="flex items-center gap-2">

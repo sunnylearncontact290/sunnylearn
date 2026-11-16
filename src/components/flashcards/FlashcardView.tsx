@@ -795,8 +795,8 @@ export const FlashcardView: React.FC<FlashcardViewProps> = ({
                       {aiExplanation ? (
                         <div className="p-3 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200 dark:border-amber-900/40 text-left space-y-1.5 animate-fade-in">
                           <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 rounded-full overflow-hidden border border-amber-300 shrink-0">
-                              <SunnyLogo className="w-full h-full object-cover" />
+                            <div className="w-6 h-6 rounded-[22%] overflow-hidden shrink-0">
+                              <SunnyLogo className="block w-full h-full object-cover" />
                             </div>
                             <span className="text-[11px] font-black text-amber-700 dark:text-amber-300">
                               Sunny багшийн цээжлэх зөвлөгөө:

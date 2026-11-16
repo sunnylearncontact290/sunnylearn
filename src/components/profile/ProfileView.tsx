@@ -69,8 +69,8 @@ export const ProfileView: React.FC = () => {
       <div className="bg-white dark:bg-stone-900 p-6 sm:p-8 rounded-3xl border border-stone-200 dark:border-stone-800 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-sm border border-stone-200 dark:border-stone-700 shrink-0">
-              <SunnyLogo className="w-full h-full object-cover" />
+            <div className="w-12 h-12 rounded-[22%] overflow-hidden shadow-sm shrink-0">
+              <SunnyLogo className="block w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-2xl font-extrabold text-stone-900 dark:text-stone-100">

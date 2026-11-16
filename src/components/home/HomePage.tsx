@@ -272,8 +272,8 @@ export const HomePage: React.FC = () => {
 
         {/* Mascot in Hero Card */}
         <div className="hidden md:flex absolute top-8 right-8 z-10 items-center justify-center">
-          <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-xl border border-white/20 bg-transparent">
-            <SunnyLogo className="w-full h-full object-cover" />
+          <div className="w-20 h-20 rounded-[22%] overflow-hidden shadow-xl bg-transparent">
+            <SunnyLogo className="block w-full h-full object-cover" />
           </div>
         </div>
       </section>

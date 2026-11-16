@@ -44,8 +44,8 @@ export const AdminLogin: React.FC = () => {
 
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-16 h-16 rounded-3xl overflow-hidden shadow-md border-2 border-stone-200 dark:border-stone-700 bg-transparent mx-auto">
-            <SunnyLogo className="w-full h-full object-cover" />
+          <div className="w-16 h-16 rounded-[22%] overflow-hidden shadow-md bg-transparent mx-auto">
+            <SunnyLogo className="block w-full h-full object-cover" />
           </div>
           <h1 className="text-2xl font-extrabold text-stone-900 dark:text-stone-100 tracking-tight">
             Sunny<span className="text-red-600 dark:text-red-400">Learn</span> Админ нэвтрэх

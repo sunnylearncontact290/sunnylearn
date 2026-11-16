@@ -20,8 +20,8 @@ export const Footer: React.FC = () => {
           {/* Brand Col */}
           <div className="space-y-3 sm:col-span-2 md:col-span-1">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl overflow-hidden shadow-sm border border-stone-200 dark:border-stone-750 bg-transparent shrink-0">
-                <SunnyLogo className="w-full h-full object-cover" />
+              <div className="w-8 h-8 rounded-[22%] overflow-hidden shadow-sm bg-transparent shrink-0">
+                <SunnyLogo className="block w-full h-full object-cover" />
               </div>
               <span className="font-extrabold text-stone-900 dark:text-white tracking-tight text-base">
                 Sunny<span className="text-red-600 dark:text-red-400">Learn</span>

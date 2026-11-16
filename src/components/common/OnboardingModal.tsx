@@ -97,8 +97,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onClos
         
         {/* Header & Mascot */}
         <div className="flex items-center gap-3.5 pb-2 border-b border-stone-100 dark:border-stone-800/80">
-          <div className="w-12 h-12 rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-800 shadow-xs shrink-0">
-            <SunnyLogo className="w-full h-full object-cover" />
+          <div className="w-12 h-12 rounded-[22%] overflow-hidden shadow-xs shrink-0">
+            <SunnyLogo className="block w-full h-full object-cover" />
           </div>
           <div>
             <div className="flex items-center gap-2">

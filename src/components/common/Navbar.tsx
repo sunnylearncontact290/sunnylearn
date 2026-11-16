@@ -136,8 +136,8 @@ export const Navbar: React.FC = () => {
               className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group select-none shrink-0"
               title="SunnyLearn Нүүр хуудас"
             >
-              <div className="relative w-8 h-8 sm:w-9 sm:h-9 xl:w-10 xl:h-10 rounded-xl overflow-hidden shadow-xs border border-stone-200 dark:border-stone-800 bg-transparent group-hover:scale-105 transition-transform shrink-0">
-                <SunnyLogo className="w-full h-full object-cover" />
+              <div className="relative w-8 h-8 sm:w-9 sm:h-9 xl:w-10 xl:h-10 rounded-[22%] overflow-hidden shadow-xs bg-transparent group-hover:scale-105 transition-transform shrink-0">
+                <SunnyLogo className="block w-full h-full object-cover" />
               </div>
               
               <div className="flex items-center gap-1.5 shrink-0">

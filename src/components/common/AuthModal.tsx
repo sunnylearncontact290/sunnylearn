@@ -207,8 +207,8 @@ export const AuthModal: React.FC = () => {
 
         {/* Modal Header */}
         <div className="text-center pt-2 pb-4">
-          <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-sm border border-stone-200 dark:border-stone-700 mx-auto mb-2">
-            <SunnyLogo className="w-full h-full object-cover" />
+          <div className="w-14 h-14 rounded-[22%] overflow-hidden shadow-sm mx-auto mb-2">
+            <SunnyLogo className="block w-full h-full object-cover" />
           </div>
           <h3 className="text-xl font-extrabold text-stone-900 dark:text-white">
             {mode === 'login' && 'SunnyLearn-д нэвтрэх'}

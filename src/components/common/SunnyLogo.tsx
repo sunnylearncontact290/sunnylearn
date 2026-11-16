@@ -1,41 +1,49 @@
 import React, { useEffect, useState } from "react";
 
-const getLogo = () => {
-  const hour = new Date().getHours();
+export const TIME_BASED_LOGOS = {
+  morning: "/assets/logo/01_morning.png",
+  lateMorning: "/assets/logo/02_late_morning.png",
+  afternoon: "/assets/logo/03_afternoon.png",
+  evening: "/assets/logo/04_evening.png",
+  night: "/assets/logo/05_night.png",
+  lateNight: "/assets/logo/06_late_night.png",
+  earlyMorning: "/assets/logo/07_early_morning.png",
+} as const;
 
+export const getLogoForHour = (hour: number = new Date().getHours()): string => {
   if (hour >= 5 && hour < 11) {
-    return "/logos/01_morning.jpg";
+    return TIME_BASED_LOGOS.morning;
   }
 
   if (hour >= 11 && hour < 15) {
-    return "/logos/02_late_morning.jpg";
+    return TIME_BASED_LOGOS.lateMorning;
   }
 
   if (hour >= 15 && hour < 18) {
-    return "/logos/03_afternoon.jpg";
+    return TIME_BASED_LOGOS.afternoon;
   }
 
   if (hour >= 18 && hour < 21) {
-    return "/logos/04_evening.jpg";
+    return TIME_BASED_LOGOS.evening;
   }
 
   if (hour >= 21) {
-    return "/logos/05_night.jpg";
+    return TIME_BASED_LOGOS.night;
   }
 
   if (hour < 3) {
-    return "/logos/06_late_night_study.jpg";
+    return TIME_BASED_LOGOS.lateNight;
   }
 
-  return "/logos/07_early_morning.jpg";
+  return TIME_BASED_LOGOS.earlyMorning;
 };
 
 export const SunnyLogo: React.FC<{ className?: string }> = ({ className = "" }) => {
-  const [logo, setLogo] = useState(getLogo());
+  const [logo, setLogo] = useState(() => getLogoForHour());
 
   useEffect(() => {
     const updateLogo = () => {
-      setLogo(getLogo());
+      setLogo(getLogoForHour());
     };
 
     updateLogo();
@@ -45,11 +53,23 @@ export const SunnyLogo: React.FC<{ className?: string }> = ({ className = "" }) 
     return () => clearInterval(timer);
   }, []);
 
+  const extraClasses = className
+    .replace(/\bobject-(cover|contain)\b/g, "")
+    .replace(/\brounded-\S+\b/g, "")
+    .trim();
+
+  const normalizedClassName = [
+    "block w-full h-full object-cover rounded-[22%]",
+    extraClasses,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <img
       src={logo}
       alt="SunnyLearn"
-      className={className}
+      className={normalizedClassName}
     />
   );
 };
